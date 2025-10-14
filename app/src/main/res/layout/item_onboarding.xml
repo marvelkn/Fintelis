@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_onboarding"
     android:padding="24dp"
     tools:context=".MainActivity">
 
@@ -46,7 +47,7 @@
         android:text="Smart insights for better credit decisions."
         android:textAlignment="center"
         android:textColor="@android:color/black"
-        android:textSize="25sp"
+        android:textSize="36sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
