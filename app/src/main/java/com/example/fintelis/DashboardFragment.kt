@@ -1,59 +1,90 @@
 package com.example.fintelis
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.utils.ColorTemplate
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [DashboardFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class DashboardFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var tvTotalApps: TextView
+    private lateinit var tvAvgScore: TextView
+    private lateinit var pieChart: PieChart
+    private lateinit var barChart: BarChart
+    private lateinit var btnNewAnalysis: Button
+    private lateinit var btnImportData: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_dashboard, container, false)
+        val view = inflater.inflate(R.layout.fragment_dashboard, container, false)
+
+        tvTotalApps = view.findViewById(R.id.tv_total_apps)
+        tvAvgScore = view.findViewById(R.id.tv_avg_score)
+        pieChart = view.findViewById(R.id.pieChartApproval)
+        barChart = view.findViewById(R.id.barChartRisk)
+        btnNewAnalysis = view.findViewById(R.id.btn_new_analysis)
+        btnImportData = view.findViewById(R.id.btn_import_data)
+
+        setupMetrics()
+        setupPieChart()
+        setupBarChart()
+        setupButtons()
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment DashboardFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            DashboardFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    private fun setupMetrics() {
+        // Contoh data, bisa diganti dengan data real-time
+        tvTotalApps.text = "1,200"
+        tvAvgScore.text = "750"
+    }
+
+    private fun setupPieChart() {
+        val entries = listOf(
+            PieEntry(70f, "Disetujui"),
+            PieEntry(30f, "Ditolak")
+        )
+        val dataSet = PieDataSet(entries, "Rasio Persetujuan")
+        dataSet.colors = ColorTemplate.MATERIAL_COLORS.toList()
+        val data = PieData(dataSet)
+        pieChart.data = data
+        pieChart.invalidate() // refresh
+    }
+
+    private fun setupBarChart() {
+        val entries = listOf(
+            BarEntry(1f, 50f),
+            BarEntry(2f, 30f),
+            BarEntry(3f, 20f)
+        )
+        val dataSet = BarDataSet(entries, "Distribusi Risiko")
+        dataSet.colors = ColorTemplate.COLORFUL_COLORS.toList()
+        val data = BarData(dataSet)
+        barChart.data = data
+        barChart.invalidate() // refresh
+    }
+
+    private fun setupButtons() {
+        btnNewAnalysis.setOnClickListener {
+            Toast.makeText(context, "Mulai Analisis Kredit Baru", Toast.LENGTH_SHORT).show()
+        }
+        btnImportData.setOnClickListener {
+            Toast.makeText(context, "Mulai Impor Data Nasabah", Toast.LENGTH_SHORT).show()
+        }
     }
 }
