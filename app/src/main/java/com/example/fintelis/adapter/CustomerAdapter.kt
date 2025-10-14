@@ -6,30 +6,33 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fintelis.R
 import com.example.fintelis.data.Customer
-import com.example.fintelis.databinding.ItemCustomerBinding
 import com.example.fintelis.data.Status
+import com.example.fintelis.databinding.ItemCustomerBinding
 
 class CustomerAdapter(
-    private val customerList: List<Customer>,
+    // Ubah menjadi var agar bisa di-update
+    private var customerList: MutableList<Customer>,
     private val onCustomerClicked: (Customer) -> Unit
 ) : RecyclerView.Adapter<CustomerAdapter.CustomerViewHolder>() {
+
+    // FUNGSI BARU UNTUK UPDATE DATA
+    fun updateData(newCustomerList: List<Customer>) {
+        customerList.clear()
+        customerList.addAll(newCustomerList)
+        notifyDataSetChanged() // Memberitahu RecyclerView untuk refresh
+    }
 
     inner class CustomerViewHolder(private val binding: ItemCustomerBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(customer: Customer) {
             binding.tvCustomerName.text = customer.name
             binding.tvCustomerId.text = customer.id
             binding.tvSubmissionDate.text = customer.submissionDate
-
-            // FIX 1: Use .name to get the String value for the TextView
-            // This will convert Status.APPROVED to the string "APPROVED"
             binding.tvStatus.text = customer.status.name
 
-            // FIX 2: Compare against the actual enum values, not strings.
-            // Notice it's Status.APPROVED, not "APPROVED"
             val statusColorRes = when (customer.status) {
                 Status.APPROVED -> R.color.status_approved
                 Status.REJECTED -> R.color.status_rejected
-                Status.PENDING -> R.color.status_pending // or use 'else'
+                Status.PENDING -> R.color.status_pending
             }
             binding.tvStatus.setTextColor(ContextCompat.getColor(itemView.context, statusColorRes))
 

@@ -13,7 +13,16 @@
         <action
             android:id="@+id/action_customerListFragment_to_customerDetailFragment"
             app:destination="@id/customerDetailFragment" />
+        <action
+            android:id="@+id/action_customerListFragment_to_addCustomerFragment"
+            app:destination="@id/addCustomerFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/addCustomerFragment"
+        android:name="com.example.fintelis.AddCustomerFragment"
+        android:label="Add Customer"
+        tools:layout="@layout/fragment_add_customer" />
 
     <fragment
         android:id="@+id/customerDetailFragment"
@@ -23,6 +32,18 @@
         <argument
             android:name="customerData"
             app:argType="com.example.fintelis.data.Customer" />
+        <action
+            android:id="@+id/action_to_analysisResult"
+            app:destination="@id/analysisResultFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/analysisResultFragment"
+        android:name="com.example.fintelis.AnalysisResultFragment"
+        android:label="Analysis Result"
+        tools:layout="@layout/fragment_analysis_result">
+        <argument
+            android:name="analysisStatus"
+            app:argType="string" />
+    </fragment>
 </navigation>

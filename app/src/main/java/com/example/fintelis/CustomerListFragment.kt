@@ -5,18 +5,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fintelis.adapter.CustomerAdapter
-import com.example.fintelis.data.Customer
-import com.example.fintelis.data.RiskCategory
-import com.example.fintelis.data.Status
 import com.example.fintelis.databinding.FragmentCustomerListBinding
+import com.example.fintelis.viewmodel.CustomerViewModel
 
 class CustomerListFragment : Fragment() {
 
     private var _binding: FragmentCustomerListBinding? = null
     private val binding get() = _binding!!
+
+    // KUNCI: Menggunakan activityViewModels() untuk berbagi ViewModel
+    private val customerViewModel: CustomerViewModel by activityViewModels()
+
+    // Inisialisasi adapter sekali saja
+    private lateinit var customerAdapter: CustomerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,27 +34,30 @@ class CustomerListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val dummyCustomers = generateDummyData()
+        setupRecyclerView()
 
-        val customerAdapter = CustomerAdapter(dummyCustomers) { selectedCustomer ->
-            // Aksi saat item diklik: navigasi ke detail
-            val action = CustomerListFragmentDirections.actionCustomerListFragmentToCustomerDetailFragment(selectedCustomer)
-            findNavController().navigate(action)
+        // KUNCI: Mengamati (observe) LiveData dari ViewModel
+        customerViewModel.customers.observe(viewLifecycleOwner) { customerList ->
+            // Saat data berubah, cukup update data di adapter.
+            // Tidak perlu membuat adapter baru setiap saat.
+            customerAdapter.updateData(customerList)
         }
 
-        binding.recyclerViewCustomers.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = customerAdapter
+        binding.fabAddCustomer.setOnClickListener {
+            findNavController().navigate(R.id.action_customerListFragment_to_addCustomerFragment)
         }
     }
 
-    private fun generateDummyData(): List<Customer> {
-        return listOf(
-            Customer("ID-20251012001", "Budi Santoso", "Oct 12, 2025", 780, RiskCategory.LOW, Status.APPROVED),
-            Customer("ID-20251011002", "Citra Lestari", "Oct 11, 2025", 420, RiskCategory.HIGH, Status.REJECTED),
-            Customer("ID-20251010003", "Agus Wijaya", "Oct 10, 2025", 650, RiskCategory.MEDIUM, Status.PENDING),
-            Customer("ID-20251009004", "Dewi Anggraini", "Oct 09, 2025", 810, RiskCategory.LOW, Status.APPROVED)
-        )
+    private fun setupRecyclerView() {
+        // Inisialisasi adapter dengan list kosong terlebih dahulu
+        customerAdapter = CustomerAdapter(mutableListOf()) { customer ->
+            val action = CustomerListFragmentDirections.actionCustomerListFragmentToCustomerDetailFragment(customer)
+            findNavController().navigate(action)
+        }
+        binding.recyclerViewCustomers.apply {
+            adapter = customerAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+        }
     }
 
     override fun onDestroyView() {
@@ -57,3 +65,4 @@ class CustomerListFragment : Fragment() {
         _binding = null
     }
 }
+

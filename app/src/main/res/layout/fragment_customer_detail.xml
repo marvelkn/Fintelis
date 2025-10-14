@@ -1,49 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="24dp"
     android:background="@color/white"
     tools:context=".CustomerDetailFragment">
 
-    <!-- Header: Nama dan ID Nasabah -->
-    <TextView
-        android:id="@+id/tv_detail_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        tools:text="Budi Santoso"/>
-
-    <TextView
-        android:id="@+id/tv_detail_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="16sp"
-        android:textColor="@android:color/darker_gray"
-        tools:text="ID-20251012001"/>
-
-    <!-- Garis Pemisah -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#DDDDDD"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="24dp"/>
-
-    <!-- Konten Detail dalam satu TextView agar mudah diatur -->
-    <TextView
-        android:id="@+id/tv_detail_info"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lineSpacingExtra="8dp"
-        android:textColor="@color/black"
-        android:textSize="18sp"
-        tools:text="Submission Date: Oct 12, 2025\nCredit Score: 780\nRisk Category: LOW\nStatus: APPROVED"/>
+        android:orientation="vertical">
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/tv_detail_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            tools:text="Budi Santoso"/>
 
+        <TextView
+            android:id="@+id/tv_detail_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray"
+            tools:text="ID-20251012001"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:id="@+id/tv_detail_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="8dp"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            tools:text="Submission Date: Oct 12, 2025\nCredit Score: 780\nRisk Category: LOW\nStatus: APPROVED"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_analyze"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:text="Analyze Customer"
+        android:textSize="18sp"/>
+
+</RelativeLayout>
