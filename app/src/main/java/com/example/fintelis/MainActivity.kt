@@ -41,8 +41,6 @@ class MainActivity : AppCompatActivity() {
         // Jika belum, lanjutkan dengan menampilkan layout onboarding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         adapter = OnboardingAdapter(items) { position ->
             onNextClicked(position)
@@ -118,6 +116,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        binding.viewPager.unregisterOnPageChangeCallback(pageChangeCallback)
+        // Check if 'binding' has been initialized before using it
+        if (::binding.isInitialized) {
+            // Your cleanup code that uses the binding object
+            // For example: binding.recyclerView.adapter = null
+        }
     }
 }

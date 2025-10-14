@@ -2,12 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_dashboard"
+        android:id="@+id/mainDashboard"
         android:icon="@drawable/home"
         android:title="Home" />
 
     <item
-        android:id="@+id/nav_customers"
+        android:id="@+id/customerListFragment"
         android:icon="@drawable/home"
         android:title="Nasabah" />
 
@@ -22,7 +22,7 @@
         android:title="Visualisasi" />
 
     <item
-        android:id="@+id/nav_settings"
+        android:id="@+id/settingsFragment"
         android:icon="@drawable/home"
         android:title="Pengaturan" />
 
