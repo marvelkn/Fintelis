@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="primary_dark">#1E3A8A</color>
+    <color name="primary_light">#3B82F6</color>
+    <color name="gray_soft">#F3F4F6</color>
+
+    <color name="status_approved">#10B981</color>
+    <color name="status_rejected">#EF4444</color>
+    <color name="status_pending">#F97316</color>
 </resources>

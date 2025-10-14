@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/customerListFragment">
+
+    <fragment
+        android:id="@+id/customerListFragment"
+        android:name="com.example.fintelis.CustomerListFragment"
+        android:label="Customer Database"
+        tools:layout="@layout/fragment_customer_list" >
+        <action
+            android:id="@+id/action_customerListFragment_to_customerDetailFragment"
+            app:destination="@id/customerDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerDetailFragment"
+        android:name="com.example.fintelis.CustomerDetailFragment"
+        android:label="Customer Detail"
+        tools:layout="@layout/fragment_customer_detail" >
+        <argument
+            android:name="customerData"
+            app:argType="com.example.fintelis.data.Customer" />
+    </fragment>
+
+</navigation>
