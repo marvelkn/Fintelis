@@ -5,7 +5,7 @@
     <!-- Gradient: light bluish to pale purple to white -->
     <gradient
         android:angle="270"
-        android:startColor="#E6E6FA"
-        android:endColor="#E0FFFF"
+        android:startColor="#F3E8FF"
+        android:endColor="#CEFAFE"
         android:type="linear" />
 </shape>
