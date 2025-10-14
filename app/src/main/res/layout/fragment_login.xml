@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_onboarding"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Welcome text -->
+        <TextView
+            android:text="Welcome to Fintelis!"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/lato_bold"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+        <TextView
+            android:text="Sign in to your account"
+            android:textSize="15sp"
+            android:textColor="#777"
+            android:fontFamily="@font/lato_regular"
+            android:layout_marginBottom="24dp"
+            android:layout_marginTop="5dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+        <!-- Phone -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="12dp">
+
+            <ImageView
+                android:src="@drawable/ic_phone"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Phone icon" />
+
+            <EditText
+                android:id="@+id/etPhoneLogin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:hint="Phone number"
+                android:background="@android:color/transparent"
+                android:inputType="phone"
+                android:textColor="#000"
+                android:textSize="14sp"
+                android:fontFamily="@font/lato_regular" />
+        </LinearLayout>
+
+        <!-- Password -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="12dp">
+
+            <ImageView
+                android:src="@drawable/ic_lock"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Lock icon" />
+
+            <EditText
+                android:id="@+id/etPasswordLogin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:hint="Password"
+                android:background="@android:color/transparent"
+                android:inputType="textPassword"
+                android:textColor="#000"
+                android:textSize="14sp"
+                android:fontFamily="@font/lato_regular" />
+        </LinearLayout>
+
+
+        <!-- Login button -->
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Log In"
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/lato_bold"
+            android:layout_marginTop="10dp"
+            android:textSize="16sp"
+            android:radius="12dp"/>
+
+        <!-- Divider -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="24dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#CCC" />
+
+            <TextView
+                android:text="  or continue with  "
+                android:textSize="14sp"
+                android:textColor="#777"
+                android:fontFamily="@font/lato_regular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#CCC" />
+        </LinearLayout>
+
+        <!-- Tombol Sign in with Google -->
+        <LinearLayout
+            android:id="@+id/btnGoogleLogin"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_button_google"
+            android:paddingHorizontal="16dp"
+            android:elevation="2dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <ImageView
+                android:src="@drawable/google"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Google logo" />
+
+            <TextView
+                android:text="Sign in with Google"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/lato_bold"
+                android:layout_marginStart="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Tombol Sign in with Facebook -->
+        <LinearLayout
+            android:id="@+id/btnFacebookLogin"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_button_facebook"
+            android:paddingHorizontal="16dp"
+            android:elevation="2dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <ImageView
+                android:src="@drawable/facebook"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Facebook logo" />
+
+            <TextView
+                android:text="Sign in with Facebook"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/lato_bold"
+                android:layout_marginStart="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Signup link -->
+        <TextView
+            android:id="@+id/tvSignup"
+            android:text="Don’t have an account? Sign up"
+            android:textColor="#333"
+            android:fontFamily="@font/lato_regular"
+            android:layout_marginTop="24dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+    </LinearLayout>
+</ScrollView>
