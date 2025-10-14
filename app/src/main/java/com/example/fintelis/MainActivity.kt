@@ -1,5 +1,6 @@
 package com.example.fintelis
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -24,6 +25,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Cek apakah onboarding sudah selesai sebelumnya
+        val sharedPref = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val onboardingCompleted = sharedPref.getBoolean("onboarding_completed", false)
+
+        if (onboardingCompleted) {
+            // Jika sudah, langsung ke Dashboard dan lewati onboarding
+            val intent = Intent(this, DashboardActivity::class.java)
+            startActivity(intent)
+            finish()
+            return // Penting untuk menghentikan eksekusi sisa onCreate
+        }
+
+        // Jika belum, lanjutkan dengan menampilkan layout onboarding
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -42,6 +59,14 @@ class MainActivity : AppCompatActivity() {
         if (next < items.size) {
             binding.viewPager.currentItem = next
         } else {
+            // Tandai bahwa onboarding sudah selesai
+            val sharedPref = getSharedPreferences("app_prefs", MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                putBoolean("onboarding_completed", true)
+                apply()
+            }
+            val intent = Intent(this, DashboardActivity::class.java)
+            startActivity(intent)
             // Misal onboarding selesai → tutup activity
             finish()
         }
