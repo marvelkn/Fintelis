@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         OnboardItem(R.drawable.onb1, "Trusted by millions of people, part of one part"),
         OnboardItem(R.drawable.onb2, "Smart insights for better credit decisions."),
         OnboardItem(R.drawable.onb3, "Receive Money From Anywhere In The World"),
-        OnboardItem(R.drawable.onb4, "Welcome to Fintelis!")
+        OnboardItem(R.drawable.onb4, "Let's get started! Welcome to Fintelis!")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
