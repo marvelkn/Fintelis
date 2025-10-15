@@ -42,8 +42,9 @@
         android:name="com.example.fintelis.AnalysisResultFragment"
         android:label="Analysis Result"
         tools:layout="@layout/fragment_analysis_result">
+
         <argument
-            android:name="analysisStatus"
-            app:argType="string" />
+            android:name="customerData"
+            app:argType="com.example.fintelis.data.Customer" />
     </fragment>
 </navigation>

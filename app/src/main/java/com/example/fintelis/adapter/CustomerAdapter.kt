@@ -8,33 +8,52 @@ import com.example.fintelis.R
 import com.example.fintelis.data.Customer
 import com.example.fintelis.data.Status
 import com.example.fintelis.databinding.ItemCustomerBinding
+import com.example.fintelis.data.RiskCategory
 
 class CustomerAdapter(
-    // Ubah menjadi var agar bisa di-update
     private var customerList: MutableList<Customer>,
     private val onCustomerClicked: (Customer) -> Unit
 ) : RecyclerView.Adapter<CustomerAdapter.CustomerViewHolder>() {
 
-    // FUNGSI BARU UNTUK UPDATE DATA
     fun updateData(newCustomerList: List<Customer>) {
         customerList.clear()
         customerList.addAll(newCustomerList)
-        notifyDataSetChanged() // Memberitahu RecyclerView untuk refresh
+        notifyDataSetChanged()
     }
 
     inner class CustomerViewHolder(private val binding: ItemCustomerBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(customer: Customer) {
+            // Kode yang sudah ada (biarkan)
             binding.tvCustomerName.text = customer.name
             binding.tvCustomerId.text = customer.id
             binding.tvSubmissionDate.text = customer.submissionDate
+            binding.tvCreditScore.text = customer.creditScore.toString()
             binding.tvStatus.text = customer.status.name
 
+            // Mengatur warna status (biarkan)
             val statusColorRes = when (customer.status) {
                 Status.APPROVED -> R.color.status_approved
                 Status.REJECTED -> R.color.status_rejected
                 Status.PENDING -> R.color.status_pending
             }
             binding.tvStatus.setTextColor(ContextCompat.getColor(itemView.context, statusColorRes))
+
+            // ==========================================================
+            // PENAMBAHAN KODE UNTUK RISK CATEGORY
+            // ==========================================================
+            binding.tvRiskCategory.text = customer.riskCategory.name
+
+            // Tentukan warna berdasarkan Risk Category
+            val riskColorRes = when (customer.riskCategory) {
+                RiskCategory.LOW -> R.color.status_approved  // Hijau
+                RiskCategory.MEDIUM -> R.color.status_pending // Oranye
+                RiskCategory.HIGH -> R.color.status_rejected   // Merah
+            }
+            // Terapkan warna ke TextView
+            binding.tvRiskCategory.setTextColor(ContextCompat.getColor(itemView.context, riskColorRes))
+            // ==========================================================
+            // AKHIR DARI PENAMBAHAN
+            // ==========================================================
 
             itemView.setOnClickListener { onCustomerClicked(customer) }
         }
@@ -51,4 +70,3 @@ class CustomerAdapter(
 
     override fun getItemCount() = customerList.size
 }
-

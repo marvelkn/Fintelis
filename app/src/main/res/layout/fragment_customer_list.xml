@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E1E6FF"
+    android:background="#F0F4FF"
     tools:context=".CustomerListFragment">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -17,9 +17,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Customer Database"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:menu="@menu/customer_list_menu"/>
+            app:title="Customer Database" />
 
         <EditText
             android:id="@+id/search_bar"
@@ -41,12 +40,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:padding="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/item_customer" />
-
-
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_customer"
@@ -58,4 +55,3 @@
         android:src="@drawable/ic_add" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

@@ -16,6 +16,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Memastikan ViewModel terbuat saat aplikasi dimulai.
-        customerViewModel.customers
+        customerViewModel.sortedCustomers
     }
 }

@@ -4,48 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
+    android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
-    android:layout_marginEnd="16dp"
-    android:layout_marginBottom="8dp"
+    android:layout_marginEnd="8dp"
     app:cardCornerRadius="20dp"
-    app:cardElevation="4dp">
+    app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Icon Placeholder -->
-        <ImageView
-            android:id="@+id/iv_customer_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/bg_icon_placeholder"
-            android:src="@drawable/ic_person"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
+        <!-- Bagian Nama, ID, dan Status (Tetap Sama) -->
         <TextView
             android:id="@+id/tv_customer_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@id/iv_customer_icon"
-            app:layout_constraintTop_toTopOf="@id/iv_customer_icon"
             app:layout_constraintEnd_toStartOf="@id/tv_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Budi Santoso" />
 
         <TextView
             android:id="@+id/tv_customer_id"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:textColor="@android:color/darker_gray"
             android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="@id/tv_customer_name"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_customer_name"
             tools:text="ID-20251012001" />
 
@@ -53,14 +44,10 @@
             android:id="@+id/tv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawablePadding="4dp"
-            android:gravity="center_vertical"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:drawableStart="@drawable/ic_check_circle"
-            tools:text="Approved"
-            tools:textColor="#10B981"/>
+            tools:text="PENDING"/>
 
         <View
             android:id="@+id/divider"
@@ -68,28 +55,88 @@
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
             android:background="#EEEEEE"
-            app:layout_constraintTop_toBottomOf="@id/iv_customer_icon"
+            app:layout_constraintTop_toBottomOf="@id/tv_customer_id"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <GridLayout
+        <!-- PERBAIKAN: Menggunakan LinearLayout horizontal -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:columnCount="3"
+            android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/divider"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView android:text="Submission Date" android:textColor="@android:color/darker_gray" android:layout_columnWeight="1"/>
-            <TextView android:text="Credit Score" android:textColor="@android:color/darker_gray" android:layout_columnWeight="1"/>
-            <TextView android:text="Risk Category" android:textColor="@android:color/darker_gray" android:layout_columnWeight="1"/>
+            <!-- Blok 1: Submission Date -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView android:id="@+id/tv_submission_date" tools:text="Oct 12, 2025" android:textStyle="bold" android:textColor="@color/black" android:layout_columnWeight="1"/>
-            <TextView android:id="@+id/tv_credit_score" tools:text="780" android:textStyle="bold" android:textColor="@color/black" android:layout_columnWeight="1"/>
-            <TextView android:id="@+id/tv_risk_category" tools:text="Low" android:textStyle="bold" android:textColor="@color/black" android:layout_columnWeight="1"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Submission Date"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tv_submission_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    tools:text="Oct 12, 2025" />
+            </LinearLayout>
 
-        </GridLayout>
+            <!-- Blok 2: Credit Score -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Credit Score"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tv_credit_score"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    tools:text="780" />
+            </LinearLayout>
+
+            <!-- Blok 3: Risk Category -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Risk Category"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tv_risk_category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    tools:text="LOW" />
+            </LinearLayout>
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
+

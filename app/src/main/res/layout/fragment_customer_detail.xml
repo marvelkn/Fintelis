@@ -1,59 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    android:background="@color/white"
+    android:background="@color/gray_soft"
     tools:context=".CustomerDetailFragment">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:title="Customer Detail" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:id="@+id/tv_detail_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            tools:text="Budi Santoso"/>
-
-        <TextView
-            android:id="@+id/tv_detail_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="16sp"
-            android:textColor="@android:color/darker_gray"
-            tools:text="ID-20251012001"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#DDDDDD"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"/>
-
-        <TextView
-            android:id="@+id/tv_detail_info"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:lineSpacingExtra="8dp"
-            android:textColor="@color/black"
-            android:textSize="18sp"
-            tools:text="Submission Date: Oct 12, 2025\nCredit Score: 780\nRisk Category: LOW\nStatus: APPROVED"/>
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/tv_detail_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    tools:text="Citra Lestari" />
+
+                <TextView
+                    android:id="@+id/tv_detail_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="16sp"
+                    tools:text="ID-20251011002" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Analysis Details"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Submission Date" android:textSize="12sp" android:textColor="@android:color/darker_gray"/>
+                <TextView android:id="@+id/tv_detail_date" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="Oct 11, 2025" android:textColor="@color/black" android:textSize="16sp" android:layout_marginBottom="12dp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Credit Score" android:textSize="12sp" android:textColor="@android:color/darker_gray"/>
+                <TextView android:id="@+id/tv_detail_score" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="420" android:textColor="@color/black" android:textSize="16sp" android:layout_marginBottom="12dp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Risk Category" android:textSize="12sp" android:textColor="@android:color/darker_gray"/>
+                <TextView android:id="@+id/tv_detail_risk" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="HIGH" android:textColor="@color/black" android:textSize="16sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Status" android:textSize="12sp" android:textColor="@android:color/darker_gray"/>
+                <TextView android:id="@+id/tv_detail_status" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="PENDING" android:textColor="@color/black" android:textSize="16sp" android:textStyle="bold"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
     <Button
         android:id="@+id/btn_analyze"
+        style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
         android:text="Analyze Customer"
-        android:textSize="18sp"/>
-
-</RelativeLayout>
+        android:textSize="16sp" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
