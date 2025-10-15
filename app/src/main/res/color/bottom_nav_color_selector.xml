@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Warna saat item aktif/terpilih -->
-    <item android:state_checked="true" android:color="@color/purple_500" />
+    <item android:state_checked="true" android:color="@color/blue_200" />
     <!-- Warna default saat item tidak aktif -->
     <item android:state_checked="false" android:color="@android:color/darker_gray" />
 </selector>
