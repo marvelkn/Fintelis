@@ -42,8 +42,7 @@ class OnboardingActivity : AppCompatActivity() {
                 currentIndex++
                 updateOnboardingPage()
             } else {
-                startActivity(Intent(this, AuthActivity::class.java))
-                finish()
+                onFinishOnboarding()
             }
         }
     }
@@ -52,5 +51,23 @@ class OnboardingActivity : AppCompatActivity() {
         imageOnboard.setImageResource(images[currentIndex])
         textDescription.text = descriptions[currentIndex]
         btnNext.text = if (currentIndex == images.size - 1) "Get Started" else "Next"
+    }
+
+    /**
+     * Fungsi ini dijalankan HANYA saat onboarding selesai.
+     * Tugasnya: menyimpan status dan pindah ke AuthActivity.
+     */
+    private fun onFinishOnboarding() {
+        // 1. Simpan status bahwa onboarding sudah selesai
+        val sharedPref = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putBoolean("onboarding_completed", true)
+            apply()
+        }
+
+        // 2. SELALU pergi ke AuthActivity setelah selesai
+        val intent = Intent(this, AuthActivity::class.java)
+        startActivity(intent)
+        finish() // Tutup OnboardingActivity agar tidak bisa kembali
     }
 }

@@ -12,23 +12,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fintelis">
 
-        <!-- Onboarding muncul pertama kali -->
-        <activity android:name=".OnboardingActivity"
-        <activity
-            android:name=".DashboardActivity"
-            android:exported="false" />
+        <!-- 1. MainActivity sebagai LAUNCHER. Theme NoActionBar agar tidak ada kedipan UI. -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".AuthActivity" />
-        <activity android:name=".MainActivity" />
+        <!-- 2. Daftarkan semua Activity lain sebagai activity biasa (exported="false") -->
+        <activity
+            android:name=".OnboardingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AuthActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="false" />
 
     </application>
+
 </manifest>

@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.fintelis.databinding.FragmentLoginBinding
@@ -37,8 +38,19 @@ class LoginFragment : Fragment() {
             } else {
                 // Sementara: simulasi login sukses
                 Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(requireContext(), MainActivity::class.java))
-                requireActivity().finish()
+
+                // 2. Simpan status bahwa pengguna sudah login
+                val sharedPref = requireActivity().getSharedPreferences("app_prefs",
+                    AppCompatActivity.MODE_PRIVATE)
+                with(sharedPref.edit()) {
+                    putBoolean("user_logged_in", true)
+                    apply()
+                }
+
+                // 3. Arahkan ke DashboardActivity (BUKAN MainActivity)
+                val intent = Intent(requireActivity(), DashboardActivity::class.java)
+                startActivity(intent)
+                requireActivity().finish() // Tutup AuthActivity agar tidak bisa kembali
             }
         }
     }
