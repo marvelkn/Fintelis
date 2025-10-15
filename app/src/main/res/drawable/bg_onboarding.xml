@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Gradient: light bluish to pale purple to white -->
+    <gradient
+        android:angle="270"
+        android:startColor="#F3E8FF"
+        android:endColor="#CEFAFE"
+        android:type="linear" />
+</shape>
