@@ -71,7 +71,9 @@ class AddCustomerFragment : Fragment() {
         )
 
         customerViewModel.addCustomer(newCustomer)
-        findNavController().popBackStack()
+        Toast.makeText(requireContext(), "Nasabah baru berhasil disimpan!", Toast.LENGTH_SHORT).show()
+        val action = AddCustomerFragmentDirections.actionAddCustomerFragmentToCustomerListFragment()
+        findNavController().navigate(action)
     }
 
     override fun onDestroyView() {

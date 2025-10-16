@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     // Baris ini SANGAT PENTING.
     // Ini membuat ViewModel di level Activity agar bisa di-share.
-    private val customerViewModel: CustomerViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +40,6 @@ class MainActivity : AppCompatActivity() {
         finish() // Penting! Agar pengguna tidak bisa kembali ke layar ini
         setContentView(R.layout.activity_main)
 
-        // Memastikan ViewModel terbuat saat aplikasi dimulai.
-        customerViewModel.sortedCustomers
+
     }
 }

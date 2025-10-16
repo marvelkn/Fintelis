@@ -112,7 +112,7 @@ import com.example.fintelis.databinding.FragmentOnboardingBinding
 
 // Ganti Fragment() menjadi kelas dasar
 class OnboardingFragment : Fragment() {
-
+/*
     // Gunakan View Binding untuk Fragment
     private var _binding: FragmentOnboardingBinding? = null
     private val binding get() = _binding!!
@@ -207,4 +207,4 @@ class OnboardingFragment : Fragment() {
         binding.viewPager.unregisterOnPageChangeCallback(pageChangeCallback)
         _binding = null // Penting untuk Fragment
     }
-}
+*/}

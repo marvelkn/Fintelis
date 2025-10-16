@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     // Aktifkan Safe Args dan Parcelize
-    id("androidx.navigation.safeargs.kotlin")
+    alias(libs.plugins.kotlinSafeargs)
     id("kotlin-parcelize")
 }
 
@@ -54,20 +54,15 @@ dependencies {
     implementation(libs.androidx.viewpager2)
 
     // tambahkan viewpager2 manual karena belum selalu diinclude
-    implementation("androidx.viewpager2:viewpager2:1.1.0")
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     // Dependencies untuk Navigasi & RecyclerView
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.recyclerview)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.5")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.5")
 }

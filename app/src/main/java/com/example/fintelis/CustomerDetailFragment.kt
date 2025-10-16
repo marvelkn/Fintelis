@@ -65,50 +65,53 @@ class CustomerDetailFragment : Fragment() {
         if (customer.status == Status.PENDING) {
             binding.btnAnalyze.isVisible = true
             binding.btnAnalyze.setOnClickListener {
-                performAnalysis(customer.id, customer.riskCategory)
+                performAnalysis(customer)
             }
         } else {
             binding.btnAnalyze.isVisible = false
         }
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CustomerDetailFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CustomerDetailFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
     }
 
-    private fun performAnalysis(customerId: String, risk: RiskCategory) {
-        val finalStatus = if (risk == RiskCategory.HIGH) {
+    private fun performAnalysis(customer: Customer) {
+        val finalStatus = if (customer.riskCategory == RiskCategory.HIGH) {
             Status.REJECTED
         } else {
             Status.APPROVED
         }
 
-        customerViewModel.updateCustomerStatus(customerId, finalStatus)
+        customerViewModel.updateCustomerStatus(customer.id, finalStatus)
 
-        val updatedCustomer = customerViewModel.getCustomerById(customerId)
+        // 3. Buat salinan objek nasabah dengan status yang sudah diperbarui
+        //    Gunakan fungsi copy() dari data class, ini cara yang paling efisien dan aman.
+        val customerForAnalysis = customer.copy(status = finalStatus)
 
-        if (updatedCustomer != null) {
-            val action = CustomerDetailFragmentDirections.actionToAnalysisResult(updatedCustomer)
-            findNavController().navigate(action)
-        }
+        // 4. Buat action dan navigasi dengan objek yang sudah lengkap dan diperbarui
+        val action = CustomerDetailFragmentDirections.actionToAnalysisResult(customerForAnalysis)
+        findNavController().navigate(action)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
+        /*companion object {
+            /**
+             * Use this factory method to create a new instance of
+             * this fragment using the provided parameters.
+             *
+             * @param param1 Parameter 1.
+             * @param param2 Parameter 2.
+             * @return A new instance of fragment CustomerDetailFragment.
+             */
+            // TODO: Rename and change types and number of parameters
+            @JvmStatic
+            fun newInstance(param1: String, param2: String) =
+                CustomerDetailFragment().apply {
+                    arguments = Bundle().apply {
+                        putString(ARG_PARAM1, param1)
+                        putString(ARG_PARAM2, param2)
+                    }
+                }
+        }*/
 }

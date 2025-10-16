@@ -5,39 +5,80 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.example.fintelis.data.Status
+import com.example.fintelis.databinding.FragmentAnalysisResultBinding
+import kotlin.getValue
 
 // TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AnalysisFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AnalysisFragment : Fragment() {
     // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    /*private var _binding: FragmentAnalysisResultBinding? = null
+    private val binding get() = _binding!!
+    private val args: AnalysisResultFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_analysis, container, false)
+    ): View {
+        _binding = FragmentAnalysisResultBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val customer = args.customerData
+
+        // Mengisi data nasabah di kartu summary
+        binding.tvResultCustomerName.text = customer.name
+        binding.tvResultScore.text = customer.creditScore.toString()
+        binding.tvResultRisk.text = customer.riskCategory.name
+
+        // Mengisi status utama
+        binding.tvResultStatus.text = customer.status.name
+
+        // Logika untuk menampilkan visual yang sesuai
+        if (customer.status == Status.APPROVED) {
+            binding.ivResultIcon.setImageResource(R.drawable.ic_check_circle)
+            binding.ivResultIcon.imageTintList =
+                ContextCompat.getColorStateList(requireContext(), R.color.status_approved)
+            binding.tvResultStatus.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.status_approved
+                )
+            )
+            binding.tvContextMessage.text =
+                "Based on their profile, this customer is eligible for a loan."
+        } else {
+            binding.ivResultIcon.setImageResource(R.drawable.ic_cancel)
+            binding.ivResultIcon.imageTintList =
+                ContextCompat.getColorStateList(requireContext(), R.color.status_rejected)
+            binding.tvResultStatus.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.status_rejected
+                )
+            )
+            binding.tvContextMessage.text =
+                "The customer's profile indicates a high risk of default."
+        }
+
+        binding.btnOk.setOnClickListener {
+            findNavController().popBackStack(R.id.customerListFragment, false)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+
+    /*companion object {
         /**
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.
@@ -55,5 +96,5 @@ class AnalysisFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
-    }
-}
+    }*/
+*/}
