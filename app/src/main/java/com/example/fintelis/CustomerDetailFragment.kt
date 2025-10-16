@@ -24,7 +24,10 @@ class CustomerDetailFragment : Fragment() {
     private val args: CustomerDetailFragmentArgs by navArgs()
     private val customerViewModel: CustomerViewModel by activityViewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentCustomerDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -32,7 +35,10 @@ class CustomerDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
+        // PERBAIKAN: Setup listener untuk tombol kembali di toolbar
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp() // This will navigate back to the previous screen
+        }
 
         val customer = args.customerData
         displayCustomerData(customer)
@@ -67,12 +73,14 @@ class CustomerDetailFragment : Fragment() {
     }
 
     private fun performAnalysis(customerId: String, risk: RiskCategory) {
-        val finalStatus = if (risk == RiskCategory.HIGH) Status.REJECTED else Status.APPROVED
+        val finalStatus = if (risk == RiskCategory.HIGH) {
+            Status.REJECTED
+        } else {
+            Status.APPROVED
+        }
 
-        // Update status di ViewModel
         customerViewModel.updateCustomerStatus(customerId, finalStatus)
 
-        // PERBAIKAN UTAMA: "Minta" data yang sudah di-update dari ViewModel
         val updatedCustomer = customerViewModel.getCustomerById(customerId)
 
         if (updatedCustomer != null) {

@@ -31,49 +31,46 @@ class AddCustomerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Setup listener untuk tombol kembali di toolbar
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
+
         binding.btnSave.setOnClickListener {
             saveNewCustomer()
         }
     }
 
     private fun saveNewCustomer() {
-        val name = binding.etName.text.toString().trim()
-        val id = binding.etId.text.toString().trim()
-        val scoreText = binding.etCreditScore.text.toString().trim()
+        // Mengambil teks dari TextInputEditText di dalam TextInputLayout
+        val name = binding.tilName.editText?.text.toString().trim()
+        val id = binding.tilId.editText?.text.toString().trim()
+        val scoreText = binding.tilCreditScore.editText?.text.toString().trim()
 
-        // Validasi input sederhana
         if (name.isEmpty() || id.isEmpty() || scoreText.isEmpty()) {
             Toast.makeText(requireContext(), "All fields must be filled", Toast.LENGTH_SHORT).show()
             return
         }
 
         val score = scoreText.toInt()
-
-        // Kalkulasi Risk Category
         val riskCategory = when {
             score > 670 -> RiskCategory.LOW
             score >= 580 -> RiskCategory.MEDIUM
             else -> RiskCategory.HIGH
         }
-
-        // Mendapatkan tanggal hari ini
         val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
         val currentDate = sdf.format(Date())
 
-        // Membuat objek Customer baru
         val newCustomer = Customer(
             id = id,
             name = name,
             submissionDate = currentDate,
             creditScore = score,
             riskCategory = riskCategory,
-            status = Status.PENDING // Status awal selalu Pending
+            status = Status.PENDING
         )
 
-        // Menambahkan customer ke ViewModel
         customerViewModel.addCustomer(newCustomer)
-
-        // Kembali ke halaman daftar
         findNavController().popBackStack()
     }
 

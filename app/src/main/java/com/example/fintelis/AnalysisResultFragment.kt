@@ -30,7 +30,7 @@ class AnalysisResultFragment : Fragment() {
 
         val customer = args.customerData
 
-        // Mengisi data nasabah
+        // Mengisi data nasabah di kartu summary
         binding.tvResultCustomerName.text = customer.name
         binding.tvResultScore.text = customer.creditScore.toString()
         binding.tvResultRisk.text = customer.riskCategory.name
@@ -40,13 +40,11 @@ class AnalysisResultFragment : Fragment() {
 
         // Logika untuk menampilkan visual yang sesuai
         if (customer.status == Status.APPROVED) {
-            // Tampilan untuk Approved
             binding.ivResultIcon.setImageResource(R.drawable.ic_check_circle)
             binding.ivResultIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), R.color.status_approved)
             binding.tvResultStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_approved))
             binding.tvContextMessage.text = "Based on their profile, this customer is eligible for a loan."
         } else {
-            // Tampilan untuk Rejected
             binding.ivResultIcon.setImageResource(R.drawable.ic_cancel)
             binding.ivResultIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), R.color.status_rejected)
             binding.tvResultStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_rejected))
@@ -54,7 +52,6 @@ class AnalysisResultFragment : Fragment() {
         }
 
         binding.btnOk.setOnClickListener {
-            // Kembali ke halaman daftar
             findNavController().popBackStack(R.id.customerListFragment, false)
         }
     }

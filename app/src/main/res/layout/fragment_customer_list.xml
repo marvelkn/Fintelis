@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F4FF"
+    android:background="@drawable/bg_page_gradient"
     tools:context=".CustomerListFragment">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -18,7 +18,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:title="Customer Database" />
+            app:title="Customer Database"
+            app:titleTextColor="@color/fintelis_text_dark" />
 
         <EditText
             android:id="@+id/search_bar"
@@ -27,11 +28,14 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_rounded_edittext_white"
+            android:background="@drawable/bg_search_bar"
             android:drawableStart="@drawable/ic_search"
-            android:drawablePadding="8dp"
+            android:drawablePadding="12dp"
+            android:drawableTint="@color/fintelis_text_secondary"
             android:hint="Search..."
-            android:padding="12dp" />
+            android:padding="14dp"
+            android:textColor="@color/fintelis_text_dark"
+            android:textColorHint="@color/fintelis_text_secondary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -51,7 +55,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        app:backgroundTint="@color/fintelis_accent"
         android:contentDescription="Add New Customer"
-        android:src="@drawable/ic_add" />
+        android:src="@drawable/ic_add"
+        app:tint="@color/white"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

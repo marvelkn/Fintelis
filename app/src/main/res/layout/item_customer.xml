@@ -7,22 +7,23 @@
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp"
+    app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="20dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <!-- Bagian Nama, ID, dan Status (Tetap Sama) -->
         <TextView
             android:id="@+id/tv_customer_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:textColor="@color/black"
-            android:textSize="18sp"
+            android:textColor="@color/fintelis_text_dark"
+            android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/tv_status"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/fintelis_text_secondary"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_customer_name"
@@ -45,98 +46,90 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textStyle="bold"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="PENDING"/>
+            app:layout_constraintBottom_toBottomOf="@id/tv_customer_id"
+            tools:text="APPROVED"
+            tools:textColor="@color/status_approved"/>
 
         <View
             android:id="@+id/divider"
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
-            android:background="#EEEEEE"
+            android:background="#1A000000"
             app:layout_constraintTop_toBottomOf="@id/tv_customer_id"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- PERBAIKAN: Menggunakan LinearLayout horizontal -->
-        <LinearLayout
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/label_submission_date"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/divider"
+            android:text="Submission Date"
+            android:textColor="@color/fintelis_text_secondary"
+            android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/divider" />
+        <TextView
+            android:id="@+id/tv_submission_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/fintelis_text_dark"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/label_submission_date"
+            app:layout_constraintTop_toBottomOf="@id/label_submission_date"
+            tools:text="Oct 12, 2025" />
 
-            <!-- Blok 1: Submission Date -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+        <TextView
+            android:id="@+id/label_credit_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Credit Score"
+            android:textColor="@color/fintelis_text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@id/guideline_center"
+            app:layout_constraintTop_toTopOf="@id/label_submission_date" />
+        <TextView
+            android:id="@+id/tv_credit_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/fintelis_text_dark"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/label_credit_score"
+            app:layout_constraintTop_toBottomOf="@id/label_credit_score"
+            tools:text="780" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Submission Date"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/tv_submission_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    tools:text="Oct 12, 2025" />
-            </LinearLayout>
+        <TextView
+            android:id="@+id/label_risk_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Risk Category"
+            android:textColor="@color/fintelis_text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/label_submission_date" />
+        <TextView
+            android:id="@+id/tv_risk_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/fintelis_text_dark"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@id/label_risk_category"
+            app:layout_constraintTop_toBottomOf="@id/label_risk_category"
+            tools:text="LOW" />
 
-            <!-- Blok 2: Credit Score -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Credit Score"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/tv_credit_score"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    tools:text="780" />
-            </LinearLayout>
-
-            <!-- Blok 3: Risk Category -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Risk Category"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="12sp" />
-                <TextView
-                    android:id="@+id/tv_risk_category"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    tools:text="LOW" />
-            </LinearLayout>
-
-        </LinearLayout>
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.45" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
-

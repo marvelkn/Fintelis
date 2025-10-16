@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray_soft"
+    android:background="@drawable/bg_page_gradient"
     android:padding="24dp"
     tools:context=".AnalysisResultFragment">
 
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textAlignment="center"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/fintelis_text_secondary"
             android:textSize="16sp"
             tools:text="Based on their profile, this customer is eligible for a loan." />
 
@@ -46,26 +46,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
+            app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="16dp"
-            app:cardElevation="0dp">
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Summary for:"
+                    android:textColor="@color/fintelis_text_secondary"
                     android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tv_result_customer_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/black"
+                    android:textColor="@color/fintelis_text_dark"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     tools:text="Budi Santoso" />
@@ -75,7 +78,7 @@
                     android:layout_height="1dp"
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="12dp"
-                    android:background="#EEEEEE" />
+                    android:background="#1A000000" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -87,20 +90,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Credit Score"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/tv_result_score"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/black"
-                            android:textStyle="bold"
-                            tools:text="780" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Credit Score" android:textColor="@color/fintelis_text_secondary" android:textSize="12sp" />
+                        <TextView android:id="@+id/tv_result_score" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/fintelis_text_dark" android:textStyle="bold" tools:text="780" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -108,33 +99,23 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Risk Category"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/tv_result_risk"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/black"
-                            android:textStyle="bold"
-                            tools:text="LOW" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Risk Category" android:textColor="@color/fintelis_text_secondary" android:textSize="12sp" />
+                        <TextView android:id="@+id/tv_result_risk" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/fintelis_text_dark" android:textStyle="bold" tools:text="LOW" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
 
     <Button
         android:id="@+id/btn_ok"
+        style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_alignParentBottom="true"
+        android:backgroundTint="@color/fintelis_accent"
         android:text="Finish"
-        android:textSize="18sp" />
+        android:textAllCaps="false"
+        android:textSize="16sp" />
 
 </RelativeLayout>
