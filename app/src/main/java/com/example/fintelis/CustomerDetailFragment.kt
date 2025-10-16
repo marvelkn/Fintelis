@@ -1,42 +1,75 @@
 package com.example.fintelis
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.example.fintelis.data.Customer
+import com.example.fintelis.data.RiskCategory
+import com.example.fintelis.data.Status
+import com.example.fintelis.databinding.FragmentCustomerDetailBinding
+import com.example.fintelis.viewmodel.CustomerViewModel
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [CustomerDetailFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class CustomerDetailFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var _binding: FragmentCustomerDetailBinding? = null
+    private val binding get() = _binding!!
+
+    private val args: CustomerDetailFragmentArgs by navArgs()
+    private val customerViewModel: CustomerViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_customer_detail, container, false)
+    ): View {
+        _binding = FragmentCustomerDetailBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // PERBAIKAN: Setup listener untuk tombol kembali di toolbar
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp() // This will navigate back to the previous screen
+        }
+
+        val customer = args.customerData
+        displayCustomerData(customer)
+        setupAnalysisButton(customer)
+    }
+
+    private fun displayCustomerData(customer: Customer) {
+        binding.tvDetailName.text = customer.name
+        binding.tvDetailId.text = customer.id
+        binding.tvDetailDate.text = customer.submissionDate
+        binding.tvDetailScore.text = customer.creditScore.toString()
+        binding.tvDetailRisk.text = customer.riskCategory.name
+        binding.tvDetailStatus.text = customer.status.name
+
+        val riskColor = when (customer.riskCategory) {
+            RiskCategory.HIGH -> R.color.status_rejected
+            RiskCategory.MEDIUM -> R.color.status_pending
+            RiskCategory.LOW -> R.color.status_approved
+        }
+        binding.tvDetailRisk.setTextColor(ContextCompat.getColor(requireContext(), riskColor))
+    }
+
+    private fun setupAnalysisButton(customer: Customer) {
+        if (customer.status == Status.PENDING) {
+            binding.btnAnalyze.isVisible = true
+            binding.btnAnalyze.setOnClickListener {
+                performAnalysis(customer.id, customer.riskCategory)
+            }
+        } else {
+            binding.btnAnalyze.isVisible = false
+        }
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -55,5 +88,27 @@ class CustomerDetailFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+    private fun performAnalysis(customerId: String, risk: RiskCategory) {
+        val finalStatus = if (risk == RiskCategory.HIGH) {
+            Status.REJECTED
+        } else {
+            Status.APPROVED
+        }
+
+        customerViewModel.updateCustomerStatus(customerId, finalStatus)
+
+        val updatedCustomer = customerViewModel.getCustomerById(customerId)
+
+        if (updatedCustomer != null) {
+            val action = CustomerDetailFragmentDirections.actionToAnalysisResult(updatedCustomer)
+            findNavController().navigate(action)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
