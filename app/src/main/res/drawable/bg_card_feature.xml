@@ -1,14 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#FFFFFF" />
+
+    <!-- Gradasi soft biru ke putih -->
+    <gradient
+        android:startColor="#E6F0FA"
+    android:endColor="#FFFFFF"
+    android:angle="270"/>
+
+    <!-- Sudut bulat -->
     <corners android:radius="16dp" />
+
+    <!-- Padding dalam -->
     <padding
         android:left="8dp"
         android:top="8dp"
         android:right="8dp"
         android:bottom="8dp" />
+
+    <!-- Border lembut -->
     <stroke
         android:width="1dp"
-        android:color="#E2E8F0" />
+        android:color="#CBD5E1" />
 </shape>

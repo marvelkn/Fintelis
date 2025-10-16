@@ -61,7 +61,7 @@ class DashboardFragment : Fragment() {
         tvGreeting.text = "Hi, $username!"
 
         val currentDate = Calendar.getInstance().time
-        val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("id", "ID"))
+        val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("eng", "ID"))
         tvDate.text = dateFormat.format(currentDate)
     }
 
@@ -70,7 +70,7 @@ class DashboardFragment : Fragment() {
             @SuppressLint("SimpleDateFormat")
             override fun run() {
                 val currentDate = Calendar.getInstance().time
-                val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("id", "ID"))
+                val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("eng", "ID"))
                 tvDate.text = dateFormat.format(currentDate)
 
                 // Ulangi setiap 60 detik (bisa ubah ke 1000L untuk tiap detik)
@@ -82,8 +82,8 @@ class DashboardFragment : Fragment() {
 
 private fun setupPieChart() {
         val entries = listOf(
-            PieEntry(70f, "Disetujui"),
-            PieEntry(30f, "Ditolak")
+            PieEntry(70f, "Approved"),
+            PieEntry(30f, "Rejected")
         )
 
         val dataSet = PieDataSet(entries, "")
@@ -155,9 +155,9 @@ private fun setupPieChart() {
 
         legend.setCustom(
             listOf(
-                LegendEntry("Risiko Tinggi", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#1565C0")),
-                LegendEntry("Risiko Sedang", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#1E88E5")),
-                LegendEntry("Risiko Rendah", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#90CAF9"))
+                LegendEntry("High Risk", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#1565C0")),
+                LegendEntry("Medium Risk", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#1E88E5")),
+                LegendEntry("Low Risk", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#90CAF9"))
             )
         )
 
@@ -169,7 +169,7 @@ private fun setupPieChart() {
         val cardImportData = view.findViewById<LinearLayout>(R.id.card_import_data)
 
         cardNewAnalysis.setOnClickListener {
-            Toast.makeText(context, "Mulai Analisis Kredit Baru", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Start New Credit Analyze", Toast.LENGTH_SHORT).show()
         }
         cardImportData.setOnClickListener {
             Toast.makeText(context, "Mulai Impor Data Nasabah", Toast.LENGTH_SHORT).show()
