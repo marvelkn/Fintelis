@@ -1,25 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/creditResultFragment">
 
+    <!-- Fragment Login -->
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.fintelis.LoginFragment"
         android:label="Login">
         <action
             android:id="@+id/action_login_to_signup"
-            app:destination="@id/signupFragment"/>
+            app:destination="@id/signupFragment" />
+        <action
+            android:id="@+id/action_login_to_creditResult"
+            app:destination="@id/creditResultFragment" />
     </fragment>
 
+    <!-- Fragment Signup -->
     <fragment
         android:id="@+id/signupFragment"
         android:name="com.example.fintelis.SignupFragment"
         android:label="Signup">
         <action
             android:id="@+id/action_signup_to_login"
-            app:destination="@id/loginFragment"/>
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_signup_to_creditResult"
+            app:destination="@id/creditResultFragment" />
     </fragment>
 
+    <!-- ✅ Fragment Credit Result -->
+    <fragment
+        android:id="@+id/creditResultFragment"
+        android:name="com.example.fintelis.CreditResultFragment"
+        android:label="Hasil Analisis Kredit"
+        tools:layout="@layout/fragment_credit_result" />
 </navigation>

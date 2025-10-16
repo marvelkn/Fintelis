@@ -1,6 +1,5 @@
 package com.example.fintelis
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -32,13 +31,14 @@ class LoginFragment : Fragment() {
         binding.btnLogin.setOnClickListener {
             val phone = binding.etPhoneLogin.text.toString()
             val password = binding.etPasswordLogin.text.toString()
+
             if (phone.isEmpty() || password.isEmpty()) {
                 Toast.makeText(context, "Please fill phone and password", Toast.LENGTH_SHORT).show()
             } else {
-                // Sementara: simulasi login sukses
                 Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(requireContext(), MainActivity::class.java))
-                requireActivity().finish()
+
+                // Arahkan ke CreditResultFragment
+                findNavController().navigate(R.id.action_login_to_creditResult)
             }
         }
     }
