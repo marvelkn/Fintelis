@@ -17,7 +17,8 @@
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Performa Pinjaman"
+            android:text="Loan Performance"
+            android:fontFamily="@font/lato_bold"
             android:textSize="20sp"
             android:textStyle="bold"
             android:gravity="center"
@@ -46,13 +47,15 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Total Pinjaman Disetujui"
+                        android:fontFamily="@font/lato_regular"
+                        android:text="Total Loan Approved"
                         android:textSize="12sp"/>
                     <TextView
                         android:id="@+id/tv_total"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="2.5M"
+                        android:fontFamily="@font/lato_bold"
                         android:textStyle="bold"
                         android:textSize="18sp"/>
                 </LinearLayout>
@@ -73,7 +76,8 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Rata-rata Skor Kredit"
+                        android:text="Average Credit Score"
+                        android:fontFamily="@font/lato_regular"
                         android:textSize="12sp"/>
                     <TextView
                         android:id="@+id/tv_avg_score"
@@ -81,6 +85,7 @@
                         android:layout_height="wrap_content"
                         android:text="720"
                         android:textStyle="bold"
+                        android:fontFamily="@font/lato_bold"
                         android:textSize="18sp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -99,13 +104,15 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Tingkat Persetujuan"
+                        android:text="Approval Rate"
+                        android:fontFamily="@font/lato_regular"
                         android:textSize="12sp"/>
                     <TextView
                         android:id="@+id/tv_rate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="85%"
+                        android:fontFamily="@font/lato_bold"
                         android:textStyle="bold"
                         android:textSize="18sp"/>
                 </LinearLayout>
@@ -139,7 +146,8 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tren Bulanan Persetujuan Pinjaman"
+                    android:text="Monthly Trends in Loan Approvals"
+                    android:fontFamily="@font/lato_bold"
                     android:textStyle="bold" />
 
                 <com.github.mikephil.charting.charts.LineChart
@@ -167,7 +175,8 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Distribusi Skor Kredit Nasabah"
+                    android:text="Customer Credit Score Distribution"
+                    android:fontFamily="@font/lato_bold"
                     android:textStyle="bold" />
 
                 <com.github.mikephil.charting.charts.BarChart
@@ -195,7 +204,8 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Perbandingan Antar Cabang"
+                    android:text="Comparison Between Branches"
+                    android:fontFamily="@font/lato_bold"
                     android:textStyle="bold" />
 
                 <com.github.mikephil.charting.charts.HorizontalBarChart
@@ -221,6 +231,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/lato_regular"
                 android:text="Export PDF" />
 
             <Button
@@ -229,6 +240,7 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="Export CSV"
+                android:fontFamily="@font/lato_regular"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"/>
 
@@ -236,6 +248,7 @@
                 android:id="@+id/btn_export_excel"
                 android:layout_width="0dp"
                 android:layout_weight="1"
+                android:fontFamily="@font/lato_regular"
                 android:layout_height="wrap_content"
                 android:text="Export Excel" />
         </LinearLayout>

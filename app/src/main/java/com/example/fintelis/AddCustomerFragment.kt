@@ -71,7 +71,7 @@ class AddCustomerFragment : Fragment() {
         )
 
         customerViewModel.addCustomer(newCustomer)
-        Toast.makeText(requireContext(), "Nasabah baru berhasil disimpan!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "New customer successfully saved!", Toast.LENGTH_SHORT).show()
         val action = AddCustomerFragmentDirections.actionAddCustomerFragmentToCustomerListFragment()
         findNavController().navigate(action)
     }

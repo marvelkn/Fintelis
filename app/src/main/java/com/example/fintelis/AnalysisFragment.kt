@@ -45,7 +45,7 @@ class AnalysisFragment : Fragment() {
             BarEntry(4f, 10f)
         )
 
-        val dataSet = BarDataSet(entries, "Faktor Penilaian")
+        val dataSet = BarDataSet(entries, "Rating Factors")
 
         // 🎨 Gradasi biru elegan
         val startColor = Color.parseColor("#4A90E2") // biru muda
@@ -66,7 +66,7 @@ class AnalysisFragment : Fragment() {
         data.barWidth = 0.6f
         barChart.data = data
 
-        val labels = listOf("Penghasilan", "Riwayat", "Aset", "Pengeluaran", "Lainnya")
+        val labels = listOf("Income", "History", "Assets", "Expenses", "Other")
         val xAxis = barChart.xAxis
         xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         xAxis.position = XAxis.XAxisPosition.BOTTOM

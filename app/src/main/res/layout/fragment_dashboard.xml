@@ -29,8 +29,9 @@
             android:id="@+id/tv_greeting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hi, Zel!"
+            android:text="Hi, Fintelis Buddy!"
             android:textColor="#1E293B"
+            android:fontFamily="@font/lato_bold"
             android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginTop="4dp" />
@@ -40,7 +41,8 @@
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tanggal Otomatis"
+            android:text="Auto Date"
+            android:fontFamily="@font/lato_regular"
             android:textSize="14sp"
             android:textColor="#64748B"
             android:layout_marginBottom="20dp" />
@@ -76,6 +78,7 @@
                         android:layout_width="55dp"
                         android:layout_height="55dp"
                         android:src="@drawable/logo_analytic"
+                        android:fontFamily="@font/lato_regular"
                         android:contentDescription="New Analysis Icon" />
                 </LinearLayout>
 
@@ -84,6 +87,7 @@
                     android:layout_height="wrap_content"
                     android:text="New Analysis"
                     android:textColor="#1E293B"
+                    android:fontFamily="@font/lato_bold"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:gravity="center"
@@ -119,6 +123,7 @@
                     android:layout_height="wrap_content"
                     android:text="Export Data"
                     android:textColor="#1E293B"
+                    android:fontFamily="@font/lato_bold"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:gravity="center"
@@ -155,6 +160,7 @@
                     android:text="Model"
                     android:textColor="#1E293B"
                     android:textSize="13sp"
+                    android:fontFamily="@font/lato_bold"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:layout_marginTop="4dp" />
@@ -190,6 +196,7 @@
                     android:text="Visual and Report"
                     android:textColor="#1E293B"
                     android:textSize="13sp"
+                    android:fontFamily="@font/lato_bold"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:layout_marginTop="4dp" />
@@ -216,6 +223,7 @@
                     android:layout_height="wrap_content"
                     android:text="Approval Credit"
                     android:textStyle="bold"
+                    android:fontFamily="@font/lato_bold"
                     android:textSize="16sp"
                     android:layout_marginBottom="8dp" />
 
@@ -244,6 +252,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Credit Risk"
+                    android:fontFamily="@font/lato_bold"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:layout_marginBottom="8dp" />

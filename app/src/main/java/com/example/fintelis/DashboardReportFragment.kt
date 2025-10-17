@@ -107,7 +107,7 @@ class DashboardReportFragment : Fragment() {
         }
 
         val entries = vals.mapIndexed { i, v -> Entry(i.toFloat(), v) }
-        val set = LineDataSet(entries, "Persetujuan (%)")
+        val set = LineDataSet(entries, "Approval (%)")
         set.color = resources.getColor(android.R.color.holo_blue_dark)
         set.lineWidth = 2f
         set.setDrawCircles(true)
@@ -135,7 +135,7 @@ class DashboardReportFragment : Fragment() {
 
     private fun setupBarScoreChart(range: String) {
         // categories: Rendah, Menengah, Baik, Sangat Baik
-        val labels = listOf("Rendah", "Menengah", "Baik", "Sangat Baik")
+        val labels = listOf("Low", "Medium", "Good", "Excellent")
         val vals = when(range) {
             "weekly" -> listOf(20f, 40f, 30f, 10f)
             "monthly" -> listOf(15f, 45f, 30f, 10f)
@@ -175,7 +175,7 @@ class DashboardReportFragment : Fragment() {
 
     private fun setupBranchesChart(range: String) {
         // horizontal bars: Cabang A..D
-        val labels = listOf("Cabang A", "Cabang B", "Cabang C", "Cabang D")
+        val labels = listOf("Branch A", "Branch B", "Branch C", "Branch D")
         val vals = when(range) {
             "weekly" -> listOf(40f, 55f, 30f, 60f)
             "monthly" -> listOf(50f, 45f, 35f, 60f)
@@ -246,10 +246,10 @@ class DashboardReportFragment : Fragment() {
             pdfDocument.writeTo(FileOutputStream(file))
             pdfDocument.close()
 
-            Toast.makeText(requireContext(), "PDF disimpan: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "PDF saved: ${file.absolutePath}", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(requireContext(), "Gagal ekspor PDF: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "PDF export failed: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -269,10 +269,10 @@ class DashboardReportFragment : Fragment() {
             writer.flush()
             writer.close()
 
-            Toast.makeText(ctx, "CSV disimpan: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            Toast.makeText(ctx, "CSV saved: ${file.absolutePath}", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(ctx, "Gagal ekspor CSV: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(ctx, "CSV export failed: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -327,10 +327,10 @@ class DashboardReportFragment : Fragment() {
             fos.close()
             workbook.close()
 
-            Toast.makeText(ctx, "Excel disimpan: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            Toast.makeText(ctx, "Excel saved: ${file.absolutePath}", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(ctx, "Gagal ekspor Excel: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(ctx, "Excel export failed: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 

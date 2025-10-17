@@ -20,10 +20,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:text="Pengaturan"
+            android:text="Settings"
             android:textColor="@android:color/black"
             android:textSize="28sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:fontFamily="@font/lato_bold" />
 
         <!-- CardView untuk Pengaturan Akun -->
         <com.google.android.material.card.MaterialCardView
@@ -47,9 +48,10 @@
                     android:gravity="center_vertical"
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
-                    android:text="Edit Profil"
+                    android:text="Edit Profile"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:fontFamily="@font/lato_bold" />
 
                 <View
                     android:layout_width="match_parent"
@@ -67,9 +69,10 @@
                     android:gravity="center_vertical"
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
-                    android:text="Ubah Kata Sandi"
+                    android:text="Change Password"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:fontFamily="@font/lato_bold" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -95,9 +98,10 @@
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:drawableStart="@drawable/arrow_right"
-                    android:text="Notifikasi"
+                    android:text="Notification"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:fontFamily="@font/lato_bold" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -110,9 +114,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:padding="12dp"
-            android:text="Keluar"
+            android:text="Logout"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="16sp"
+            android:fontFamily="@font/lato_bold"
             app:icon="@drawable/arrow_right"
             app:iconGravity="textStart"
             app:iconTint="@android:color/holo_red_dark" />

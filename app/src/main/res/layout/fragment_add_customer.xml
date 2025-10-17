@@ -42,6 +42,7 @@
                 android:hint="Customer Name"
                 app:boxBackgroundColor="@color/white"
                 app:boxCornerRadiusBottomEnd="16dp"
+                android:fontFamily="@font/lato_bold"
                 app:boxCornerRadiusBottomStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusTopStart="16dp">
@@ -59,6 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:fontFamily="@font/lato_bold"
                 android:hint="Customer ID"
                 app:boxBackgroundColor="@color/white"
                 app:boxCornerRadiusBottomEnd="16dp"
@@ -80,6 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="Credit Score (0-850)"
+                android:fontFamily="@font/lato_bold"
                 app:boxBackgroundColor="@color/white"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"

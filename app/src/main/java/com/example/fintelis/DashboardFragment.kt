@@ -57,7 +57,7 @@ class DashboardFragment : Fragment() {
 
     @SuppressLint("SimpleDateFormat")
     private fun setupGreeting() {
-        val username = "Zel"
+        val username = "Fintelis Buddy"
         tvGreeting.text = "Hi, $username!"
 
         val currentDate = Calendar.getInstance().time
@@ -172,7 +172,7 @@ private fun setupPieChart() {
             Toast.makeText(context, "Start New Credit Analyze", Toast.LENGTH_SHORT).show()
         }
         cardImportData.setOnClickListener {
-            Toast.makeText(context, "Mulai Impor Data Nasabah", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Start Importing Customer Data", Toast.LENGTH_SHORT).show()
         }
     }
 
