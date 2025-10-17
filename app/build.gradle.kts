@@ -61,7 +61,8 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     // Dependencies untuk Navigasi & RecyclerView
     implementation(libs.androidx.recyclerview)
-
+    // Chart library
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

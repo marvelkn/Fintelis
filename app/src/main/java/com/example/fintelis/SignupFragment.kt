@@ -1,6 +1,5 @@
 package com.example.fintelis
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,10 +38,10 @@ class SignupFragment : Fragment() {
                 Toast.makeText(context, "Please fill all fields and accept terms", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(context, "Account created", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(requireContext(), MainActivity::class.java))
-                requireActivity().finish()
+
+                // Arahkan ke CreditResultFragment
+                findNavController().navigate(R.id.creditResultFragment)
             }
         }
-
     }
 }
