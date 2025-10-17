@@ -63,6 +63,14 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     // Chart library
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("androidx.cardview:cardview:1.0.0")
+
+    // Apache POI untuk .xlsx export
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
+
+    // material components (tablayout)
+    implementation("com.google.android.material:material:1.10.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
