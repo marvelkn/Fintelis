@@ -1,5 +1,6 @@
 package com.example.fintelis
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,91 +11,89 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.fintelis.data.Status
 import com.example.fintelis.databinding.FragmentAnalysisResultBinding
+import com.example.fintelis.databinding.FragmentCreditResultBinding
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import kotlin.getValue
 
 // TODO: Rename parameter arguments, choose names that match
 class AnalysisFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    /*private var _binding: FragmentAnalysisResultBinding? = null
+    private var _binding: FragmentCreditResultBinding? = null
     private val binding get() = _binding!!
-    private val args: AnalysisResultFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAnalysisResultBinding.inflate(inflater, container, false)
+        _binding = FragmentCreditResultBinding.inflate(inflater, container, false)
+        setupBarChart()
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    private fun setupBarChart() {
+        val barChart = binding.barChart
 
-        val customer = args.customerData
+        val entries = listOf(
+            BarEntry(0f, 25f),
+            BarEntry(1f, 30f),
+            BarEntry(2f, 20f),
+            BarEntry(3f, 15f),
+            BarEntry(4f, 10f)
+        )
 
-        // Mengisi data nasabah di kartu summary
-        binding.tvResultCustomerName.text = customer.name
-        binding.tvResultScore.text = customer.creditScore.toString()
-        binding.tvResultRisk.text = customer.riskCategory.name
+        val dataSet = BarDataSet(entries, "Faktor Penilaian")
 
-        // Mengisi status utama
-        binding.tvResultStatus.text = customer.status.name
+        // 🎨 Gradasi biru elegan
+        val startColor = Color.parseColor("#4A90E2") // biru muda
+        val endColor = Color.parseColor("#003C8F")   // biru tua
+        dataSet.setGradientColor(startColor, endColor)
 
-        // Logika untuk menampilkan visual yang sesuai
-        if (customer.status == Status.APPROVED) {
-            binding.ivResultIcon.setImageResource(R.drawable.ic_check_circle)
-            binding.ivResultIcon.imageTintList =
-                ContextCompat.getColorStateList(requireContext(), R.color.status_approved)
-            binding.tvResultStatus.setTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.status_approved
-                )
-            )
-            binding.tvContextMessage.text =
-                "Based on their profile, this customer is eligible for a loan."
-        } else {
-            binding.ivResultIcon.setImageResource(R.drawable.ic_cancel)
-            binding.ivResultIcon.imageTintList =
-                ContextCompat.getColorStateList(requireContext(), R.color.status_rejected)
-            binding.tvResultStatus.setTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.status_rejected
-                )
-            )
-            binding.tvContextMessage.text =
-                "The customer's profile indicates a high risk of default."
+        dataSet.valueTextColor = Color.BLACK
+        dataSet.valueTextSize = 12f
+
+        // Formatter untuk menampilkan nilai di atas bar
+        dataSet.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return "${value.toInt()}%"
+            }
         }
 
-        binding.btnOk.setOnClickListener {
-            findNavController().popBackStack(R.id.customerListFragment, false)
-        }
+        val data = BarData(dataSet)
+        data.barWidth = 0.6f
+        barChart.data = data
+
+        val labels = listOf("Penghasilan", "Riwayat", "Aset", "Pengeluaran", "Lainnya")
+        val xAxis = barChart.xAxis
+        xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.granularity = 1f
+        xAxis.setDrawGridLines(false)
+        xAxis.labelRotationAngle = -25f
+        xAxis.textSize = 11f
+        xAxis.textColor = Color.DKGRAY
+
+        val leftAxis = barChart.axisLeft
+        leftAxis.axisMinimum = 0f
+        leftAxis.textColor = Color.DKGRAY
+        leftAxis.gridColor = Color.parseColor("#E0E0E0")
+
+        barChart.axisRight.isEnabled = false
+        barChart.description.isEnabled = false
+        barChart.legend.isEnabled = false
+
+        barChart.setDrawBarShadow(false)
+        barChart.setFitBars(true)
+        barChart.animateY(1000)
+        barChart.invalidate()
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
-
-    /*companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AnalysisFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AnalysisFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }*/
-*/}
+}
