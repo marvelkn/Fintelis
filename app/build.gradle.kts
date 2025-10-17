@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.fintelis"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -70,7 +70,6 @@ dependencies {
     implementation("org.apache.poi:poi-ooxml:5.2.3")
 
     // material components (tablayout)
-    implementation("com.google.android.material:material:1.10.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
