@@ -108,15 +108,40 @@
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_ok"
-        style="@style/Widget.Material3.Button"
+    <!-- Ganti Button lama dengan LinearLayout ini -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:backgroundTint="@color/fintelis_accent"
-        android:text="Finish"
-        android:textAllCaps="false"
-        android:textSize="16sp" />
+        android:orientation="horizontal">
+
+        <!-- Button Baru (misalnya: Export) -->
+        <!-- Menggunakan style OutlinedButton untuk variasi visual -->
+        <Button
+            android:id="@+id/btn_analysis"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/fintelis_accent"
+            android:text="Analysis Detail"
+            android:textAllCaps="false"
+            android:textSize="16sp" />
+
+        <!-- Button Finish (yang sudah ada) -->
+        <Button
+            android:id="@+id/btn_ok"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/fintelis_accent"
+            android:text="Finish"
+            android:textAllCaps="false"
+            android:textSize="16sp" />
+
+    </LinearLayout>
 
 </RelativeLayout>

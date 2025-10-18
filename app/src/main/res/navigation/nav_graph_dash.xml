@@ -51,10 +51,13 @@
         android:name="com.example.fintelis.AnalysisResultFragment"
         android:label="Analysis Result"
         tools:layout="@layout/fragment_analysis_result">
-
         <argument
             android:name="customerData"
             app:argType="com.example.fintelis.data.Customer" />
+        <!-- Action untuk tombol "btnAnalysis" -->
+        <action
+            android:id="@+id/action_analysisResultFragment_to_analysisFragment"
+            app:destination="@id/analysisFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"

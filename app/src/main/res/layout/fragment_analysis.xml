@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_onboarding"
+    android:id="@+id/nav_analysis"
     android:padding="24dp">
 
     <LinearLayout
@@ -14,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Credit Analysis Results"
+            android:text="Budi Santoso Credit Analysis Results"
             android:textSize="25sp"
             android:textStyle="bold"
             android:fontFamily="@font/lato_bold"
@@ -24,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Review your scores and recommendations"
+            android:text="Review Budi Santoso scores and recommendations"
             android:textSize="14sp"
             android:textColor="#808080"
             android:fontFamily="@font/lato_regular"
@@ -42,7 +43,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Your Credit Score"
+                android:text="Budi Santoso Credit Score"
                 android:textColor="#333333"
                 android:textSize="16sp"
                 android:fontFamily="@font/lato_bold" />
@@ -78,7 +79,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Score Detail"
+                android:text="Budi Santoso Score Detail"
                 android:textColor="#1E1E1E"
                 android:textSize="16sp"
                 android:fontFamily="@font/lato_bold"
@@ -87,7 +88,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Here is the distribution of your scores based on the assessment factors:"
+                android:text="Here is the distribution of Budi Santoso scores based on the assessment factors:"
                 android:textColor="#555555"
                 android:textSize="13sp"
                 android:fontFamily="@font/lato_regular"

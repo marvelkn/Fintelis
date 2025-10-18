@@ -54,6 +54,17 @@ class AnalysisResultFragment : Fragment() {
         binding.btnOk.setOnClickListener {
             findNavController().popBackStack(R.id.customerListFragment, false)
         }
+
+        binding.btnAnalysis.setOnClickListener {
+            // 1. Ambil data customer yang sama
+            //val customerData = args.customerData
+
+            // 2. Buat action untuk navigasi ke AnalysisFragment
+            val action = AnalysisResultFragmentDirections.actionAnalysisResultFragmentToAnalysisFragment()
+
+            // 3. Lakukan navigasi
+            findNavController().navigate(action)
+        }
     }
 
     override fun onDestroyView() {
