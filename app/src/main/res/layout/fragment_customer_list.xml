@@ -56,7 +56,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:backgroundTint="@color/fintelis_accent"
+        android:backgroundTint="@color/fintelis_accent"
         android:contentDescription="Add New Customer"
         android:src="@drawable/ic_add"
         app:tint="@color/white"/>
