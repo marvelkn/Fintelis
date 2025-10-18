@@ -60,6 +60,8 @@ class SettingsFragment : Fragment() {
         val sharedPreferences = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
 
+        Toast.makeText(requireContext(), "Anda telah logout", Toast.LENGTH_SHORT).show()
+
         // Buat Intent untuk memulai AuthActivity
         val intent = Intent(requireActivity(), AuthActivity::class.java)
 
