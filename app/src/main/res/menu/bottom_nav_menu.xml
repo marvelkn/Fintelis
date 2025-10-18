@@ -9,21 +9,21 @@
     <item
         android:id="@+id/customerListFragment"
         android:icon="@drawable/users_alt"
-        android:title="Nasabah" />
+        android:title="Customer" />
 
     <item
         android:id="@+id/analysisFragment"
         android:icon="@drawable/document_signed"
-        android:title="Analisis" />
+        android:title="Analysis" />
 
     <item
         android:id="@+id/nav_visualization"
         android:icon="@drawable/chart"
-        android:title="Visualisasi" />
+        android:title="Visualization" />
 
     <item
         android:id="@+id/settingsFragment"
         android:icon="@drawable/settings"
-        android:title="Pengaturan" />
+        android:title="Settings" />
 
 </menu>

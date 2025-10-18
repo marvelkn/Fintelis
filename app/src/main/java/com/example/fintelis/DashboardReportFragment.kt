@@ -6,22 +6,20 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.os.Bundle
-import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TabHost
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.HorizontalBarChart
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.tabs.TabLayout
+import android.widget.PopupMenu
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.usermodel.IndexedColors
@@ -51,16 +49,16 @@ class DashboardReportFragment : Fragment() {
         tabTimeFilter = view.findViewById(R.id.tab_time_filter)
 
         setupTabs()
-        setupSampleCharts() // initial with monthly
-        setupExportButtons(view)
+        setupSampleCharts()
+        setupExportMenu(view) // 🔹 ganti dari setupExportButtons() ke popup menu
 
         return view
     }
 
     private fun setupTabs() {
-        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("MINGGUAN"))
-        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("BULANAN"))
-        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("TAHUNAN"))
+        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("WEEKLY"))
+        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("MONTHLY"))
+        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("YEARLY"))
 
         tabTimeFilter.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -73,16 +71,14 @@ class DashboardReportFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab) {}
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
-        // select monthly by default
         tabTimeFilter.getTabAt(1)?.select()
     }
 
     private fun loadDataFor(range: String) {
-        // Replace with real data retrieval. For demo, regenerate sample data depending on range.
         when (range) {
-            "weekly" -> setupSampleCharts(range = "weekly")
-            "monthly" -> setupSampleCharts(range = "monthly")
-            "yearly" -> setupSampleCharts(range = "yearly")
+            "weekly" -> setupSampleCharts("weekly")
+            "monthly" -> setupSampleCharts("monthly")
+            "yearly" -> setupSampleCharts("yearly")
         }
     }
 
@@ -93,10 +89,9 @@ class DashboardReportFragment : Fragment() {
     }
 
     private fun setupLineChart(range: String) {
-        // Example: x = labels (months or weeks), y = approval %
         val labels = when (range) {
-            "weekly" -> listOf("M1","M2","M3","M4")
-            "monthly" -> listOf("Jan","Feb","Mar","Apr","Mei","Jun")
+            "weekly" -> listOf("W1","W2","W3","W4")
+            "monthly" -> listOf("Jan","Feb","Mar","Apr","May","Jun")
             else -> listOf("2019","2020","2021","2022","2023","2024")
         }
 
@@ -134,7 +129,6 @@ class DashboardReportFragment : Fragment() {
     }
 
     private fun setupBarScoreChart(range: String) {
-        // categories: Rendah, Menengah, Baik, Sangat Baik
         val labels = listOf("Low", "Medium", "Good", "Excellent")
         val vals = when(range) {
             "weekly" -> listOf(20f, 40f, 30f, 10f)
@@ -174,14 +168,12 @@ class DashboardReportFragment : Fragment() {
     }
 
     private fun setupBranchesChart(range: String) {
-        // horizontal bars: Cabang A..D
         val labels = listOf("Branch A", "Branch B", "Branch C", "Branch D")
         val vals = when(range) {
             "weekly" -> listOf(40f, 55f, 30f, 60f)
             "monthly" -> listOf(50f, 45f, 35f, 60f)
             else -> listOf(60f, 50f, 40f, 70f)
         }
-        // For HorizontalBarChart, we want entries with y = value
         val entries = vals.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
         val set = BarDataSet(entries, "")
         set.color = resources.getColor(android.R.color.holo_blue_dark)
@@ -190,7 +182,6 @@ class DashboardReportFragment : Fragment() {
         data.barWidth = 0.6f
         hbarChartBranches.data = data
 
-        // formatting x labels vertically (we use index -> label)
         val xAxis = hbarChartBranches.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.granularity = 1f
@@ -205,28 +196,39 @@ class DashboardReportFragment : Fragment() {
         hbarChartBranches.invalidate()
     }
 
-    private fun setupExportButtons(root: View) {
-        val btnPdf = root.findViewById<Button>(R.id.btn_export_pdf)
-        val btnCsv = root.findViewById<Button>(R.id.btn_export_csv)
-        val btnExcel = root.findViewById<Button>(R.id.btn_export_excel)
-
-        btnPdf.setOnClickListener {
-            exportToPdf(root)
-        }
-        btnCsv.setOnClickListener {
-            exportToCsv(requireContext())
-        }
-        btnExcel.setOnClickListener {
-            exportToExcel(requireContext())
+    // 🔹 Popup menu logic untuk export
+    private fun setupExportMenu(view: View) {
+        val btnExport = view.findViewById<MaterialButton>(R.id.btn_export)
+        btnExport.setOnClickListener {
+            val popup = PopupMenu(requireContext(), btnExport)
+            popup.menuInflater.inflate(R.menu.menu_export_options, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.export_pdf -> {
+                        exportToPdf(view)
+                        Toast.makeText(context, "Export to PDF", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    R.id.export_csv -> {
+                        exportToCsv(requireContext())
+                        Toast.makeText(context, "Export to CSV", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    R.id.export_excel -> {
+                        exportToExcel(requireContext())
+                        Toast.makeText(context, "Export to Excel", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
         }
     }
 
-    // --------- Export PDF: capture scroll content to pdf ----------
     private fun exportToPdf(viewRoot: View) {
         try {
-            // Render view to bitmap: measure full height of ScrollView content
             val scroll = viewRoot.findViewById<View>(R.id.scrollMain)
-            // create bitmap of content
             val totalHeight = scroll.height
             val totalWidth = scroll.width
 
@@ -253,14 +255,11 @@ class DashboardReportFragment : Fragment() {
         }
     }
 
-    // --------- Export CSV ----------
     private fun exportToCsv(ctx: Context) {
         try {
-            // build CSV header + some sample rows (replace with real data)
             val csvBuilder = StringBuilder()
             csvBuilder.append("Label, Value\n")
-            // sample: monthly trend (you may replace with actual values)
-            csvBuilder.append("Jan,60\nFeb,62\nMar,68\nApr,70\nMei,72\nJun,74\n")
+            csvBuilder.append("Jan,60\nFeb,62\nMar,68\nApr,70\nMay,72\nJun,74\n")
 
             val fileName = "report_${timeStamp()}.csv"
             val file = File(ctx.getExternalFilesDir(null), fileName)
@@ -276,47 +275,39 @@ class DashboardReportFragment : Fragment() {
         }
     }
 
-    // --------- Export Excel (.xlsx) using Apache POI ----------
     private fun exportToExcel(ctx: Context) {
         try {
             val workbook: Workbook = XSSFWorkbook()
             val sheet: Sheet = workbook.createSheet("Report")
 
-            // Header style
             val headerStyle: CellStyle = workbook.createCellStyle()
             val headerFont: Font = workbook.createFont()
             headerFont.bold = true
             headerStyle.setFont(headerFont)
             headerStyle.fillForegroundColor = IndexedColors.GREY_25_PERCENT.index
-            headerStyle.fillPattern = FillPatternType.SOLID_FOREGROUND  // ✅ pakai FillPatternType, bukan CellStyle.SOLID_FOREGROUND
+            headerStyle.fillPattern = FillPatternType.SOLID_FOREGROUND
 
-            // Buat header row
             val headerRow = sheet.createRow(0)
             val cellLabel = headerRow.createCell(0)
             val cellValue = headerRow.createCell(1)
-
             cellLabel.setCellValue("Label")
             cellValue.setCellValue("Value")
-
             cellLabel.cellStyle = headerStyle
             cellValue.cellStyle = headerStyle
 
-            // sample data
             val data = listOf(
                 Pair("Jan", 60.0),
                 Pair("Feb", 62.0),
                 Pair("Mar", 68.0),
                 Pair("Apr", 70.0),
-                Pair("Mei", 72.0),
+                Pair("May", 72.0),
                 Pair("Jun", 74.0)
             )
-
             for ((i, row) in data.withIndex()) {
                 val r = sheet.createRow(i + 1)
                 r.createCell(0).setCellValue(row.first)
                 r.createCell(1).setCellValue(row.second)
             }
-
             for (i in 0..1) sheet.autoSizeColumn(i)
 
             val fileName = "report_${timeStamp()}.xlsx"
