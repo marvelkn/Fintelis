@@ -20,9 +20,9 @@ class OnboardingActivity : AppCompatActivity() {
     )
 
     private val descriptions = listOf(
-        "Smart insights for better credit decisions.",
-        "Track your spending and save efficiently.",
-        "Get started now and manage your finances easily."
+        "Welcome to Fintelis, your place to take control of money with confidence.",
+        "Track spending, set targets, and watch your progress in real time.",
+        "Let’s start building healthier financial habits, one smart move at a time."
     )
 
     private var currentIndex = 0

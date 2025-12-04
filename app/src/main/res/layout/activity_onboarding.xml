@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/lato_bold"
-        android:text="Smart insights for better credit decisions."
+        android:text="Welcome to Fintelis, your place to take control of money with confidence."
         android:textAlignment="center"
         android:textColor="@android:color/black"
         android:textSize="24sp"
