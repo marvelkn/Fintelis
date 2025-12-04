@@ -1,179 +1,99 @@
 package com.example.fintelis
 
-import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
+import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.components.Legend
-import com.github.mikephil.charting.components.LegendEntry
-import com.github.mikephil.charting.data.*
-import java.text.SimpleDateFormat
-import java.util.*
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 
-class DashboardFragment : Fragment() {
+// Pastikan import R sesuai dengan package name project Anda
+// import com.example.namaaplikasi.R
 
-    private lateinit var tvGreeting: TextView
-    private lateinit var tvDate: TextView
-    private lateinit var pieChart: PieChart
-    private lateinit var barChart: BarChart
+class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
-    private val handler = Handler(Looper.getMainLooper())
-    private lateinit var dateUpdater: Runnable
+    // Variabel untuk state saldo (Sembunyi/Tampil)
+    private var isBalanceVisible = false
+    private val realBalance = "IDR 25.500.000" // Contoh data asli (nanti bisa dari database/API)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_dashboard, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        tvGreeting = view.findViewById(R.id.tv_greeting)
-        tvDate = view.findViewById(R.id.tv_date)
-        pieChart = view.findViewById(R.id.pieChartApproval)
-        barChart = view.findViewById(R.id.barChartRisk)
+        // --- 1. SETUP FITUR HIDE/UNHIDE SALDO ---
+        setupBalanceVisibility(view)
 
-        setupGreeting()
-        setupPieChart()
-        setupBarChart()
-        setupButtons(view)
-        startDateUpdater() // ✅ mulai update tanggal real-time
-
-        return view
+        // --- 2. SETUP DONUT CHART ---
+        setupPieChart(view)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        handler.removeCallbacks(dateUpdater) // ❌ hentikan saat fragment hancur
-    }
+    private fun setupBalanceVisibility(view: View) {
+        val tvBalance = view.findViewById<TextView>(R.id.tv_balance_nominal)
+        val btnToggle = view.findViewById<ImageView>(R.id.img_toggle_balance)
 
-    @SuppressLint("SimpleDateFormat")
-    private fun setupGreeting() {
-        val username = "Fintelis Buddy"
-        tvGreeting.text = "Hi, $username!"
+        // Set state awal (Terkunci/Hidden)
+        updateBalanceView(tvBalance, btnToggle)
 
-        val currentDate = Calendar.getInstance().time
-        val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("eng", "ID"))
-        tvDate.text = dateFormat.format(currentDate)
-    }
-
-    private fun startDateUpdater() {
-        dateUpdater = object : Runnable {
-            @SuppressLint("SimpleDateFormat")
-            override fun run() {
-                val currentDate = Calendar.getInstance().time
-                val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("eng", "ID"))
-                tvDate.text = dateFormat.format(currentDate)
-
-                // Ulangi setiap 60 detik (bisa ubah ke 1000L untuk tiap detik)
-                handler.postDelayed(this, 60_000L)
-            }
+        btnToggle.setOnClickListener {
+            // Ubah status true <-> false
+            isBalanceVisible = !isBalanceVisible
+            updateBalanceView(tvBalance, btnToggle)
         }
-        handler.post(dateUpdater)
     }
 
-private fun setupPieChart() {
-        val entries = listOf(
-            PieEntry(70f, "Approved"),
-            PieEntry(30f, "Rejected")
-        )
+    private fun updateBalanceView(textView: TextView, iconView: ImageView) {
+        if (isBalanceVisible) {
+            // Jika Mode Terbuka
+            textView.text = realBalance
+            iconView.setImageResource(R.drawable.ic_visibility) // Pastikan icon mata terbuka ada di drawable
+        } else {
+            // Jika Mode Tersembunyi
+            textView.text = "IDR •••••••••••"
+            iconView.setImageResource(R.drawable.ic_visibility_off) // Pastikan icon mata coret ada di drawable
+        }
+    }
 
+    private fun setupPieChart(view: View) {
+        val pieChart = view.findViewById<PieChart>(R.id.pieChartFinancial)
+
+        // 1. Siapkan Data (Income, Expenses, Investment)
+        val entries = ArrayList<PieEntry>()
+        entries.add(PieEntry(35f)) // Income (35%)
+        entries.add(PieEntry(45f)) // Expense (45%)
+        entries.add(PieEntry(20f)) // Investment (20%)
+
+        // 2. Siapkan Warna (Sesuai desain XML sebelumnya)
+        val colors = ArrayList<Int>()
+        colors.add(Color.parseColor("#FFC107")) // Kuning (Income)
+        colors.add(Color.parseColor("#EF5350")) // Merah (Expense)
+        colors.add(Color.parseColor("#26C6DA")) // Cyan (Investment)
+
+        // 3. Konfigurasi DataSet
         val dataSet = PieDataSet(entries, "")
-        dataSet.colors = listOf(
-            android.graphics.Color.parseColor("#1E88E5"),
-            android.graphics.Color.parseColor("#90CAF9")
-        )
+        dataSet.colors = colors
+        dataSet.sliceSpace = 3f // Jarak antar potongan kue
+        dataSet.setDrawValues(false) // Hilangkan angka di dalam chart agar bersih
 
-        val data = PieData(dataSet)
-        data.setValueTextColor(android.graphics.Color.DKGRAY)
-        data.setValueTextSize(14f)
+        // 4. Konfigurasi Tampilan Chart (Donut Style)
+        val pieData = PieData(dataSet)
+        pieChart.data = pieData
 
-        pieChart.data = data
-        pieChart.description.isEnabled = false
-        pieChart.setCenterTextColor(android.graphics.Color.parseColor("#1E88E5"))
-        pieChart.setEntryLabelColor(android.graphics.Color.DKGRAY)
-        pieChart.animateY(1000)
+        pieChart.apply {
+            description.isEnabled = false // Matikan label deskripsi di pojok kanan bawah
+            legend.isEnabled = false      // Matikan legend bawaan (karena kita buat custom di XML)
 
-        val legend = pieChart.legend
-        legend.isEnabled = true
-        legend.textColor = android.graphics.Color.DKGRAY
-        legend.textSize = 13f
-        legend.form = Legend.LegendForm.CIRCLE
-        legend.formSize = 12f
-        legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
-        legend.verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
-        legend.orientation = Legend.LegendOrientation.HORIZONTAL
-        legend.setDrawInside(false)
+            isDrawHoleEnabled = true      // Aktifkan lubang tengah (Donut)
+            setHoleColor(Color.TRANSPARENT) // Warna lubang transparan atau putih
 
-        pieChart.invalidate()
-    }
+            holeRadius = 65f              // Besar lubang dalam
+            transparentCircleRadius = 70f // Efek bayangan lingkaran
 
-    private fun setupBarChart() {
-        val entries = listOf(
-            BarEntry(1f, 50f),
-            BarEntry(2f, 30f),
-            BarEntry(3f, 20f)
-        )
-
-        val dataSet = BarDataSet(entries, "")
-        dataSet.colors = listOf(
-            android.graphics.Color.parseColor("#1565C0"),
-            android.graphics.Color.parseColor("#1E88E5"),
-            android.graphics.Color.parseColor("#90CAF9")
-        )
-
-        val data = BarData(dataSet)
-        data.setValueTextColor(android.graphics.Color.WHITE)
-        data.setValueTextSize(13f)
-
-        barChart.data = data
-        barChart.description.isEnabled = false
-        barChart.axisLeft.textColor = android.graphics.Color.DKGRAY
-        barChart.axisRight.isEnabled = false
-        barChart.xAxis.textColor = android.graphics.Color.DKGRAY
-        barChart.animateY(1000)
-        barChart.setExtraOffsets(16f, 16f, 16f, 24f)
-
-        val legend = barChart.legend
-        legend.isEnabled = true
-        legend.textColor = android.graphics.Color.DKGRAY
-        legend.textSize = 13f
-        legend.form = Legend.LegendForm.SQUARE
-        legend.formSize = 12f
-        legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
-        legend.verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
-        legend.orientation = Legend.LegendOrientation.HORIZONTAL
-        legend.setDrawInside(false)
-
-        legend.setCustom(
-            listOf(
-                LegendEntry("High Risk", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#1565C0")),
-                LegendEntry("Medium Risk", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#1E88E5")),
-                LegendEntry("Low Risk", Legend.LegendForm.SQUARE, 10f, 2f, null, android.graphics.Color.parseColor("#90CAF9"))
-            )
-        )
-
-        barChart.invalidate()
-    }
-
-    private fun setupButtons(view: View) {
-        val cardNewAnalysis = view.findViewById<LinearLayout>(R.id.card_new_analysis)
-        val cardImportData = view.findViewById<LinearLayout>(R.id.card_import_data)
-
-        cardNewAnalysis.setOnClickListener {
-            Toast.makeText(context, "Start New Credit Analyze", Toast.LENGTH_SHORT).show()
-        }
-        cardImportData.setOnClickListener {
-            Toast.makeText(context, "Start Importing Customer Data", Toast.LENGTH_SHORT).show()
+            setEntryLabelColor(Color.TRANSPARENT) // Hilangkan text label di dalam chart
+            animateY(1400) // Animasi putar saat loading
+            invalidate() // Render ulang
         }
     }
-
 }
