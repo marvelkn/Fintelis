@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_page_gradient"
+    android:padding="24dp"
+    android:id="@+id/nav_analysisResult"
+    tools:context=".AnalysisResultFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/iv_result_icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            tools:src="@drawable/ic_check_circle"
+            tools:tint="@color/status_approved" />
+
+        <TextView
+            android:id="@+id/tv_result_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            tools:text="APPROVED"
+            tools:textColor="@color/status_approved" />
+
+        <TextView
+            android:id="@+id/tv_context_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAlignment="center"
+            android:textColor="@color/fintelis_text_secondary"
+            android:textSize="16sp"
+            tools:text="Based on their profile, this customer is eligible for a loan." />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Summary for:"
+                    android:textColor="@color/fintelis_text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_result_customer_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/fintelis_text_dark"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="Budi Santoso" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="#1A000000" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Credit Score" android:textColor="@color/fintelis_text_secondary" android:textSize="12sp" />
+                        <TextView android:id="@+id/tv_result_score" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/fintelis_text_dark" android:textStyle="bold" tools:text="780" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Risk Category" android:textColor="@color/fintelis_text_secondary" android:textSize="12sp" />
+                        <TextView android:id="@+id/tv_result_risk" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/fintelis_text_dark" android:textStyle="bold" tools:text="LOW" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <!-- Ganti Button lama dengan LinearLayout ini -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <!-- Button Baru (misalnya: Export) -->
+        <!-- Menggunakan style OutlinedButton untuk variasi visual -->
+        <Button
+            android:id="@+id/btn_analysis"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/fintelis_accent"
+            android:text="Analysis Detail"
+            android:textAllCaps="false"
+            android:textSize="16sp" />
+
+        <!-- Button Finish (yang sudah ada) -->
+        <Button
+            android:id="@+id/btn_ok"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/fintelis_accent"
+            android:text="Finish"
+            android:textAllCaps="false"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

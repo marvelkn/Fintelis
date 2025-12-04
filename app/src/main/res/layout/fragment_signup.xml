@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_onboarding"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Welcome text -->
+        <TextView
+            android:text="Welcome to Fintelis!"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/lato_bold"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+        <TextView
+            android:text="Please, create a new account."
+            android:textSize="14sp"
+            android:textColor="#777"
+            android:fontFamily="@font/lato_regular"
+            android:layout_marginBottom="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Name -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="12dp">
+
+            <ImageView
+                android:src="@drawable/ic_person"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Name icon" />
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:hint="Name"
+                android:background="@android:color/transparent"
+                android:textColor="#000"
+                android:textSize="14sp"
+                android:fontFamily="@font/lato_regular" />
+        </LinearLayout>
+
+        <!-- Phone -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="12dp">
+
+            <ImageView
+                android:src="@drawable/ic_phone"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Phone icon" />
+
+            <EditText
+                android:id="@+id/etPhone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:hint="Phone number"
+                android:background="@android:color/transparent"
+                android:inputType="phone"
+                android:textColor="#000"
+                android:textSize="14sp"
+                android:fontFamily="@font/lato_regular" />
+        </LinearLayout>
+
+        <!-- Password -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="12dp">
+
+            <ImageView
+                android:src="@drawable/ic_lock"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Password icon" />
+
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:hint="Password"
+                android:background="@android:color/transparent"
+                android:inputType="textPassword"
+                android:textColor="#000"
+                android:textSize="14sp"
+                android:fontFamily="@font/lato_regular" />
+        </LinearLayout>
+
+        <!-- Checkbox Terms -->
+        <CheckBox
+            android:id="@+id/checkTerms"
+            android:text="By creating an account you agree to our Terms and Conditions"
+            android:fontFamily="@font/lato_regular"
+            android:textColor="#555"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Sign Up Button -->
+        <Button
+            android:id="@+id/btnSignUp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sign Up"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#0066CC"
+            android:fontFamily="@font/lato_bold"
+            android:layout_marginTop="4dp" />
+
+        <!-- Divider -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="24dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#CCC"/>
+
+            <TextView
+                android:text="  or continue with  "
+                android:textSize="14sp"
+                android:textColor="#777"
+                android:fontFamily="@font/lato_regular"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#CCC"/>
+        </LinearLayout>
+
+        <!-- Google Login -->
+        <LinearLayout
+            android:id="@+id/btnGoogleSignup"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_button_google"
+            android:paddingHorizontal="16dp"
+            android:elevation="2dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:src="@drawable/google"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Google logo" />
+
+            <TextView
+                android:text="Sign up with Google"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/lato_bold"
+                android:layout_marginStart="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Facebook Login -->
+        <LinearLayout
+            android:id="@+id/btnFacebookSignup"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_button_facebook"
+            android:paddingHorizontal="16dp"
+            android:elevation="2dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:src="@drawable/facebook"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Facebook logo" />
+
+            <TextView
+                android:text="Sign up with Facebook"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/lato_bold"
+                android:layout_marginStart="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Login link -->
+        <TextView
+            android:id="@+id/tvLogin"
+            android:text="Have an account? Sign in"
+            android:textColor="#333"
+            android:fontFamily="@font/lato_regular"
+            android:layout_marginTop="24dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mainDashboard"
+        android:icon="@drawable/home"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/customerListFragment"
+        android:icon="@drawable/users_alt"
+        android:title="Customer" />
+
+    <item
+        android:id="@+id/analysisFragment"
+        android:icon="@drawable/document_signed"
+        android:title="Analysis" />
+
+    <item
+        android:id="@+id/nav_visualization"
+        android:icon="@drawable/chart"
+        android:title="Visualization" />
+
+    <item
+        android:id="@+id/settingsFragment"
+        android:icon="@drawable/settings"
+        android:title="Settings" />
+
+</menu>

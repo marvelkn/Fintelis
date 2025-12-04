@@ -2,4 +2,22 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="blue_200">#FF64B5F6</color>
+    <color name="color_ripple_effect">#FFCCCCCC</color>
+
+    <color name="primary_dark">#1E3A8A</color>
+    <color name="primary_light">#3B82F6</color>
+    <color name="gray_soft">#F3F4F6</color>
+
+    <color name="fintelis_text_dark">#282b34</color>
+    <color name="fintelis_background">#f1f5fd</color>
+    <color name="fintelis_primary">#7179c3</color>
+    <color name="fintelis_text_secondary">#a297af</color>
+    <color name="fintelis_primary_light">#bac1f5</color>
+    <color name="fintelis_accent">#3c2fb9</color>
+
+    <color name="status_approved">#22c55e</color>
+    <color name="status_rejected">#ef4444</color>
+    <color name="status_pending">#f97316</color>
 </resources>

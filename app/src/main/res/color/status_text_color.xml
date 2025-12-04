@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- State untuk "Approved" -->
+    <item android:state_activated="true" android:color="#10B981"/>
+    <!-- State untuk "Rejected" -->
+    <item android:state_checked="true" android:color="#EF4444"/>
+    <!-- Default state untuk "Pending" -->
+    <item android:color="#F97316"/>
+</selector>
