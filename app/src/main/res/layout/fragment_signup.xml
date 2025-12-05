@@ -77,13 +77,13 @@
                 android:contentDescription="Phone icon" />
 
             <EditText
-                android:id="@+id/etPhone"
+                android:id="@+id/etemail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="8dp"
-                android:hint="Phone number"
+                android:hint="Email Address"
                 android:background="@android:color/transparent"
-                android:inputType="phone"
+                android:inputType="textEmailAddress"
                 android:textColor="#000"
                 android:textSize="14sp"
                 android:fontFamily="@font/lato_regular" />
