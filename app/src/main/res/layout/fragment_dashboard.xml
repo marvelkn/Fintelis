@@ -136,33 +136,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:layout_marginBottom="20dp">
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="#B39DDB"
-                android:layout_margin="4dp"/> <View
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:background="#CFD8DC"
-            android:layout_margin="4dp"/>
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="#CFD8DC"
-                android:layout_margin="4dp"/>
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="#CFD8DC"
-                android:layout_margin="4dp"/>
-        </LinearLayout>
-
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -287,6 +260,7 @@
                         android:textColor="#1E293B"
                         android:layout_marginEnd="16dp"/>
                     <TextView
+                        android:id="@+id/tv_income_nominal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="IDR 12.500.000"
@@ -322,6 +296,7 @@
                         android:textColor="#1E293B"
                         android:layout_marginEnd="16dp"/>
                     <TextView
+                        android:id="@+id/tv_expense_nominal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="IDR 8.200.000"

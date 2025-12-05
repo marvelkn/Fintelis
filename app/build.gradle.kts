@@ -80,7 +80,9 @@ dependencies {
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
-
+    // Dependensi realtime-database
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-firestore")
     // material components (tablayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
