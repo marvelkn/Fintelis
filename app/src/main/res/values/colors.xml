@@ -20,4 +20,8 @@
     <color name="status_approved">#22c55e</color>
     <color name="status_rejected">#ef4444</color>
     <color name="status_pending">#f97316</color>
+
+    <!-- Icon Background Colors -->
+    <color name="bg_income_icon">#A7F3D0</color>
+    <color name="bg_expense_icon">#FECDD3</color>
 </resources>
