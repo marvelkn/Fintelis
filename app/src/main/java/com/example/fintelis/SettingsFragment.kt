@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.example.fintelis.databinding.FragmentAnalysisResultBinding
 import com.example.fintelis.databinding.FragmentEditProfileBinding
 import com.example.fintelis.databinding.FragmentSettingsBinding
 import com.google.android.material.button.MaterialButton

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Filter By Type"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/rg_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/rb_filter_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All Transactions" />
+
+        <RadioButton
+            android:id="@+id/rb_filter_income"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Income Only" />
+
+        <RadioButton
+            android:id="@+id/rb_filter_expense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Expense Only" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Sort By"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/rg_sort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/rb_sort_date_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date (Newest First)" />
+
+        <RadioButton
+            android:id="@+id/rb_sort_date_asc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date (Oldest First)" />
+
+        <RadioButton
+            android:id="@+id/rb_sort_amount_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Amount (High to Low)" />
+
+        <RadioButton
+            android:id="@+id/rb_sort_amount_asc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Amount (Low to High)" />
+    </RadioGroup>
+
+</LinearLayout>
