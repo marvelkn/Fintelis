@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "827935796526",
+    "project_id": "fintelis-c0b85",
+    "storage_bucket": "fintelis-c0b85.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:827935796526:android:e926006a1429e182c19ebf",
+        "android_client_info": {
+          "package_name": "com.example.fintelis"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6jlqwXID5IiupRFyoOQigjwTobGd3h2o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

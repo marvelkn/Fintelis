@@ -4,6 +4,9 @@ plugins {
     // Aktifkan Safe Args dan Parcelize
     alias(libs.plugins.kotlinSafeargs)
     id("kotlin-parcelize")
+    // Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
+    id("kotlin-kapt")
 }
 
 android {
@@ -71,8 +74,22 @@ dependencies {
 
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+
+    // TODO: Add the dependencies for Firebase products you want to use
+    // When using the BoM, don't specify versions in Firebase dependencies
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    // Dependensi realtime-database
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-firestore")
     // material components (tablayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
 }

@@ -10,16 +10,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.fintelis.databinding.FragmentLoginBinding
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginFragment : Fragment() {
 
-    private lateinit var binding: FragmentLoginBinding
+    private var _binding: FragmentLoginBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentLoginBinding.inflate(inflater, container, false)
+        // Inisialisasi Firebase Auth
+        auth = FirebaseAuth.getInstance()
+        _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -31,27 +36,49 @@ class LoginFragment : Fragment() {
         }
 
         binding.btnLogin.setOnClickListener {
-            val phone = binding.etPhoneLogin.text.toString()
-            val password = binding.etPasswordLogin.text.toString()
-            if (phone.isEmpty() || password.isEmpty()) {
-                Toast.makeText(context, "Please fill phone and password", Toast.LENGTH_SHORT).show()
+            val email = binding.etemailLogin.text.toString().trim()
+            val password = binding.etPasswordLogin.text.toString().trim()
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(context, "Please fill email and password", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             } else {
-                // Sementara: simulasi login sukses
-                Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                // Tampilkan loading
+                binding.progressBar.visibility = View.VISIBLE
+                binding.btnLogin.isEnabled = false
 
-                // 2. Simpan status bahwa pengguna sudah login
-                val sharedPref = requireActivity().getSharedPreferences("app_prefs",
-                    AppCompatActivity.MODE_PRIVATE)
-                with(sharedPref.edit()) {
-                    putBoolean("user_logged_in", true)
-                    apply()
+                // Fungsi Login Firebase
+                auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(requireActivity()) { task ->
+
+                        binding.progressBar.visibility = View.GONE
+                        binding.btnLogin.isEnabled = true
+
+                        //Login berhasil
+                        if (task.isSuccessful) {
+                            Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                            // 2. Simpan status bahwa pengguna sudah login
+                            val sharedPref = requireActivity().getSharedPreferences("app_prefs",
+                                AppCompatActivity.MODE_PRIVATE)
+                            with(sharedPref.edit()) {
+                                putBoolean("user_logged_in", true)
+                                apply()
+                            }
+                            // 3. Arahkan ke DashboardActivity (BUKAN MainActivity)
+                            val intent = Intent(requireActivity(), DashboardActivity::class.java)
+                            startActivity(intent)
+                            requireActivity().finish() // Tutup AuthActivity agar tidak bisa kembali
+
+                        } else {
+                            // Login gagal
+                            Toast.makeText(context, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
-
-                // 3. Arahkan ke DashboardActivity (BUKAN MainActivity)
-                val intent = Intent(requireActivity(), DashboardActivity::class.java)
-                startActivity(intent)
-                requireActivity().finish() // Tutup AuthActivity agar tidak bisa kembali
-            }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
