@@ -9,6 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.fintelis.data.AppDatabase
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
+// Import Library Chart
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.PieEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -23,6 +27,9 @@ enum class FilterType { ALL, INCOME, EXPENSE }
 class TransactionViewModel(application: Application) : AndroidViewModel(application) {
     private val dao = AppDatabase.getDatabase(application).transactionDao()
     private val _allData = dao.getAllTransactions()
+
+    // Jika Anda ingin grafik mengambil semua data tanpa filter bulan, gunakan ini di Fragment:
+    // val allTransactions: LiveData<List<Transaction>> = _allData
 
     val displayedTransactions = MediatorLiveData<List<Transaction>>()
     val income = MediatorLiveData<Double>()
@@ -137,6 +144,76 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         expense.postValue(exp)
         total.postValue(inc - exp)
     }
+
+    // =================================================================================
+    // CHART DATA PROCESSING FUNCTIONS (Added for VisualizationFragment)
+    // =================================================================================
+
+    // 1. Data untuk Donut Chart (Pengeluaran per Kategori)
+    fun getExpenseByCategoryData(transactions: List<Transaction>): List<PieEntry> {
+        val expenseMap = transactions
+            .filter { it.type == TransactionType.EXPENSE }
+            .groupBy { it.category }
+            .mapValues { entry -> entry.value.sumOf { it.amount } }
+
+        val entries = ArrayList<PieEntry>()
+        for ((category, amount) in expenseMap) {
+            entries.add(PieEntry(amount.toFloat(), category))
+        }
+        return entries
+    }
+
+    // 2. Data untuk Bar Chart (Pemasukan vs Pengeluaran per Bulan)
+    fun getIncomeExpenseBarData(transactions: List<Transaction>): Pair<List<String>, List<BarEntry>> {
+        val fmt = SimpleDateFormat("MMM yyyy", Locale.US)
+
+        val sortedList = transactions.sortedBy { parseDate(it.date) }
+        val groupedData = sortedList.groupBy { fmt.format(parseDate(it.date)) }
+
+        val entries = ArrayList<BarEntry>()
+        val labels = ArrayList<String>()
+        var index = 0f
+
+        for ((dateLabel, transList) in groupedData) {
+            val income = transList.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }.toFloat()
+            val expense = transList.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }.toFloat()
+
+            // Stacked Bar (Income, Expense)
+            entries.add(BarEntry(index, floatArrayOf(income, expense)))
+            labels.add(dateLabel)
+            index++
+        }
+        return Pair(labels, entries)
+    }
+
+    // 3. Data untuk Line Chart (Tren Saldo/Keuangan)
+    fun getFinancialTrendData(transactions: List<Transaction>): List<Entry> {
+        val sortedList = transactions.sortedBy { parseDate(it.date) }
+        val entries = ArrayList<Entry>()
+
+        var currentBalance = 0.0
+        val groupedByDay = sortedList.groupBy { parseDate(it.date) }
+        val sortedDates = groupedByDay.keys.sorted()
+
+        for (date in sortedDates) {
+            val dailyTrans = groupedByDay[date] ?: continue
+            for (t in dailyTrans) {
+                if (t.type == TransactionType.INCOME) currentBalance += t.amount
+                else currentBalance -= t.amount
+            }
+            entries.add(Entry(date.time.toFloat(), currentBalance.toFloat()))
+        }
+        return entries
+    }
+
+    // Helper Public untuk akses parseDate dari luar jika diperlukan
+    fun parseDatePublic(d: String): Date {
+        return parseDate(d)
+    }
+
+    // =================================================================================
+    // END CHART FUNCTIONS
+    // =================================================================================
 
     private fun parseDate(d: String): Date {
         return try {
