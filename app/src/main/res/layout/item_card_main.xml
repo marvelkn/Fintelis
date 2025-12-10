@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="130dp"
+    android:layout_margin="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="7dp"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="25dp"
+        android:background="@drawable/grad_main_pink">
+
+        <ImageView
+            android:id="@+id/imgMainBalanceIcon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/logo_robot"
+            android:layout_gravity="center_vertical"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingStart="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtMainTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Main Balance"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#050E3C"/>
+
+            <TextView
+                android:id="@+id/txtMainNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Total Savings Account"
+                android:textSize="13.5sp"
+                android:textColor="#050E3C"
+                android:layout_marginTop="2dp"/>
+
+            <TextView
+                android:id="@+id/txtMainBalance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Rp 12.560.000"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#050E3C"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

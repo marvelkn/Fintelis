@@ -15,5 +15,6 @@ data class Transaction(
     val amount: Double,
     val type: TransactionType,
     val date: String,
-    val category: String
+    val category: String,
+    val wallet: String = "Cash"
 ) : Parcelable

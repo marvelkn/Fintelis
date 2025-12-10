@@ -19,4 +19,19 @@ interface TransactionDao {
 
     @Query("SELECT COUNT(*) FROM transactions")
     suspend fun getCount(): Int
+
+    @Query("SELECT SUM(amount) FROM transactions WHERE type = 'INCOME'")
+    fun getTotalIncome(): LiveData<Double?>
+
+    @Query("SELECT SUM(amount) FROM transactions WHERE type = 'EXPENSE'")
+    fun getTotalExpense(): LiveData<Double?>
+
+    @Query("""
+    SELECT SUM(amount) FROM transactions 
+    WHERE type = 'EXPENSE' 
+    AND strftime('%m', date) = strftime('%m', 'now') 
+    AND strftime('%Y', date) = strftime('%Y', 'now')
+    """)
+    fun getMonthlyExpense(): LiveData<Double?>
+
 }
