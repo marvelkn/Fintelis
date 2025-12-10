@@ -7,11 +7,13 @@ import kotlinx.parcelize.Parcelize
 enum class TransactionType { INCOME, EXPENSE }
 
 @Parcelize
+@Entity(tableName = "transactions")
 data class Transaction(
-    @DocumentId val id: String = "",
-    val title: String = "",
-    val amount: Double = 0.0,
-    val type: TransactionType = TransactionType.EXPENSE,
-    val date: String = "",
-    val category: String = ""
+    @PrimaryKey val id: String,
+    val title: String,
+    val amount: Double,
+    val type: TransactionType,
+    val date: String,
+    val category: String,
+    val wallet: String = "Cash"
 ) : Parcelable
