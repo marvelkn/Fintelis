@@ -6,7 +6,6 @@ plugins {
     id("kotlin-parcelize")
     // Add the Google services Gradle plugin
     id("com.google.gms.google-services")
-    id("kotlin-kapt")
 }
 
 android {
@@ -84,12 +83,9 @@ dependencies {
     // Dependensi realtime-database
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-firestore")
+
     // material components (tablayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
 }

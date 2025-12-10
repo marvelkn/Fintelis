@@ -1,28 +1,28 @@
 package com.example.fintelis.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import com.example.fintelis.data.AppDatabase
+import androidx.lifecycle.ViewModel
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObjects
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
 enum class SortOrder { DATE_DESC, DATE_ASC, AMOUNT_DESC, AMOUNT_ASC }
 enum class FilterType { ALL, INCOME, EXPENSE }
 
-class TransactionViewModel(application: Application) : AndroidViewModel(application) {
-    private val dao = AppDatabase.getDatabase(application).transactionDao()
-    private val _allData = dao.getAllTransactions()
+class TransactionViewModel : ViewModel() {
+    private val firestore = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
+    private val _allData = MutableLiveData<List<Transaction>>()
 
     val displayedTransactions = MediatorLiveData<List<Transaction>>()
     val income = MediatorLiveData<Double>()
@@ -39,12 +39,23 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private var currentSearchQuery = ""
 
     init {
-        // Default to the current local month
         _currentMonth.value = Calendar.getInstance()
+        fetchTransactions()
 
-        seedDatabaseIfEmpty()
         displayedTransactions.addSource(_allData) { list -> processList(list) }
         displayedTransactions.addSource(_currentMonth) { _allData.value?.let { list -> processList(list) } }
+    }
+
+    private fun fetchTransactions() {
+        val userId = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(userId).collection("transactions")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("TransactionViewModel", "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+                snapshot?.let { _allData.value = it.toObjects() }
+            }
     }
 
     fun changeMonth(amount: Int) {
@@ -54,41 +65,16 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         _currentMonth.value = newCal
     }
 
-    private fun seedDatabaseIfEmpty() {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (dao.getCount() == 0) {
-                val transactions = mutableListOf<Transaction>()
-                val cal = Calendar.getInstance() // Use a single calendar instance
-
-                // --- CURRENT MONTH (HEAVY) ---
-                cal.time = Date() // Reset to today
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Gaji Bulan Ini", 12000000.0, TransactionType.INCOME, formatDate(cal), "Gaji"))
-                cal.add(Calendar.DAY_OF_MONTH, -1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Sewa Kost", 2500000.0, TransactionType.EXPENSE, formatDate(cal), "Sewa"))
-                cal.add(Calendar.DAY_OF_MONTH, -3)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Belanja Mingguan", 750000.0, TransactionType.EXPENSE, formatDate(cal), "Belanja"))
-                cal.add(Calendar.DAY_OF_MONTH, -5)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Makan di Luar", 150000.0, TransactionType.EXPENSE, formatDate(cal), "Makanan"))
-
-                // --- LAST MONTH ---
-                cal.time = Date()
-                cal.add(Calendar.MONTH, -1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Bonus Proyek Lama", 5000000.0, TransactionType.INCOME, formatDate(cal), "Bonus"))
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Tagihan Bulan Lalu", 1800000.0, TransactionType.EXPENSE, formatDate(cal), "Tagihan"))
-
-                // --- NEXT MONTH ---
-                cal.time = Date()
-                cal.add(Calendar.MONTH, 1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Gaji Bulan Depan", 12000000.0, TransactionType.INCOME, formatDate(cal), "Gaji"))
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Tiket Konser", 1200000.0, TransactionType.EXPENSE, formatDate(cal), "Hiburan"))
-
-                dao.insertAll(transactions)
-            }
-        }
+    fun addTransaction(t: Transaction) {
+        val userId = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(userId).collection("transactions").add(t)
     }
 
-    fun addTransaction(t: Transaction) = viewModelScope.launch(Dispatchers.IO) { dao.insertTransaction(t) }
-    fun deleteTransactions(items: Set<Transaction>) = viewModelScope.launch(Dispatchers.IO) { items.forEach { dao.deleteTransaction(it) } }
+    fun deleteTransactions(items: Set<Transaction>) {
+        val userId = auth.currentUser?.uid ?: return
+        val collection = firestore.collection("users").document(userId).collection("transactions")
+        items.forEach { collection.document(it.id).delete() }
+    }
 
     fun searchTransactions(query: String) {
         currentSearchQuery = query
@@ -144,9 +130,5 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         } catch (e: Exception) {
             Date()
         }
-    }
-
-    private fun formatDate(calendar: Calendar): String {
-        return SimpleDateFormat("MMM dd, yyyy", Locale.US).format(calendar.time)
     }
 }
