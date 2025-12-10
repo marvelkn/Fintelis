@@ -1,20 +1,22 @@
 package com.example.fintelis.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import com.example.fintelis.data.AppDatabase
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
+// Import Firebase & Auth
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.firestore
 // Import Library Chart
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieEntry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -25,11 +27,32 @@ enum class SortOrder { DATE_DESC, DATE_ASC, AMOUNT_DESC, AMOUNT_ASC }
 enum class FilterType { ALL, INCOME, EXPENSE }
 
 class TransactionViewModel(application: Application) : AndroidViewModel(application) {
-    private val dao = AppDatabase.getDatabase(application).transactionDao()
-    private val _allData = dao.getAllTransactions()
 
-    // Jika Anda ingin grafik mengambil semua data tanpa filter bulan, gunakan ini di Fragment:
-    // val allTransactions: LiveData<List<Transaction>> = _allData
+    // --- FIREBASE SETUP ---
+    private val db = Firebase.firestore
+    private val auth = FirebaseAuth.getInstance() // Instance Auth untuk cek user login
+
+    // Wallet default (Bisa diubah nanti jika ada fitur multi-wallet)
+    private var currentWalletId = "Cash"
+
+    // Helper untuk mendapatkan Collection Reference milik User yang sedang Login
+    // Path: users/{userId}/wallets/{walletId}/transactions
+    private val currentUserTransactionsCollection: CollectionReference?
+        get() {
+            val userId = auth.currentUser?.uid
+            return if (userId != null) {
+                db.collection("users")
+                    .document(userId)
+                    .collection("wallets")
+                    .document(currentWalletId)
+                    .collection("transactions")
+            } else {
+                null // User belum login
+            }
+        }
+
+    // --- DATA HOLDERS ---
+    private val _allData = MutableLiveData<List<Transaction>>()
 
     val displayedTransactions = MediatorLiveData<List<Transaction>>()
     val income = MediatorLiveData<Double>()
@@ -39,20 +62,111 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private val _currentMonth = MutableLiveData<Calendar>()
     val currentMonth: LiveData<Calendar> = _currentMonth
 
-    var currentSortOrder = SortOrder.DATE_DESC
-        private set
-    var currentFilterType = FilterType.ALL
-        private set
+    var currentSortOrder = SortOrder.DATE_DESC; private set
+    var currentFilterType = FilterType.ALL; private set
     private var currentSearchQuery = ""
 
     init {
-        // Default to the current local month
         _currentMonth.value = Calendar.getInstance()
 
-        seedDatabaseIfEmpty()
+        // 1. Cek Login & Fetch Data
+        if (auth.currentUser != null) {
+            fetchRealtimeData()
+        } else {
+            // Jika user belum login (misal error state), kosongkan data
+            _allData.value = emptyList()
+        }
+
+        // 2. Setup Mediator (Logic Filter & Sort)
         displayedTransactions.addSource(_allData) { list -> processList(list) }
-        displayedTransactions.addSource(_currentMonth) { _allData.value?.let { list -> processList(list) } }
+        displayedTransactions.addSource(_currentMonth) {
+            _allData.value?.let { list -> processList(list) }
+        }
     }
+
+    // --- FUNGSI AMBIL DATA (REALTIME) ---
+    private fun fetchRealtimeData() {
+        val collection = currentUserTransactionsCollection
+
+        if (collection == null) {
+            Log.e("ViewModel", "User not logged in, cannot fetch data")
+            return
+        }
+
+        collection.addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Log.e("ViewModel", "Listen failed.", e)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null) {
+                val list = mutableListOf<Transaction>()
+                for (document in snapshot) {
+                    try {
+                        val trans = document.toObject(Transaction::class.java)
+                        trans.id = document.id // Simpan ID dokumen
+                        list.add(trans)
+                    } catch (e: Exception) {
+                        Log.e("ViewModel", "Error converting document", e)
+                    }
+                }
+
+                // Jika data kosong, isi dengan data dummy (Seeding) khusus user ini
+                if (list.isEmpty()) {
+                    seedFirebaseIfEmpty()
+                } else {
+                    _allData.value = list
+                }
+            }
+        }
+    }
+
+    // --- SEEDING DATA (DUMMY) ---
+    private fun seedFirebaseIfEmpty() {
+        val cal = Calendar.getInstance()
+        val dummyList = mutableListOf<Transaction>()
+
+        // Data awal untuk user baru
+        cal.time = Date()
+        dummyList.add(Transaction(UUID.randomUUID().toString(), "Saldo Awal", 0.0, TransactionType.INCOME, formatDate(cal), "System", currentWalletId))
+
+        dummyList.forEach { addTransaction(it) }
+    }
+
+    // --- CRUD OPERATIONS ---
+
+    fun addTransaction(t: Transaction) {
+        val collection = currentUserTransactionsCollection ?: return // Stop jika belum login
+
+        // Pastikan wallet ID sesuai dengan yang sedang aktif
+        val finalTransaction = t.copy(wallet = currentWalletId)
+
+        // Tentukan ID Dokumen
+        val docRef = if (t.id.isNotEmpty()) {
+            collection.document(t.id)
+        } else {
+            collection.document() // Auto ID
+        }
+
+        // Simpan field ID di dalam dokumen juga
+        val dataToSave = finalTransaction.copy(id = docRef.id)
+
+        docRef.set(dataToSave)
+            .addOnFailureListener { e -> Log.e("ViewModel", "Error adding document", e) }
+    }
+
+    fun deleteTransactions(items: Set<Transaction>) {
+        val collection = currentUserTransactionsCollection ?: return
+
+        items.forEach { item ->
+            if (item.id.isNotEmpty()) {
+                collection.document(item.id).delete()
+                    .addOnFailureListener { e -> Log.e("ViewModel", "Error deleting document", e) }
+            }
+        }
+    }
+
+    // --- LOGIC UI HELPER (FILTER, SORT, SEARCH) ---
 
     fun changeMonth(amount: Int) {
         val calendar = _currentMonth.value ?: return
@@ -60,42 +174,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         newCal.add(Calendar.MONTH, amount)
         _currentMonth.value = newCal
     }
-
-    private fun seedDatabaseIfEmpty() {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (dao.getCount() == 0) {
-                val transactions = mutableListOf<Transaction>()
-                val cal = Calendar.getInstance() // Use a single calendar instance
-
-                // --- CURRENT MONTH (HEAVY) ---
-                cal.time = Date() // Reset to today
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Gaji Bulan Ini", 12000000.0, TransactionType.INCOME, formatDate(cal), "Gaji"))
-                cal.add(Calendar.DAY_OF_MONTH, -1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Sewa Kost", 2500000.0, TransactionType.EXPENSE, formatDate(cal), "Sewa"))
-                cal.add(Calendar.DAY_OF_MONTH, -3)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Belanja Mingguan", 750000.0, TransactionType.EXPENSE, formatDate(cal), "Belanja"))
-                cal.add(Calendar.DAY_OF_MONTH, -5)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Makan di Luar", 150000.0, TransactionType.EXPENSE, formatDate(cal), "Makanan"))
-
-                // --- LAST MONTH ---
-                cal.time = Date()
-                cal.add(Calendar.MONTH, -1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Bonus Proyek Lama", 5000000.0, TransactionType.INCOME, formatDate(cal), "Bonus"))
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Tagihan Bulan Lalu", 1800000.0, TransactionType.EXPENSE, formatDate(cal), "Tagihan"))
-
-                // --- NEXT MONTH ---
-                cal.time = Date()
-                cal.add(Calendar.MONTH, 1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Gaji Bulan Depan", 12000000.0, TransactionType.INCOME, formatDate(cal), "Gaji"))
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Tiket Konser", 1200000.0, TransactionType.EXPENSE, formatDate(cal), "Hiburan"))
-
-                dao.insertAll(transactions)
-            }
-        }
-    }
-
-    fun addTransaction(t: Transaction) = viewModelScope.launch(Dispatchers.IO) { dao.insertTransaction(t) }
-    fun deleteTransactions(items: Set<Transaction>) = viewModelScope.launch(Dispatchers.IO) { items.forEach { dao.deleteTransaction(it) } }
 
     fun searchTransactions(query: String) {
         currentSearchQuery = query
@@ -111,15 +189,22 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private fun processList(list: List<Transaction>) {
         val cal = _currentMonth.value ?: return
 
+        // 1. Filter by Date, Search, & Type
         val filteredList = list.filter { transaction ->
             val transCal = Calendar.getInstance()
             transCal.time = parseDate(transaction.date)
-            val dateMatch = transCal.get(Calendar.MONTH) == cal.get(Calendar.MONTH) && transCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
 
+            // Filter Bulan & Tahun
+            val dateMatch = transCal.get(Calendar.MONTH) == cal.get(Calendar.MONTH) &&
+                    transCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
+
+            // Filter Search
             val searchMatch = if (currentSearchQuery.isBlank()) true else {
-                transaction.title.contains(currentSearchQuery, true) || transaction.category.contains(currentSearchQuery, true)
+                transaction.title.contains(currentSearchQuery, true) ||
+                        transaction.category.contains(currentSearchQuery, true)
             }
 
+            // Filter Income/Expense
             val typeMatch = when (currentFilterType) {
                 FilterType.INCOME -> transaction.type == TransactionType.INCOME
                 FilterType.EXPENSE -> transaction.type == TransactionType.EXPENSE
@@ -129,14 +214,17 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             dateMatch && searchMatch && typeMatch
         }
 
+        // 2. Sorting
         val sorted = when (currentSortOrder) {
             SortOrder.AMOUNT_DESC -> filteredList.sortedByDescending { it.amount }
             SortOrder.AMOUNT_ASC -> filteredList.sortedBy { it.amount }
             SortOrder.DATE_ASC -> filteredList.sortedBy { parseDate(it.date) }
             else -> filteredList.sortedByDescending { parseDate(it.date) }
         }
+
         displayedTransactions.postValue(sorted)
 
+        // 3. Calculate Totals
         var inc = 0.0
         var exp = 0.0
         sorted.forEach { if (it.type == TransactionType.INCOME) inc += it.amount else exp += it.amount }
@@ -146,10 +234,9 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     // =================================================================================
-    // CHART DATA PROCESSING FUNCTIONS (Added for VisualizationFragment)
+    // CHART DATA PROCESSING FUNCTIONS
     // =================================================================================
 
-    // 1. Data untuk Donut Chart (Pengeluaran per Kategori)
     fun getExpenseByCategoryData(transactions: List<Transaction>): List<PieEntry> {
         val expenseMap = transactions
             .filter { it.type == TransactionType.EXPENSE }
@@ -163,10 +250,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         return entries
     }
 
-    // 2. Data untuk Bar Chart (Pemasukan vs Pengeluaran per Bulan)
     fun getIncomeExpenseBarData(transactions: List<Transaction>): Pair<List<String>, List<BarEntry>> {
         val fmt = SimpleDateFormat("MMM yyyy", Locale.US)
-
         val sortedList = transactions.sortedBy { parseDate(it.date) }
         val groupedData = sortedList.groupBy { fmt.format(parseDate(it.date)) }
 
@@ -177,8 +262,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         for ((dateLabel, transList) in groupedData) {
             val income = transList.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }.toFloat()
             val expense = transList.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }.toFloat()
-
-            // Stacked Bar (Income, Expense)
             entries.add(BarEntry(index, floatArrayOf(income, expense)))
             labels.add(dateLabel)
             index++
@@ -186,11 +269,9 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         return Pair(labels, entries)
     }
 
-    // 3. Data untuk Line Chart (Tren Saldo/Keuangan)
     fun getFinancialTrendData(transactions: List<Transaction>): List<Entry> {
         val sortedList = transactions.sortedBy { parseDate(it.date) }
         val entries = ArrayList<Entry>()
-
         var currentBalance = 0.0
         val groupedByDay = sortedList.groupBy { parseDate(it.date) }
         val sortedDates = groupedByDay.keys.sorted()
@@ -206,14 +287,9 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         return entries
     }
 
-    // Helper Public untuk akses parseDate dari luar jika diperlukan
     fun parseDatePublic(d: String): Date {
         return parseDate(d)
     }
-
-    // =================================================================================
-    // END CHART FUNCTIONS
-    // =================================================================================
 
     private fun parseDate(d: String): Date {
         return try {
