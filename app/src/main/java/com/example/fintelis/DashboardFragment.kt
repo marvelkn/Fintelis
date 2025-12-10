@@ -44,19 +44,17 @@ class DashboardFragment : Fragment() {
         dashboardViewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             if (wallets == null) return@observe
 
-            // Using binding.root.findViewById is the most robust way to get views from <include> tags
             val cardMap = mapOf(
-                "BCA" to binding.root.findViewById<View>(R.id.card_bca),
-                "BLU" to binding.root.findViewById<View>(R.id.card_blu),
-                "BNI" to binding.root.findViewById<View>(R.id.card_bni),
-                "MANDIRI" to binding.root.findViewById<View>(R.id.card_mandiri),
-                "DANA" to binding.root.findViewById<View>(R.id.card_dana),
-                "GOPAY" to binding.root.findViewById<View>(R.id.card_gopay),
-                "OVO" to binding.root.findViewById<View>(R.id.card_ovo),
-                "SPAY" to binding.root.findViewById<View>(R.id.card_spay)
+                "BCA" to binding.cardBca.root,
+                "BLU" to binding.cardBlu.root,
+                "BNI" to binding.cardBni.root,
+                "MANDIRI" to binding.cardMandiri.root,
+                "DANA" to binding.cardDana.root,
+                "GOPAY" to binding.cardGopay.root,
+                "OVO" to binding.cardOvo.root,
+                "SPAY" to binding.cardSpay.root
             )
 
-            // Hide all cards initially so we only show the ones that exist
             cardMap.values.forEach { it.visibility = View.GONE }
 
             wallets.forEach { wallet ->
@@ -68,8 +66,7 @@ class DashboardFragment : Fragment() {
             }
         }
 
-        val addWalletButton = binding.root.findViewById<View>(R.id.card_add_wallet)
-        addWalletButton.setOnClickListener {
+        binding.cardAddWallet.root.setOnClickListener {
             showAddWalletDialog()
         }
     }
@@ -88,11 +85,33 @@ class DashboardFragment : Fragment() {
     }
 
     private fun showAddWalletDialog() {
+        val allPossibleWallets = listOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
+        val existingWalletNames = dashboardViewModel.wallets.value?.map { it.name.uppercase() } ?: emptyList()
+        val availableWallets = allPossibleWallets.filter { !existingWalletNames.contains(it) }
+
+        val dialogOptions = (availableWallets + "Other...").toTypedArray()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add New Wallet")
+            .setItems(dialogOptions) { dialog, which ->
+                val selected = dialogOptions[which]
+                if (selected == "Other...") {
+                    showCustomWalletDialog()
+                } else {
+                    dashboardViewModel.addNewWallet(selected)
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCustomWalletDialog() {
         val editText = TextInputEditText(requireContext())
         editText.hint = "e.g., Jenius"
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Add New Wallet")
+            .setTitle("Add Custom Wallet")
             .setView(editText)
             .setPositiveButton("Add") { dialog, _ ->
                 val walletName = editText.text.toString().trim()
@@ -104,6 +123,7 @@ class DashboardFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

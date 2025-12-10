@@ -60,16 +60,23 @@ class TransactionViewModel : ViewModel() {
 
     private fun fetchWallets() {
         val userId = auth.currentUser?.uid ?: return
+
+        // Define the wallets that the hardcoded dashboard UI supports.
+        val supportedWalletNames = setOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
+
         firestore.collection("users").document(userId).collection("wallets")
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Log.w("TransactionViewModel", "Wallets listen failed.", e)
                     return@addSnapshotListener
                 }
-                val walletList = snapshot?.toObjects<Wallet>() ?: emptyList()
-                wallets.value = walletList
+                val allWallets = snapshot?.toObjects<Wallet>() ?: emptyList()
 
-                if (_activeWalletId.value == null && walletList.isNotEmpty()) {
+                // Only show wallets that are supported by the dashboard UI.
+                val supportedWallets = allWallets.filter { supportedWalletNames.contains(it.name.uppercase()) }
+                wallets.value = supportedWallets
+
+                if (_activeWalletId.value == null) {
                     _activeWalletId.value = "ALL"
                 }
             }

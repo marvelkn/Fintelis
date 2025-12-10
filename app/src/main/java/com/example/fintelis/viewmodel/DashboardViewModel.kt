@@ -1,5 +1,6 @@
 package com.example.fintelis.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -65,6 +66,35 @@ class DashboardViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         val newWallet = Wallet(name = walletName)
         firestore.collection("users").document(userId).collection("wallets").add(newWallet)
+    }
+
+    fun updateWalletName(walletId: String, newName: String) {
+        val userId = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(userId).collection("wallets").document(walletId)
+            .update("name", newName)
+    }
+
+    fun deleteWallet(walletId: String) {
+        val userId = auth.currentUser?.uid ?: return
+        val userDocRef = firestore.collection("users").document(userId)
+
+        val walletRef = userDocRef.collection("wallets").document(walletId)
+
+        userDocRef.collection("transactions").whereEqualTo("walletId", walletId).get()
+            .addOnSuccessListener { snapshot ->
+                val batch = firestore.batch()
+                snapshot.documents.forEach { doc ->
+                    batch.delete(doc.reference)
+                }
+                batch.delete(walletRef)
+
+                batch.commit().addOnFailureListener {
+                    Log.e("DashboardViewModel", "Failed to delete wallet and transactions", it)
+                }
+            }
+            .addOnFailureListener {
+                Log.e("DashboardViewModel", "Failed to query transactions for deletion", it)
+            }
     }
 
     fun formatRupiah(number: Double): String {
