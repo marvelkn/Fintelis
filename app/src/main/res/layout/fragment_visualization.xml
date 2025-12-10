@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_screen"
+    android:background="@drawable/bg_onboarding"
     android:fillViewport="true"
     android:paddingTop="60dp"
     android:clipToPadding="false">
@@ -187,7 +187,6 @@
                 android:src="@drawable/ic_analytics_off"
                 app:tint="#CBD5E0"
                 android:layout_marginBottom="16dp"/>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -195,7 +194,6 @@
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:textSize="16sp"/>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -227,42 +225,13 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Balance Trend"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="16dp"/>
-
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/lineChart"
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@android:color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="16dp">
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -272,24 +241,124 @@
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"/>
 
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_pill_white_outline"
+                            android:orientation="horizontal"
+                            android:padding="2dp">
+                            <TextView
+                                android:id="@+id/btnSwitchExpense"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:text="Expense"
+                                android:gravity="center"
+                                android:paddingHorizontal="12dp"
+                                android:textSize="12sp"
+                                android:textColor="@android:color/white"
+                                android:textStyle="bold"
+                                android:background="@drawable/bg_pill_danger" />
+                            <TextView
+                                android:id="@+id/btnSwitchIncome"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:text="Income"
+                                android:gravity="center"
+                                android:paddingHorizontal="12dp"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:background="@android:color/transparent"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
                         <TextView
-                            android:id="@+id/tvTopExpense"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Food"
-                            android:background="@drawable/bg_pill_warning"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
-                            android:textColor="#975A16"
-                            android:textSize="10sp"/>
+                            android:text="Top Category: "
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"/>
+                        <TextView
+                            android:id="@+id/tvTopCategory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="-"
+                            android:textStyle="bold"
+                            android:layout_marginStart="4dp"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"/>
                     </LinearLayout>
 
                     <com.github.mikephil.charting.charts.PieChart
                         android:id="@+id/pieChart"
                         android:layout_width="match_parent"
                         android:layout_height="280dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#EDF2F7"
+                        android:layout_marginVertical="16dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSeeDetail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="View Expense Details"
+                        android:textColor="@android:color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_chevron_right"
+                        app:iconGravity="textEnd"
+                        app:iconTint="@android:color/white"
+                        app:backgroundTint="#C53030"
+                        android:minHeight="50dp"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTransactions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:overScrollMode="never"
+                        android:visibility="gone"
+                        android:layout_marginTop="12dp"/>
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="40dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/white">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Balance Trend"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp"/>
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/lineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
         </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
