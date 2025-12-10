@@ -7,8 +7,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
+import com.example.fintelis.data.Wallet
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.toObjects
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -23,6 +25,7 @@ class TransactionViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
 
     private val _allData = MutableLiveData<List<Transaction>>()
+    val wallets = MutableLiveData<List<Wallet>>()
 
     val displayedTransactions = MediatorLiveData<List<Transaction>>()
     val income = MediatorLiveData<Double>()
@@ -35,6 +38,8 @@ class TransactionViewModel : ViewModel() {
     private val _activeWalletId = MutableLiveData<String?>()
     val activeWalletId: LiveData<String?> = _activeWalletId
 
+    private var transactionListener: ListenerRegistration? = null
+
     var currentSortOrder = SortOrder.DATE_DESC
         private set
     var currentFilterType = FilterType.ALL
@@ -43,32 +48,57 @@ class TransactionViewModel : ViewModel() {
 
     init {
         _currentMonth.value = Calendar.getInstance()
-        // Observer for active wallet changes
+        fetchWallets()
+
         activeWalletId.observeForever { walletId ->
-            if (walletId != null) {
-                fetchTransactions(walletId)
-            }
+            fetchTransactions(walletId)
         }
 
         displayedTransactions.addSource(_allData) { list -> processList(list) }
         displayedTransactions.addSource(_currentMonth) { _allData.value?.let { list -> processList(list) } }
     }
 
-    fun setActiveWallet(walletId: String) {
-        _activeWalletId.value = walletId
-    }
-
-    private fun fetchTransactions(walletId: String) {
+    private fun fetchWallets() {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId).collection("transactions")
-            .whereEqualTo("walletId", walletId)
+        firestore.collection("users").document(userId).collection("wallets")
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
-                    Log.w("TransactionViewModel", "Listen failed.", e)
+                    Log.w("TransactionViewModel", "Wallets listen failed.", e)
                     return@addSnapshotListener
                 }
-                snapshot?.let { _allData.value = it.toObjects() }
+                val walletList = snapshot?.toObjects<Wallet>() ?: emptyList()
+                wallets.value = walletList
+
+                if (_activeWalletId.value == null && walletList.isNotEmpty()) {
+                    _activeWalletId.value = "ALL"
+                }
             }
+    }
+
+    fun setActiveWallet(walletId: String?) {
+        if (_activeWalletId.value != walletId) {
+            _activeWalletId.value = walletId
+        }
+    }
+
+    private fun fetchTransactions(walletId: String?) {
+        transactionListener?.remove()
+
+        val userId = auth.currentUser?.uid ?: return
+        val query = if (walletId == null || walletId == "ALL") {
+            firestore.collection("users").document(userId).collection("transactions")
+        } else {
+            firestore.collection("users").document(userId).collection("transactions")
+                .whereEqualTo("walletId", walletId)
+        }
+
+        transactionListener = query.addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Log.w("TransactionViewModel", "Transactions listen failed.", e)
+                return@addSnapshotListener
+            }
+            _allData.value = snapshot?.toObjects() ?: emptyList()
+        }
     }
 
     fun changeMonth(amount: Int) {
@@ -80,7 +110,16 @@ class TransactionViewModel : ViewModel() {
 
     fun addTransaction(t: Transaction) {
         val userId = auth.currentUser?.uid ?: return
-        val walletId = _activeWalletId.value ?: return
+        val walletId = _activeWalletId.value ?: run {
+            Log.e("TransactionViewModel", "Cannot add transaction without an active wallet.")
+            return
+        }
+
+        if (walletId == "ALL") {
+            Log.e("TransactionViewModel", "An active wallet must be selected to add a transaction.")
+            return
+        }
+
         val transactionWithWallet = t.copy(walletId = walletId)
         firestore.collection("users").document(userId).collection("transactions").add(transactionWithWallet)
     }
@@ -107,7 +146,11 @@ class TransactionViewModel : ViewModel() {
 
         val filteredList = list.filter { transaction ->
             val transCal = Calendar.getInstance()
-            transCal.time = parseDate(transaction.date)
+            try {
+                transCal.time = parseDate(transaction.date)
+            } catch (e: Exception) {
+                return@filter false
+            }
             val dateMatch = transCal.get(Calendar.MONTH) == cal.get(Calendar.MONTH) && transCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
 
             val searchMatch = if (currentSearchQuery.isBlank()) true else {
@@ -140,10 +183,11 @@ class TransactionViewModel : ViewModel() {
     }
 
     private fun parseDate(d: String): Date {
-        return try {
-            SimpleDateFormat("MMM dd, yyyy", Locale.US).parse(d) ?: Date()
-        } catch (e: Exception) {
-            Date()
-        }
+        return SimpleDateFormat("MMM dd, yyyy", Locale.US).parse(d)!!
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        transactionListener?.remove()
     }
 }

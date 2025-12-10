@@ -1,8 +1,10 @@
 package com.example.fintelis.data
 
+import com.google.firebase.firestore.DocumentId
+
 data class Wallet(
-    val id: String = "",
+    @DocumentId val id: String = "",
     val name: String = "",
-    val saldo: Double = 0.0,
-    val type: WalletType = WalletType.CASH
+    // This balance is for display and will be calculated, not stored directly in Firestore
+    val balance: Double = 0.0
 )

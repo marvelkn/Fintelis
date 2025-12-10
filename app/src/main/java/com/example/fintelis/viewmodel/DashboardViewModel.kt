@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
+import com.example.fintelis.data.Wallet
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObjects
@@ -15,8 +16,6 @@ class DashboardViewModel : ViewModel() {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-
-    data class Wallet(val id: String = "", val name: String = "", val balance: Double = 0.0)
 
     private val _wallets = MutableLiveData<List<Wallet>>()
     val wallets: LiveData<List<Wallet>> = _wallets
@@ -60,6 +59,12 @@ class DashboardViewModel : ViewModel() {
         val updatedWallets = wallets.map { it.copy(balance = walletBalances[it.id] ?: 0.0) }
         _wallets.value = updatedWallets
         _totalBalance.value = total
+    }
+
+    fun addNewWallet(walletName: String) {
+        val userId = auth.currentUser?.uid ?: return
+        val newWallet = Wallet(name = walletName)
+        firestore.collection("users").document(userId).collection("wallets").add(newWallet)
     }
 
     fun formatRupiah(number: Double): String {

@@ -20,6 +20,15 @@
             app:title="Transaction History"
             app:titleTextColor="@color/fintelis_text_dark" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_wallets"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
         <!-- Month Navigator -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -60,12 +69,14 @@
             android:layout_margin="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:baselineAligned="false"
                 android:orientation="horizontal"
                 android:padding="16dp">
+
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

@@ -1,7 +1,7 @@
 package com.example.fintelis
 
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
+import com.example.fintelis.data.Wallet
 import com.example.fintelis.databinding.FragmentSignupBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -47,10 +48,9 @@ class SignupFragment : Fragment() {
             val name = binding.etName.text.toString().trim()
             val email = binding.etemail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
-            val termsChecked = binding.checkTerms.isChecked
 
-            if (name.isEmpty() || email.isEmpty() || password.isEmpty() || !termsChecked) {
-                Toast.makeText(context, "Please fill all fields and accept terms", Toast.LENGTH_SHORT).show()
+            if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -62,9 +62,7 @@ class SignupFragment : Fragment() {
 
                         user?.updateProfile(profileUpdates)?.addOnCompleteListener { updateTask ->
                             if (updateTask.isSuccessful) {
-                                // Add dummy data for the new user
-                                addWelcomeTransactions(user)
-
+                                createDefaultDataForNewUser(user)
                                 Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
                                 findNavController().navigate(R.id.action_signup_to_login)
                             }
@@ -76,36 +74,44 @@ class SignupFragment : Fragment() {
         }
     }
 
-    private fun addWelcomeTransactions(user: FirebaseUser?) {
+    private fun createDefaultDataForNewUser(user: FirebaseUser?) {
         val userId = user?.uid ?: return
         val batch = firestore.batch()
-        val transactionsCollection = firestore.collection("users").document(userId).collection("transactions")
+        val walletCollection = firestore.collection("users").document(userId).collection("wallets")
 
-        val cal = Calendar.getInstance()
-        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+        // Define all default wallets
+        val walletNames = listOf("MAIN", "BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
+        val wallets = walletNames.map { Wallet(name = it) }
 
-        // 1. Initial Deposit
-        val welcomeDeposit = Transaction(
-            title = "Initial Deposit",
-            amount = 1500000.0,
-            type = TransactionType.INCOME,
-            date = sdf.format(cal.time),
-            category = "Gaji"
-        )
-        batch.set(transactionsCollection.document(), welcomeDeposit)
+        var mainWalletId = ""
+        wallets.forEach { wallet ->
+            val walletRef = walletCollection.document()
+            if (wallet.name == "MAIN") {
+                mainWalletId = walletRef.id
+            }
+            batch.set(walletRef, wallet)
+        }
 
-        // 2. First Expense
-        cal.add(Calendar.DAY_OF_MONTH, -1)
-        val firstExpense = Transaction(
-            title = "Setup Subscription",
-            amount = 150000.0,
-            type = TransactionType.EXPENSE,
-            date = sdf.format(cal.time),
-            category = "Tagihan"
-        )
-        batch.set(transactionsCollection.document(), firstExpense)
+        // Add an initial deposit to the MAIN wallet
+        if (mainWalletId.isNotEmpty()) {
+            val transactionsCollection = firestore.collection("users").document(userId).collection("transactions")
+            val cal = Calendar.getInstance()
+            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
 
-        batch.commit()
+            val welcomeDeposit = Transaction(
+                title = "Initial Deposit",
+                amount = 1500000.0,
+                type = TransactionType.INCOME,
+                date = sdf.format(cal.time),
+                category = "Gaji",
+                walletId = mainWalletId
+            )
+            batch.set(transactionsCollection.document(), welcomeDeposit)
+        }
+
+        batch.commit().addOnFailureListener {
+            Log.e("SignupFragment", "Failed to create default data", it)
+        }
     }
 
     override fun onDestroyView() {

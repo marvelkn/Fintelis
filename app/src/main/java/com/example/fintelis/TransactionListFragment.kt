@@ -9,6 +9,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
@@ -19,6 +20,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fintelis.adapter.TransactionAdapter
+import com.example.fintelis.adapter.WalletAdapter
 import com.example.fintelis.databinding.DialogDisplayOptionsBinding
 import com.example.fintelis.databinding.FragmentTransactionListBinding
 import com.example.fintelis.viewmodel.FilterType
@@ -32,7 +34,8 @@ class TransactionListFragment : Fragment() {
     private var _binding: FragmentTransactionListBinding? = null
     private val binding get() = _binding!!
     private val viewModel: TransactionViewModel by activityViewModels()
-    private lateinit var adapter: TransactionAdapter
+    private lateinit var transactionAdapter: TransactionAdapter
+    private lateinit var walletAdapter: WalletAdapter
     private var isDeleteMode = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -45,20 +48,13 @@ class TransactionListFragment : Fragment() {
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         setupMenu()
-
-        adapter = TransactionAdapter(mutableListOf()) {
-            if (!isDeleteMode) {
-                val action = TransactionListFragmentDirections.actionCustomerListFragmentToCustomerDetailFragment(it)
-                findNavController().navigate(action)
-            }
-        }
-        binding.recyclerViewTransactions.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = this@TransactionListFragment.adapter
-        }
+        setupAdapters()
 
         // Observers
-        viewModel.displayedTransactions.observe(viewLifecycleOwner) { adapter.updateData(it) }
+        viewModel.wallets.observe(viewLifecycleOwner) { wallets ->
+            walletAdapter.updateWallets(wallets ?: emptyList())
+        }
+        viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactionAdapter.updateData(it) }
         viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->
             val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.US)
             binding.tvCurrentMonth.text = monthFormat.format(calendar.time)
@@ -71,7 +67,11 @@ class TransactionListFragment : Fragment() {
 
         // Click Listeners
         binding.fabAddTransaction.setOnClickListener {
-            findNavController().navigate(R.id.action_customerListFragment_to_addCustomerFragment)
+            if (viewModel.activeWalletId.value == null || viewModel.activeWalletId.value == "ALL") {
+                Toast.makeText(context, "Please select a specific wallet to add a transaction", Toast.LENGTH_SHORT).show()
+            } else {
+                findNavController().navigate(R.id.action_customerListFragment_to_addCustomerFragment)
+            }
         }
         binding.btnPrevMonth.setOnClickListener { viewModel.changeMonth(-1) }
         binding.btnNextMonth.setOnClickListener { viewModel.changeMonth(1) }
@@ -81,6 +81,30 @@ class TransactionListFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { viewModel.searchTransactions(s.toString()) }
             override fun afterTextChanged(s: Editable?) {}
         })
+    }
+
+    private fun setupAdapters() {
+        // Transaction list adapter
+        transactionAdapter = TransactionAdapter(mutableListOf()) {
+            if (!isDeleteMode) {
+                val action = TransactionListFragmentDirections.actionCustomerListFragmentToCustomerDetailFragment(it)
+                findNavController().navigate(action)
+            }
+        }
+        binding.recyclerViewTransactions.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = transactionAdapter
+        }
+
+        // Wallet slider adapter
+        walletAdapter = WalletAdapter(requireContext(), emptyList()) { wallet ->
+            viewModel.setActiveWallet(wallet?.id)
+        }
+        binding.rvWallets.apply {
+            // THIS IS THE CRITICAL FIX:
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = walletAdapter
+        }
     }
 
     private fun setupMenu() {
@@ -100,21 +124,18 @@ class TransactionListFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
-                    R.id.action_filter -> {
-                        showDisplayOptionsDialog()
-                        true
-                    }
+                    R.id.action_filter -> { showDisplayOptionsDialog(); true }
                     R.id.action_delete -> {
                         if (!isDeleteMode) {
                             isDeleteMode = true
-                            adapter.toggleDeleteMode(true)
+                            transactionAdapter.toggleDeleteMode(true)
                             requireActivity().invalidateOptionsMenu()
                         } else {
-                            if (adapter.selectedItems.isNotEmpty()) {
+                            if (transactionAdapter.selectedItems.isNotEmpty()) {
                                 showDeleteConfirmationDialog()
                             } else {
                                 isDeleteMode = false
-                                adapter.toggleDeleteMode(false)
+                                transactionAdapter.toggleDeleteMode(false)
                                 requireActivity().invalidateOptionsMenu()
                             }
                         }
@@ -167,10 +188,9 @@ class TransactionListFragment : Fragment() {
         AlertDialog.Builder(requireContext()).setTitle("Confirm Delete")
             .setMessage("Are you sure you want to delete the selected items?")
             .setPositiveButton("Yes") { _, _ ->
-                // Pass a copy of the set to the ViewModel
-                viewModel.deleteTransactions(adapter.selectedItems.toSet())
+                viewModel.deleteTransactions(transactionAdapter.selectedItems.toSet())
                 isDeleteMode = false
-                adapter.toggleDeleteMode(false)
+                transactionAdapter.toggleDeleteMode(false)
                 requireActivity().invalidateOptionsMenu()
             }
             .setNegativeButton("No", null)
