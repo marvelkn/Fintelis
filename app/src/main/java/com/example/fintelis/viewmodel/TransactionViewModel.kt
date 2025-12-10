@@ -4,9 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
-import com.example.fintelis.data.AppDatabase
 import androidx.lifecycle.ViewModel
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
@@ -21,15 +18,6 @@ import java.util.Locale
 enum class SortOrder { DATE_DESC, DATE_ASC, AMOUNT_DESC, AMOUNT_ASC }
 enum class FilterType { ALL, INCOME, EXPENSE }
 
-data class WalletData(
-    val name: String,
-    val balance: Double
-)
-
-class TransactionViewModel(application: Application) : AndroidViewModel(application) {
-    private val dao = AppDatabase.getDatabase(application).transactionDao()
-    private val _allData = dao.getAllTransactions()
-    val allTransactions: LiveData<List<Transaction>> = _allData
 class TransactionViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -44,25 +32,8 @@ class TransactionViewModel : ViewModel() {
     private val _currentMonth = MutableLiveData<Calendar>()
     val currentMonth: LiveData<Calendar> = _currentMonth
 
-    // Wallet Balances
-    val walletBalances: LiveData<List<WalletData>> = _allData.map { transactions ->
-        val balances = mutableMapOf<String, Double>()
-        // Initialize supported wallets with 0
-        val supportedWallets = listOf("Cash", "BCA", "Mandiri", "BNI", "OVO", "GoPay", "DANA", "ShopeePay", "SeaBank", "Blu")
-        supportedWallets.forEach { balances[it] = 0.0 }
-
-        // Use the lambda parameter 'transactions' which is inferred as List<Transaction>
-        for (t in transactions) {
-            val walletName = t.wallet
-            val current = balances[walletName] ?: 0.0
-            if (t.type == TransactionType.INCOME) {
-                balances[walletName] = current + t.amount
-            } else {
-                balances[walletName] = current - t.amount
-            }
-        }
-        balances.map { WalletData(it.key, it.value) }.sortedByDescending { it.balance }
-    }
+    private val _activeWalletId = MutableLiveData<String?>()
+    val activeWalletId: LiveData<String?> = _activeWalletId
 
     var currentSortOrder = SortOrder.DATE_DESC
         private set
@@ -72,15 +43,25 @@ class TransactionViewModel : ViewModel() {
 
     init {
         _currentMonth.value = Calendar.getInstance()
-        fetchTransactions()
+        // Observer for active wallet changes
+        activeWalletId.observeForever { walletId ->
+            if (walletId != null) {
+                fetchTransactions(walletId)
+            }
+        }
 
         displayedTransactions.addSource(_allData) { list -> processList(list) }
         displayedTransactions.addSource(_currentMonth) { _allData.value?.let { list -> processList(list) } }
     }
 
-    private fun fetchTransactions() {
+    fun setActiveWallet(walletId: String) {
+        _activeWalletId.value = walletId
+    }
+
+    private fun fetchTransactions(walletId: String) {
         val userId = auth.currentUser?.uid ?: return
         firestore.collection("users").document(userId).collection("transactions")
+            .whereEqualTo("walletId", walletId)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Log.w("TransactionViewModel", "Listen failed.", e)
@@ -97,36 +78,11 @@ class TransactionViewModel : ViewModel() {
         _currentMonth.value = newCal
     }
 
-    private fun seedDatabaseIfEmpty() {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (dao.getCount() == 0) {
-                val transactions = mutableListOf<Transaction>()
-                val cal = Calendar.getInstance() // Use a single calendar instance
-
-                // --- CURRENT MONTH (HEAVY) ---
-                cal.time = Date() // Reset to today
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Gaji Bulan Ini", 12000000.0, TransactionType.INCOME, formatDate(cal), "Gaji", "BCA"))
-                cal.add(Calendar.DAY_OF_MONTH, -1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Sewa Kost", 2500000.0, TransactionType.EXPENSE, formatDate(cal), "Sewa", "BCA"))
-                cal.add(Calendar.DAY_OF_MONTH, -3)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Belanja Mingguan", 750000.0, TransactionType.EXPENSE, formatDate(cal), "Belanja", "Cash"))
-                cal.add(Calendar.DAY_OF_MONTH, -5)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Makan di Luar", 150000.0, TransactionType.EXPENSE, formatDate(cal), "Makanan", "OVO"))
-
-                // --- LAST MONTH ---
-                cal.time = Date()
-                cal.add(Calendar.MONTH, -1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Bonus Proyek Lama", 5000000.0, TransactionType.INCOME, formatDate(cal), "Bonus", "Mandiri"))
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Tagihan Bulan Lalu", 1800000.0, TransactionType.EXPENSE, formatDate(cal), "Tagihan", "BCA"))
-
-                // --- NEXT MONTH ---
-                cal.time = Date()
-                cal.add(Calendar.MONTH, 1)
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Gaji Bulan Depan", 12000000.0, TransactionType.INCOME, formatDate(cal), "Gaji", "BCA"))
-                transactions.add(Transaction(UUID.randomUUID().toString(), "Tiket Konser", 1200000.0, TransactionType.EXPENSE, formatDate(cal), "Hiburan", "GoPay"))
     fun addTransaction(t: Transaction) {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId).collection("transactions").add(t)
+        val walletId = _activeWalletId.value ?: return
+        val transactionWithWallet = t.copy(walletId = walletId)
+        firestore.collection("users").document(userId).collection("transactions").add(transactionWithWallet)
     }
 
     fun deleteTransactions(items: Set<Transaction>) {

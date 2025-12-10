@@ -57,7 +57,7 @@ class VisualizationFragment : Fragment() {
         setupExportMenu(view)
 
         // Observe data
-        viewModel.allTransactions.observe(viewLifecycleOwner) { transactions ->
+        viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
             updateCharts(transactions, tabTimeFilter.selectedTabPosition)
         }
 
@@ -71,7 +71,7 @@ class VisualizationFragment : Fragment() {
 
         tabTimeFilter.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                viewModel.allTransactions.value?.let { transactions ->
+                viewModel.displayedTransactions.value?.let { transactions ->
                     updateCharts(transactions, tab.position)
                 }
             }
@@ -302,7 +302,7 @@ class VisualizationFragment : Fragment() {
             val csvBuilder = StringBuilder()
             csvBuilder.append("Date, Title, Amount, Type, Category\n")
             
-            val transactions = viewModel.allTransactions.value ?: emptyList()
+            val transactions = viewModel.displayedTransactions.value ?: emptyList()
             for (t in transactions) {
                 csvBuilder.append("${t.date},${t.title},${t.amount},${t.type},${t.category}\n")
             }
@@ -341,7 +341,7 @@ class VisualizationFragment : Fragment() {
                 cell.cellStyle = headerStyle
             }
 
-            val transactions = viewModel.allTransactions.value ?: emptyList()
+            val transactions = viewModel.displayedTransactions.value ?: emptyList()
             for ((i, t) in transactions.withIndex()) {
                 val row = sheet.createRow(i + 1)
                 row.createCell(0).setCellValue(t.date)

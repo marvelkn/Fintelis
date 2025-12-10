@@ -7,17 +7,22 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.example.fintelis.databinding.FragmentDashboardBinding
 import com.example.fintelis.viewmodel.DashboardViewModel
+import com.example.fintelis.viewmodel.TransactionViewModel
 
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
 
-    // Initialize ViewModel
-    private val viewModel: DashboardViewModel by viewModels()
+    // ViewModel for this dashboard screen's data
+    private val dashboardViewModel: DashboardViewModel by viewModels()
+    // Shared ViewModel to communicate the active wallet to other fragments
+    private val transactionViewModel: TransactionViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,56 +36,47 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Trigger data load
-        viewModel.loadTransactionData()
+        // Observe the total balance from the ViewModel
+        dashboardViewModel.totalBalance.observe(viewLifecycleOwner) { totalBalance ->
+            binding.tvBalanceNominal.text = dashboardViewModel.formatRupiah(totalBalance ?: 0.0)
+        }
 
-        // Observe the calculated balances
-        viewModel.walletBalances.observe(viewLifecycleOwner) { balances ->
+        // Observe the list of wallets and their balances
+        dashboardViewModel.wallets.observe(viewLifecycleOwner) { wallets ->
+            if (wallets == null) return@observe
 
-            // 1. Update the Big Total Balance Card
-            binding.tvBalanceNominal.text = viewModel.formatRupiah(balances.totalAll)
+            // A map to easily find the right UI card for each wallet from the data
+            val cardMap = mapOf(
+                "BCA" to binding.cardBca.root,
+                "BLU" to binding.cardBlu.root,
+                "BNI" to binding.cardBni.root,
+                "MANDIRI" to binding.cardMandiri.root,
+                "DANA" to binding.cardDana.root,
+                "GOPAY" to binding.cardGopay.root,
+                "OVO" to binding.cardOvo.root,
+                "SPAY" to binding.cardSpay.root,
+                "MAIN" to binding.cardMain.root,
+                "CASH" to binding.cardMain.root
+            )
 
-            // 2. Update specific Wallet Cards
-            // Accessing included layouts via binding ID
-
-            // BCA
-            updateCardBalance(binding.cardBca.root, balances.bca)
-
-            // BLU
-            updateCardBalance(binding.cardBlu.root, balances.blu)
-
-            // BNI
-            updateCardBalance(binding.cardBni.root, balances.bni)
-
-            // Mandiri
-            updateCardBalance(binding.cardMandiri.root, balances.mandiri)
-
-            // Dana
-            updateCardBalance(binding.cardDana.root, balances.dana)
-
-            // Gopay
-            updateCardBalance(binding.cardGopay.root, balances.gopay)
-
-            // OVO
-            updateCardBalance(binding.cardOvo.root, balances.ovo)
-
-            // SPay
-            updateCardBalance(binding.cardSpay.root, balances.spay)
-
-            // Main Cash
-            updateCardBalance(binding.cardMain.root, balances.mainCash)
+            // Update each card with the balance and set a click listener
+            wallets.forEach { wallet ->
+                cardMap[wallet.name.uppercase()]?.let { card ->
+                    updateCardBalance(card, wallet.balance)
+                    card.setOnClickListener {
+                        // Set the active wallet in the shared ViewModel
+                        transactionViewModel.setActiveWallet(wallet.id)
+                        // Navigate to the transaction list screen
+                        findNavController().navigate(R.id.customerListFragment)
+                    }
+                }
+            }
         }
     }
 
-    // Helper function to find the specific TextView inside the included card layout
     private fun updateCardBalance(cardView: CardView, amount: Double) {
-        // Assuming the TextView ID inside item_card_*.xml is named "tv_card_balance"
-        // If your ID is different (e.g. tv_balance_nominal), change it below.
         val tvBalance = cardView.findViewById<TextView>(R.id.tv_balance_nominal)
-
-        if (tvBalance != null) {
-            tvBalance.text = viewModel.formatRupiah(amount)
-        }
+        tvBalance?.text = dashboardViewModel.formatRupiah(amount)
     }
 
     override fun onDestroyView() {

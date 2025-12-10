@@ -47,7 +47,7 @@ class TransactionDetailFragment : Fragment() {
         binding.tvDetailTitle.text = item.title
         binding.tvDetailDate.text = item.date
         binding.tvDetailCategory.text = item.category
-        binding.tvDetailWallet.text = item.wallet
+        binding.tvDetailWallet.text = item.walletId
 
         // Format Rupiah
         val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))

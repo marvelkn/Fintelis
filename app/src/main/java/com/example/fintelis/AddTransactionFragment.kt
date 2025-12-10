@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.fintelis.R
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.databinding.FragmentAddTransactionBinding
@@ -16,7 +17,6 @@ import com.example.fintelis.viewmodel.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
 class AddTransactionFragment : Fragment() {
     private var _binding: FragmentAddTransactionBinding? = null
@@ -49,7 +49,14 @@ class AddTransactionFragment : Fragment() {
             val type = if (binding.rbIncome.isChecked) TransactionType.INCOME else TransactionType.EXPENSE
             val date = SimpleDateFormat("MMM dd, yyyy", Locale.US).format(Date())
 
-            viewModel.addTransaction(Transaction(UUID.randomUUID().toString(), title, amountStr.toDouble(), type, date, category))
+            val transaction = Transaction(
+                title = title,
+                amount = amountStr.toDouble(),
+                type = type,
+                date = date,
+                category = category
+            )
+            viewModel.addTransaction(transaction)
             Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
             findNavController().popBackStack()
         }
