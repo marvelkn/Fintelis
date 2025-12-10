@@ -3,11 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_dash"
-    app:startDestination="@id/customerListFragment"> <fragment
+    app:startDestination="@id/mainDashboard"> <fragment
     android:id="@+id/mainDashboard"
     android:name="com.example.fintelis.DashboardFragment"
     android:label="Dashboard"
     tools:layout="@layout/fragment_dashboard" />
+
+    <fragment
+        android:id="@+id/analysisFragment"
+        android:name="com.example.fintelis.CreditResultFragment"
+        android:label="Analysis"
+        tools:layout="@layout/fragment_credit_result" />
 
     <fragment
         android:id="@+id/customerListFragment"
