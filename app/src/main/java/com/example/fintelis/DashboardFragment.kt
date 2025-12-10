@@ -1,165 +1,90 @@
 package com.example.fintelis
 
-import android.graphics.Color
-import java.text.NumberFormat
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
+import android.view.ViewGroup
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import com.example.fintelis.data.TransactionType
-import com.example.fintelis.viewmodel.TransactionViewModel
-import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import androidx.fragment.app.viewModels
+import com.example.fintelis.databinding.FragmentDashboardBinding
+import com.example.fintelis.viewmodel.DashboardViewModel
 
-class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
+class DashboardFragment : Fragment() {
 
-    // Firebase Auth
-    private lateinit var auth: FirebaseAuth
+    private var _binding: FragmentDashboardBinding? = null
+    private val binding get() = _binding!!
 
-    // ViewModel
-    private val viewModel: TransactionViewModel by activityViewModels()
+    // Initialize ViewModel
+    private val viewModel: DashboardViewModel by viewModels()
 
-    // UI Variables
-    private var isBalanceVisible = false
-    private var currentBalance: Double = 0.0
-    
-    private lateinit var tvBalance: TextView
-    private lateinit var btnToggle: ImageView
-    private lateinit var pieChart: PieChart
-    private lateinit var tvGreeting: TextView
-    private lateinit var tvIncome: TextView
-    private lateinit var tvExpense: TextView
-    private lateinit var tvDate: TextView
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentDashboardBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize Firebase Auth
-        auth = FirebaseAuth.getInstance()
+        // Trigger data load
+        viewModel.loadTransactionData()
 
-        // Initialize Views
-        tvBalance = view.findViewById(R.id.tv_balance_nominal)
-        btnToggle = view.findViewById(R.id.img_toggle_balance)
-        pieChart = view.findViewById(R.id.pieChartFinancial)
-        
-        tvIncome = view.findViewById(R.id.tv_income_nominal)
-        tvExpense = view.findViewById(R.id.tv_expense_nominal)
-        tvGreeting = view.findViewById(R.id.tv_greeting)
-        tvDate = view.findViewById(R.id.tv_date)
+        // Observe the calculated balances
+        viewModel.walletBalances.observe(viewLifecycleOwner) { balances ->
 
-        // Set Current Date
-        val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.US)
-        tvDate.text = dateFormat.format(Date())
+            // 1. Update the Big Total Balance Card
+            binding.tvBalanceNominal.text = viewModel.formatRupiah(balances.totalAll)
 
-        if (auth.currentUser != null) {
-            displayUserName(auth.currentUser)
-        }
+            // 2. Update specific Wallet Cards
+            // Accessing included layouts via binding ID
 
-        setupBalanceVisibility()
-        observeTransactions()
-    }
+            // BCA
+            updateCardBalance(binding.cardBca.root, balances.bca)
 
-    private fun displayUserName(user: FirebaseUser?) {
-        val userName = user?.displayName
-        if (!userName.isNullOrEmpty()) {
-            tvGreeting.text = "Hi, $userName!"
-        } else {
-            tvGreeting.text = "Hi, Fintelis Buddy!"
-        }
-    }
+            // BLU
+            updateCardBalance(binding.cardBlu.root, balances.blu)
 
-    private fun observeTransactions() {
-        viewModel.allTransactions.observe(viewLifecycleOwner) { transactions ->
-            var totalIncome = 0.0
-            var totalExpense = 0.0
+            // BNI
+            updateCardBalance(binding.cardBni.root, balances.bni)
 
-            for (transaction in transactions) {
-                if (transaction.type == TransactionType.INCOME) {
-                    totalIncome += transaction.amount
-                } else {
-                    totalExpense += transaction.amount
-                }
-            }
+            // Mandiri
+            updateCardBalance(binding.cardMandiri.root, balances.mandiri)
 
-            currentBalance = totalIncome - totalExpense
-            updateBalanceView()
+            // Dana
+            updateCardBalance(binding.cardDana.root, balances.dana)
 
-            // Update Income/Expense Text
-            tvIncome.text = formatToRupiah(totalIncome)
-            tvExpense.text = formatToRupiah(totalExpense)
+            // Gopay
+            updateCardBalance(binding.cardGopay.root, balances.gopay)
 
-            updatePieChart(totalIncome.toFloat(), totalExpense.toFloat())
+            // OVO
+            updateCardBalance(binding.cardOvo.root, balances.ovo)
+
+            // SPay
+            updateCardBalance(binding.cardSpay.root, balances.spay)
+
+            // Main Cash
+            updateCardBalance(binding.cardMain.root, balances.mainCash)
         }
     }
 
-    private fun setupBalanceVisibility() {
-        updateBalanceView()
+    // Helper function to find the specific TextView inside the included card layout
+    private fun updateCardBalance(cardView: CardView, amount: Double) {
+        // Assuming the TextView ID inside item_card_*.xml is named "tv_card_balance"
+        // If your ID is different (e.g. tv_balance_nominal), change it below.
+        val tvBalance = cardView.findViewById<TextView>(R.id.tv_balance_nominal)
 
-        btnToggle.setOnClickListener {
-            isBalanceVisible = !isBalanceVisible
-            updateBalanceView()
+        if (tvBalance != null) {
+            tvBalance.text = viewModel.formatRupiah(amount)
         }
     }
 
-    private fun updateBalanceView() {
-        if (isBalanceVisible) {
-            tvBalance.text = formatToRupiah(currentBalance)
-            btnToggle.setImageResource(R.drawable.ic_visibility)
-        } else {
-            tvBalance.text = "Rp •••••••••••"
-            btnToggle.setImageResource(R.drawable.ic_visibility_off)
-        }
-    }
-
-    private fun updatePieChart(income: Float, expense: Float) {
-        if (income == 0f && expense == 0f) {
-            pieChart.clear()
-            pieChart.invalidate()
-            return
-        }
-
-        val entries = ArrayList<PieEntry>()
-        entries.add(PieEntry(income, "Income"))
-        entries.add(PieEntry(expense, "Expense"))
-
-        val colors = ArrayList<Int>()
-        colors.add(Color.parseColor("#FFC107")) // Yellow (Income)
-        colors.add(Color.parseColor("#EF5350")) // Red (Expense)
-
-        val dataSet = PieDataSet(entries, "")
-        dataSet.colors = colors
-        dataSet.sliceSpace = 3f
-        dataSet.setDrawValues(false)
-
-        val pieData = PieData(dataSet)
-        pieChart.data = pieData
-
-        pieChart.apply {
-            description.isEnabled = false
-            legend.isEnabled = false
-            isDrawHoleEnabled = true
-            setHoleColor(Color.TRANSPARENT)
-            holeRadius = 65f
-            transparentCircleRadius = 70f
-            setEntryLabelColor(Color.TRANSPARENT)
-            animateY(1000)
-            invalidate()
-        }
-    }
-
-    private fun formatToRupiah(number: Double): String {
-        val localeID = Locale("in", "ID")
-        val formatter = NumberFormat.getCurrencyInstance(localeID)
-        formatter.maximumFractionDigits = 0
-        return formatter.format(number)
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
