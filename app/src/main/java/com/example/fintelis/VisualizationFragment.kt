@@ -5,22 +5,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.viewmodel.TransactionViewModel
 import com.github.mikephil.charting.animation.Easing
-import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.AxisBase
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import java.text.NumberFormat
@@ -31,14 +31,24 @@ class VisualizationFragment : Fragment() {
 
     private val viewModel: TransactionViewModel by activityViewModels()
 
+    // --- Components Chart ---
     private lateinit var pieChart: PieChart
-    private lateinit var barChart: BarChart
     private lateinit var lineChart: LineChart
 
-    // Teks Summary
+    // --- Containers (Layout Baru) ---
+    private lateinit var layoutCharts: LinearLayout
+    private lateinit var layoutEmptyState: LinearLayout
+
+    // --- TextViews Summary ---
     private lateinit var tvTopExpense: TextView
     private lateinit var tvTotalIncome: TextView
     private lateinit var tvTotalExpense: TextView
+
+    // --- Navigation Controls (Fitur Baru) ---
+    private lateinit var btnPrevMonth: ImageButton
+    private lateinit var btnNextMonth: ImageButton
+    private lateinit var tvMonthName: TextView
+    private lateinit var tvYearNumber: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,24 +56,46 @@ class VisualizationFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_visualization, container, false)
 
+        // 1. Inisialisasi View (Sesuai XML Baru)
         pieChart = view.findViewById(R.id.pieChart)
-        barChart = view.findViewById(R.id.barChart)
         lineChart = view.findViewById(R.id.lineChart)
+
+        layoutCharts = view.findViewById(R.id.layoutCharts)
+        layoutEmptyState = view.findViewById(R.id.layoutEmptyState)
 
         tvTopExpense = view.findViewById(R.id.tvTopExpense)
         tvTotalIncome = view.findViewById(R.id.tvTotalIncome)
         tvTotalExpense = view.findViewById(R.id.tvTotalExpense)
 
-        setupCharts()
-        observeData()
+        btnPrevMonth = view.findViewById(R.id.btnPrevMonth)
+        btnNextMonth = view.findViewById(R.id.btnNextMonth)
+        tvMonthName = view.findViewById(R.id.tvMonthName)
+        tvYearNumber = view.findViewById(R.id.tvYearNumber)
+
+        // 2. Setup Logic
+        setupCharts()          // Menggunakan Styling Kode Lama
+        setupMonthNavigation() // Menggunakan Logika Kode Baru
+        observeData()          // Menggunakan Logika Gabungan (Visibility)
 
         return view
     }
 
+    // --- SETUP NAVIGASI BULAN (DARI KODE BARU) ---
+    private fun setupMonthNavigation() {
+        btnPrevMonth.setOnClickListener { viewModel.changeMonth(-1) }
+        btnNextMonth.setOnClickListener { viewModel.changeMonth(1) }
+
+        viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->
+            val fmtMonth = SimpleDateFormat("MMMM", Locale.US)
+            val fmtYear = SimpleDateFormat("yyyy", Locale.US)
+            tvMonthName.text = fmtMonth.format(calendar.time)
+            tvYearNumber.text = fmtYear.format(calendar.time)
+        }
+    }
+
+    // --- SETUP CHARTS (DARI KODE LAMA - STYLING DETAIL) ---
     private fun setupCharts() {
-        // ==========================================================
         // 1. SETUP PIE CHART (Donut Style Pro)
-        // ==========================================================
         pieChart.setUsePercentValues(true)
         pieChart.description.isEnabled = false
         // Jarak agar label luar tidak terpotong
@@ -82,20 +114,13 @@ class VisualizationFragment : Fragment() {
         pieChart.setCenterTextSize(12f)
         pieChart.setCenterTextColor(Color.parseColor("#718096"))
 
-        // Matikan Legend (Keterangan warna di bawah)
+        // Matikan Legend
         pieChart.legend.isEnabled = false
-
-        // Animasi
         pieChart.animateY(1400, Easing.EaseInOutQuad)
 
-
-        // ==========================================================
-        // 2. SETUP LINE CHART (Clean & Minimalist)
-        // ==========================================================
+        // 2. SETUP LINE CHART (Clean & Minimalist - Kode Lama)
         lineChart.description.isEnabled = false
         lineChart.setDrawGridBackground(false)
-
-        // Sumbu Kanan dimatikan
         lineChart.axisRight.isEnabled = false
 
         // Sumbu Kiri (Y-Axis) - Format Angka Singkat
@@ -104,9 +129,9 @@ class VisualizationFragment : Fragment() {
         leftAxis.setDrawGridLines(true)
         leftAxis.enableGridDashedLine(10f, 10f, 0f) // Garis putus-putus
         leftAxis.gridColor = Color.parseColor("#E2E8F0")
-        leftAxis.axisMinimum = 0f // Opsional, agar grafik tidak melayang
+        leftAxis.axisMinimum = 0f
 
-        // Custom Formatter: Ubah 1000000 jadi "1jt"
+        // Custom Formatter dari Kode Lama
         leftAxis.valueFormatter = object : ValueFormatter() {
             override fun getAxisLabel(value: Float, axis: AxisBase?): String {
                 return if (value >= 1000000) {
@@ -123,67 +148,55 @@ class VisualizationFragment : Fragment() {
         val xAxis = lineChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.textColor = Color.parseColor("#718096")
-        xAxis.setDrawGridLines(false) // Bersih dari garis vertikal
+        xAxis.setDrawGridLines(false)
         xAxis.granularity = 1f
 
         // Formatter Tanggal
         xAxis.valueFormatter = object : ValueFormatter() {
             private val format = SimpleDateFormat("dd MMM", Locale.US)
             override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                // Pastikan value valid timestamp
                 return try { format.format(Date(value.toLong())) } catch(e: Exception) { "" }
             }
         }
 
-        // Marker View (Popup saat ditekan) tetap dipasang
-        val markerView = CustomMarkerView(requireContext(), R.layout.custom_marker_view)
-        markerView.chartView = lineChart
-        lineChart.marker = markerView
-
-
-        // ==========================================================
-        // 3. SETUP BAR CHART
-        // ==========================================================
-        barChart.description.isEnabled = false
-        barChart.setDrawGridBackground(false)
-        barChart.setPinchZoom(false)
-        barChart.axisRight.isEnabled = false
-
-        barChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        barChart.xAxis.setDrawGridLines(false)
-        barChart.xAxis.textColor = Color.parseColor("#718096")
-
-        barChart.axisLeft.textColor = Color.parseColor("#718096")
-        barChart.axisLeft.enableGridDashedLine(10f, 10f, 0f)
-        barChart.axisLeft.gridColor = Color.parseColor("#E2E8F0")
-
-        // Pindahkan Legend Bar Chart ke atas kanan
-        barChart.legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
-        barChart.legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-        barChart.legend.orientation = Legend.LegendOrientation.HORIZONTAL
-        barChart.legend.setDrawInside(true)
-        barChart.legend.yOffset = 0f
-        barChart.legend.xOffset = 10f
-        barChart.legend.yEntrySpace = 0f
-        barChart.legend.textSize = 10f
+        // Marker View (Tetap dipasang sesuai kode lama)
+        // Pastikan layout 'custom_marker_view' ada di project Anda
+        try {
+            val markerView = CustomMarkerView(requireContext(), R.layout.custom_marker_view)
+            markerView.chartView = lineChart
+            lineChart.marker = markerView
+        } catch (e: Exception) {
+            // Fallback jika CustomMarkerView belum dibuat class-nya
+        }
     }
 
+    // --- OBSERVE DATA (GABUNGAN LOGIKA) ---
     private fun observeData() {
         viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
-            if (transactions != null && transactions.isNotEmpty()) {
-                updatePieChart(transactions)
-                updateBarChart(transactions)
-                updateLineChart(transactions)
-                updateSummaryText(transactions) // Fungsi baru untuk update teks
-            } else {
-                pieChart.clear()
-                barChart.clear()
-                lineChart.clear()
+            if (transactions != null) {
+                // Update teks ringkasan selalu
+                updateSummaryText(transactions)
+
+                if (transactions.isNotEmpty()) {
+                    // Tampilkan grafik, sembunyikan empty state
+                    layoutCharts.isVisible = true
+                    layoutEmptyState.isVisible = false
+
+                    updatePieChart(transactions)
+                    updateLineChart(transactions)
+                } else {
+                    // Sembunyikan grafik, tampilkan empty state
+                    layoutCharts.isVisible = false
+                    layoutEmptyState.isVisible = true
+
+                    pieChart.clear()
+                    lineChart.clear()
+                }
             }
         }
     }
 
-    // Logic baru: Update teks ringkasan
+    // --- UPDATE TEXT (DARI KODE LAMA) ---
     private fun updateSummaryText(transactions: List<Transaction>) {
         val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
@@ -202,19 +215,23 @@ class VisualizationFragment : Fragment() {
 
         val maxEntry = expenseMap.maxByOrNull { it.value }
         if (maxEntry != null) {
-            tvTopExpense.text = "Terboros: ${maxEntry.key} (${formatRp.format(maxEntry.value)})"
+            tvTopExpense.text = "${maxEntry.key} (${formatRp.format(maxEntry.value)})"
+            tvTopExpense.isVisible = true
         } else {
             tvTopExpense.text = "Belum ada pengeluaran"
+            // Opsional: Sembunyikan jika tidak ada expense, sesuai selera
+            // tvTopExpense.isVisible = false
         }
     }
 
+    // --- UPDATE PIE CHART (DARI KODE LAMA) ---
     private fun updatePieChart(transactions: List<Transaction>) {
         val entries = viewModel.getExpenseByCategoryData(transactions)
         if (entries.isEmpty()) { pieChart.clear(); return }
 
         val dataSet = PieDataSet(entries, "")
 
-        // WARNA MODERN
+        // WARNA MODERN (Kode Lama)
         dataSet.colors = listOf(
             Color.parseColor("#4C6EF5"), // Indigo
             Color.parseColor("#22B8CF"), // Cyan
@@ -230,10 +247,9 @@ class VisualizationFragment : Fragment() {
         dataSet.valueLinePart1Length = 0.4f
         dataSet.valueLinePart2Length = 0.4f
         dataSet.valueLineWidth = 1f
-        dataSet.valueLineColor = Color.parseColor("#718096") // Warna garis penunjuk
+        dataSet.valueLineColor = Color.parseColor("#718096")
 
-        // Text Styling
-        dataSet.valueTextColor = Color.parseColor("#1A202C") // Warna teks angka hitam
+        dataSet.valueTextColor = Color.parseColor("#1A202C")
         dataSet.valueTextSize = 11f
         dataSet.sliceSpace = 2f
 
@@ -241,7 +257,7 @@ class VisualizationFragment : Fragment() {
         data.setValueFormatter(PercentFormatter(pieChart))
         pieChart.data = data
 
-        // Highlight nilai tengah (Total Amount)
+        // Highlight nilai tengah
         val totalExpense = entries.sumOf { it.value.toDouble() }
         val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
         pieChart.centerText = "Total\n${formatRp.format(totalExpense)}"
@@ -249,11 +265,16 @@ class VisualizationFragment : Fragment() {
         pieChart.invalidate()
     }
 
+    // --- UPDATE LINE CHART (DARI KODE LAMA) ---
     private fun updateLineChart(transactions: List<Transaction>) {
         val entries = viewModel.getFinancialTrendData(transactions)
-        if (entries.isEmpty()) { lineChart.clear(); return }
 
-        val dataSet = LineDataSet(entries, "Saldo")
+        // Sorting agar grafik tidak berantakan
+        val sortedEntries = entries.sortedBy { it.x }
+
+        if (sortedEntries.isEmpty()) { lineChart.clear(); return }
+
+        val dataSet = LineDataSet(sortedEntries, "Saldo")
         dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
         dataSet.cubicIntensity = 0.2f
         dataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_line)
@@ -262,7 +283,6 @@ class VisualizationFragment : Fragment() {
         dataSet.setDrawValues(false)
         dataSet.setDrawFilled(true)
         dataSet.fillDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.gradient_chart)
-        // Penting: Aktifkan highlight agar marker muncul saat disentuh
         dataSet.isHighlightEnabled = true
         dataSet.highLightColor = Color.GRAY
 
@@ -270,28 +290,5 @@ class VisualizationFragment : Fragment() {
         lineChart.data = data
         lineChart.invalidate()
         lineChart.animateX(1000)
-    }
-
-    private fun updateBarChart(transactions: List<Transaction>) {
-        val (labels, entries) = viewModel.getIncomeExpenseBarData(transactions)
-        if (entries.isEmpty()) { barChart.clear(); return }
-
-        val dataSet = BarDataSet(entries, "")
-        dataSet.colors = listOf(
-            ContextCompat.getColor(requireContext(), R.color.chart_income),
-            ContextCompat.getColor(requireContext(), R.color.chart_expense)
-        )
-        dataSet.stackLabels = arrayOf("In", "Out") // Label lebih pendek agar muat
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 10f
-
-        val data = BarData(dataSet)
-        data.barWidth = 0.5f
-
-        barChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-        barChart.data = data
-        barChart.setFitBars(true)
-        barChart.invalidate()
-        barChart.animateY(1000)
     }
 }
