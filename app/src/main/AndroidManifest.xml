@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,7 +18,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fintelis">
 
-        <!-- 1. MainActivity sebagai LAUNCHER. Theme NoActionBar agar tidak ada kedipan UI. -->
+        <receiver
+            android:name=".receiver.ReminderReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -23,7 +40,6 @@
             </intent-filter>
         </activity>
 
-        <!-- 2. Daftarkan semua Activity lain sebagai activity biasa (exported="false") -->
         <activity
             android:name=".OnboardingActivity"
             android:exported="false" />
