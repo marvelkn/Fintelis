@@ -21,10 +21,14 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import java.text.NumberFormat
 import java.util.Locale
 
 class DashboardFragment : Fragment() {
+    private lateinit var auth: FirebaseAuth
+    private lateinit var tvGreeting: TextView
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
@@ -43,6 +47,15 @@ class DashboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
+
+        tvGreeting = view.findViewById(R.id.tv_greeting)
+
+        if(auth.currentUser != null){
+            val user = auth.currentUser
+            displayUserName(user)
+        }
 
         setupPieChart()
 
@@ -109,6 +122,19 @@ class DashboardFragment : Fragment() {
             val pieData = PieData(dataSet)
             binding.pieChartFinancial.data = pieData
             binding.pieChartFinancial.invalidate()
+        }
+    }
+
+    private fun displayUserName(user: FirebaseUser?) {
+        // Ambil nama pengguna (displayName)
+        val userName = user?.displayName
+
+        // Cek jika nama tidak kosong, jika kosong, gunakan sapaan default
+        if (!userName.isNullOrEmpty()) {
+            tvGreeting.text = "Hi, $userName!"
+        } else {
+            // Fallback jika nama tidak ada
+            tvGreeting.text = "Hi, Fintelis Buddy!"
         }
     }
 

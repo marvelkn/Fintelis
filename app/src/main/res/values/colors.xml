@@ -10,7 +10,7 @@
 
     <color name="fintelis_primary">#5735A3</color>
     <color name="fintelis_primary_light">#EDE7F6</color>
-    <color name="fintelis_accent">#FFC107</color>
+    <color name="fintelis_accent">#3C2FB9</color>
 
     <color name="status_approved">#38A169</color>
     <color name="status_rejected">#C53030</color>

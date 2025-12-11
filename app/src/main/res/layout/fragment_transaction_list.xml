@@ -16,18 +16,9 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Transaction History"
-                android:textColor="@color/fintelis_text_dark"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/lato_bold"/>
-
-        </com.google.android.material.appbar.MaterialToolbar>
+            android:layout_height="?attr/actionBarSize"
+            app:title="Transaction History"
+            app:titleTextColor="@color/fintelis_text_dark" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_wallets"

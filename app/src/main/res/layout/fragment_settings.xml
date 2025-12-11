@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
+    android:background="@drawable/bg_page_gradient"
     tools:context=".SettingsFragment">
 
     <ScrollView
@@ -208,16 +208,9 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/lato_regular"
-                                    android:text="Daily Reminder"
+                                    android:text="Notifications"
                                     android:textColor="#334155"
                                     android:textSize="16sp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Alert at 13:00 and 19:00"
-                                    android:textSize="12sp"
-                                    android:textColor="#64748B"/>
                             </LinearLayout>
 
                             <com.google.android.material.switchmaterial.SwitchMaterial

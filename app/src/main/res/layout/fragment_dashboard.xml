@@ -40,17 +40,6 @@
             android:textColor="#94A3B8"
             android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/tv_user_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Marvel!"
-            android:fontFamily="@font/lato_bold"
-            android:textColor="#1E293B"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="180dp"
