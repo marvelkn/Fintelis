@@ -11,6 +11,8 @@ import com.example.fintelis.data.TransactionType
 import com.example.fintelis.databinding.ItemTransactionBinding
 import java.text.NumberFormat
 import java.util.Locale
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class TransactionAdapter(
     private var list: MutableList<Transaction>,
@@ -34,7 +36,15 @@ class TransactionAdapter(
         fun bind(item: Transaction) {
             val context = itemView.context
             binding.tvTitle.text = item.title
-            binding.tvDateCat.text = "${item.date} • ${item.category}"
+            // Mengubah timestamp (Long) menjadi teks tanggal yang rapi
+            val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
+            val dateString = try {
+                // Asumsi item.date adalah Long (timestamp)
+                dateFormat.format(Date(item.date))
+            } catch (e: Exception) {
+                // Fallback jika item.date ternyata sudah String
+                item.date.toString()
+            }
 
             val fmt = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
             binding.tvAmount.text = fmt.format(item.amount)

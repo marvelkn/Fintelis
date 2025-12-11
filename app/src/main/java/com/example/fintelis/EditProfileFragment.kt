@@ -1,59 +1,95 @@
 package com.example.fintelis
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import com.example.fintelis.databinding.FragmentEditProfileBinding // Pastikan nama Binding Class benar
+import com.example.fintelis.viewmodel.SettingsViewModel
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [EditProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class EditProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var _binding: FragmentEditProfileBinding? = null
+    private val binding get() = _binding!!
+
+    // Menggunakan activityViewModels() untuk berbagi instance SettingsViewModel
+    // dengan SettingsFragment yang merupakan parent di NavGraph
+    private val viewModel: SettingsViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_edit_profile, container, false)
+    ): View {
+        _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment EditProfileFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            EditProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Pastikan data profil dimuat ulang saat Fragment ini dibuka
+        // Ini memastikan data terbaru (Show Data) muncul di field.
+        viewModel.loadUserProfile()
+
+        setupObservers()
+        setupListeners()
+    }
+
+    private fun setupObservers() {
+        // 1. Mengisi Form (Show Data) saat data user dimuat
+        viewModel.userProfile.observe(viewLifecycleOwner) { user ->
+            binding.etFullName.setText(user.fullName)
+            binding.etEmail.setText(user.email) // Tetap tampil tapi tidak bisa diedit
+            binding.etPhone.setText(user.phoneNumber)
+        }
+
+        // 2. Status Message (Menampilkan notifikasi sukses/gagal)
+        viewModel.statusMessage.observe(viewLifecycleOwner) { msg ->
+            if (msg.contains("berhasil diperbarui")) {
+                // Jika update sukses, kembali ke halaman Settings utama
+                Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
+            } else if (msg.isNotEmpty() && !msg.contains("Gagal update Auth")) {
+                // Tampilkan error umum jika bukan error yang sudah ditangani di ViewModel
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
+        }
+
+        // 3. Loading State
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.isVisible = isLoading
+            binding.btnSaveProfile.isEnabled = !isLoading
+
+            // Mengunci field yang bisa diedit saat proses berlangsung
+            binding.etFullName.isEnabled = !isLoading
+            binding.etPhone.isEnabled = !isLoading
+            // etEmail tetap false karena sudah diatur di XML
+        }
+    }
+
+    private fun setupListeners() {
+        binding.btnSaveProfile.setOnClickListener {
+            val name = binding.etFullName.text.toString().trim()
+            val email = binding.etEmail.text.toString().trim() // Ambil nilai email yang tampil (untuk dikirim ke ViewModel, meskipun tidak diupdate)
+            val phone = binding.etPhone.text.toString().trim()
+
+            if (name.isNotEmpty() && email.isNotEmpty()) {
+                // Panggil fungsi update di ViewModel.
+                // ViewModel akan mengabaikan nilai email dari sini (karena sudah diubah logikanya)
+                viewModel.updateProfile(name, phone, email)
+            } else {
+                Toast.makeText(context, "Nama dan Email wajib diisi!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

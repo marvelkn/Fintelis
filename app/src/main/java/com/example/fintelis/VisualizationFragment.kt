@@ -1,375 +1,381 @@
 package com.example.fintelis
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
+import android.animation.LayoutTransition
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.pdf.PdfDocument
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
-import android.widget.Toast
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.viewmodel.TransactionViewModel
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.HorizontalBarChart
+import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.components.AxisBase
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.tabs.TabLayout
-import org.apache.poi.ss.usermodel.*
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStreamWriter
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
 class VisualizationFragment : Fragment() {
 
-    private lateinit var lineChartTrend: LineChart
-    private lateinit var barChartScore: BarChart
-    private lateinit var hbarChartBranches: HorizontalBarChart
-    private lateinit var tabTimeFilter: TabLayout
-
     private val viewModel: TransactionViewModel by activityViewModels()
+
+    // --- Components Chart ---
+    private lateinit var pieChart: PieChart
+    private lateinit var lineChart: LineChart
+
+    // --- Components Button ---
+    private lateinit var btnSeeDetail: MaterialButton
+
+    // --- Containers ---
+    private lateinit var layoutCharts: LinearLayout
+    private lateinit var layoutEmptyState: LinearLayout
+
+    // --- TextViews Summary ---
+    private lateinit var tvTopCategory: TextView
+    private lateinit var tvTotalIncome: TextView
+    private lateinit var tvTotalExpense: TextView
+
+    // --- Navigation Controls ---
+    private lateinit var btnPrevMonth: ImageButton
+    private lateinit var btnNextMonth: ImageButton
+    private lateinit var tvMonthName: TextView
+    private lateinit var tvYearNumber: TextView
+
+    // --- Switch Controls ---
+    private lateinit var btnSwitchExpense: TextView
+    private lateinit var btnSwitchIncome: TextView
+
+    // --- State Variables ---
+    private var isExpenseMode = true // Default to Expense
+    private var currentTransactions: List<Transaction> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_dashboard_report, container, false)
+        val view = inflater.inflate(R.layout.fragment_visualization, container, false)
+        initializeViews(view)
 
-        lineChartTrend = view.findViewById(R.id.lineChartTrend)
-        barChartScore = view.findViewById(R.id.barChartScore)
-        hbarChartBranches = view.findViewById(R.id.hbarChartBranches)
-        tabTimeFilter = view.findViewById(R.id.tab_time_filter)
-
-        setupTabs()
-        setupExportMenu(view)
-
-        // Observe data
-        viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
-            updateCharts(transactions, tabTimeFilter.selectedTabPosition)
-        }
+        setupCharts()
+        setupMonthNavigation()
+        setupCategorySwitch()
+        setupDetailButton() // Logic Navigasi Baru
+        observeData()
 
         return view
     }
 
-    private fun setupTabs() {
-        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("WEEKLY"))
-        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("MONTHLY"))
-        tabTimeFilter.addTab(tabTimeFilter.newTab().setText("YEARLY"))
+    private fun initializeViews(view: View) {
+        pieChart = view.findViewById(R.id.pieChart)
+        lineChart = view.findViewById(R.id.lineChart)
+        btnSeeDetail = view.findViewById(R.id.btnSeeDetail)
 
-        tabTimeFilter.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                viewModel.displayedTransactions.value?.let { transactions ->
-                    updateCharts(transactions, tab.position)
+        layoutCharts = view.findViewById(R.id.layoutCharts)
+        layoutEmptyState = view.findViewById(R.id.layoutEmptyState)
+
+        tvTopCategory = view.findViewById(R.id.tvTopCategory)
+        tvTotalIncome = view.findViewById(R.id.tvTotalIncome)
+        tvTotalExpense = view.findViewById(R.id.tvTotalExpense)
+
+        btnPrevMonth = view.findViewById(R.id.btnPrevMonth)
+        btnNextMonth = view.findViewById(R.id.btnNextMonth)
+        tvMonthName = view.findViewById(R.id.tvMonthName)
+        tvYearNumber = view.findViewById(R.id.tvYearNumber)
+
+        btnSwitchExpense = view.findViewById(R.id.btnSwitchExpense)
+        btnSwitchIncome = view.findViewById(R.id.btnSwitchIncome)
+
+        // Animasi layout (opsional, untuk kehalusan jika ada perubahan visibilitas)
+        layoutCharts.layoutTransition = LayoutTransition()
+    }
+
+    // --- LOGIC TOMBOL DETAIL (NAVIGASI KE HALAMAN BARU) ---
+    private fun setupDetailButton() {
+        updateDetailButtonUI()
+
+        btnSeeDetail.setOnClickListener {
+            val detailFragment = DetailCashflowFragment.newInstance(isExpenseMode)
+
+            // Gunakan 'requireActivity().supportFragmentManager'
+            // Jangan gunakan 'parentFragmentManager' agar tidak konflik dengan NavHost
+            requireActivity().supportFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    android.R.anim.slide_in_left,
+                    android.R.anim.fade_out,
+                    android.R.anim.fade_in,
+                    android.R.anim.slide_out_right
+                )
+                // Gunakan android.R.id.content untuk menimpa satu layar penuh
+                .replace(android.R.id.content, detailFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+
+    // Update Teks dan Warna tombol berdasarkan mode
+    private fun updateDetailButtonUI() {
+        val typeText = if (isExpenseMode) "Expense" else "Income"
+        btnSeeDetail.text = "View Full $typeText List"
+
+        // Icon Panah ke Kanan (Indikasi pindah halaman)
+        btnSeeDetail.setIconResource(R.drawable.ic_chevron_right)
+
+        if (isExpenseMode) {
+            btnSeeDetail.setBackgroundColor(Color.parseColor("#C53030")) // Merah
+        } else {
+            btnSeeDetail.setBackgroundColor(Color.parseColor("#38A169")) // Hijau
+        }
+    }
+
+    // --- LOGIC SWITCH CATEGORY ---
+    private fun setupCategorySwitch() {
+        btnSwitchExpense.setOnClickListener {
+            if (!isExpenseMode) {
+                isExpenseMode = true
+                updateSwitchUI()
+                updatePieChart(currentTransactions)
+                updateDetailButtonUI() // Update tombol agar merah
+            }
+        }
+
+        btnSwitchIncome.setOnClickListener {
+            if (isExpenseMode) {
+                isExpenseMode = false
+                updateSwitchUI()
+                updatePieChart(currentTransactions)
+                updateDetailButtonUI() // Update tombol agar hijau
+            }
+        }
+    }
+
+    private fun updateSwitchUI() {
+        if (isExpenseMode) {
+            // Expense Active
+            btnSwitchExpense.setBackgroundResource(R.drawable.bg_pill_danger); btnSwitchExpense.setTextColor(Color.WHITE)
+            btnSwitchIncome.setBackgroundColor(Color.TRANSPARENT); btnSwitchIncome.setTextColor(Color.parseColor("#718096"))
+        } else {
+            // Income Active
+            btnSwitchExpense.setBackgroundColor(Color.TRANSPARENT); btnSwitchExpense.setTextColor(Color.parseColor("#718096"))
+            btnSwitchIncome.setBackgroundResource(R.drawable.bg_pill_success); btnSwitchIncome.setTextColor(Color.WHITE)
+        }
+    }
+
+    // --- OBSERVE DATA ---
+    private fun observeData() {
+        viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
+            if (transactions != null) {
+                currentTransactions = transactions
+                updateSummaryText(transactions)
+
+                if (transactions.isNotEmpty()) {
+                    layoutCharts.isVisible = true
+                    layoutEmptyState.isVisible = false
+
+                    updatePieChart(transactions)
+                    updateLineChart(transactions)
+
+                    // Button selalu terlihat jika ada data
+                    btnSeeDetail.isVisible = true
+
+                } else {
+                    layoutCharts.isVisible = false
+                    layoutEmptyState.isVisible = true
+                    pieChart.clear()
+                    lineChart.clear()
+
+                    // Sembunyikan tombol detail jika tidak ada data
+                    btnSeeDetail.isVisible = false
                 }
             }
-            override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) {}
+        }
+    }
+
+    // --- HELPER FUNCTIONS (Sama seperti sebelumnya) ---
+
+    private fun updateSummaryText(transactions: List<Transaction>) {
+        val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        val totalInc = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+        val totalExp = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        tvTotalIncome.text = formatRp.format(totalInc)
+        tvTotalExpense.text = formatRp.format(totalExp)
+    }
+
+    private fun setupMonthNavigation() {
+        btnPrevMonth.setOnClickListener { viewModel.changeMonth(-1) }
+        btnNextMonth.setOnClickListener { viewModel.changeMonth(1) }
+        viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->
+            val fmtMonth = SimpleDateFormat("MMMM", Locale.US)
+            val fmtYear = SimpleDateFormat("yyyy", Locale.US)
+            tvMonthName.text = fmtMonth.format(calendar.time)
+            tvYearNumber.text = fmtYear.format(calendar.time)
+        }
+    }
+
+    private fun setupCharts() {
+        // ... (Kode Pie Chart biarkan saja seperti sebelumnya) ...
+        // Konfigurasi Pie Chart tetap sama...
+        pieChart.setUsePercentValues(true); pieChart.description.isEnabled = false
+        pieChart.setExtraOffsets(30f, 10f, 30f, 10f)
+        pieChart.dragDecelerationFrictionCoef = 0.95f; pieChart.isDrawHoleEnabled = true
+        pieChart.setHoleColor(Color.WHITE); pieChart.transparentCircleRadius = 61f; pieChart.holeRadius = 58f
+        pieChart.setDrawCenterText(true); pieChart.setCenterTextSize(12f); pieChart.setCenterTextColor(Color.parseColor("#718096"))
+        pieChart.legend.isEnabled = false; pieChart.setDrawEntryLabels(true)
+        pieChart.setEntryLabelColor(Color.parseColor("#2D3748")); pieChart.setEntryLabelTextSize(11f)
+        pieChart.animateY(1400, Easing.EaseInOutQuad)
+
+        // --- KONFIGURASI LINE CHART (BARU) ---
+        lineChart.description.isEnabled = false
+        lineChart.legend.isEnabled = false // Hilangkan legend kotak di bawah (biar bersih)
+
+        // Hapus border kotak di sekeliling chart
+        lineChart.setDrawGridBackground(false)
+        lineChart.setDrawBorders(false)
+
+        // --- Sumbu X (Bawah) ---
+        val xAxis = lineChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.textColor = Color.parseColor("#A0AEC0") // Abu-abu lembut
+        xAxis.textSize = 10f
+        xAxis.setDrawGridLines(false) // Hilangkan garis grid vertikal
+        xAxis.setDrawAxisLine(false)  // Hilangkan garis sumbu hitam
+        xAxis.granularity = 1f
+        xAxis.yOffset = 10f // Beri jarak sedikit dari grafik
+        xAxis.valueFormatter = object : ValueFormatter() {
+            private val format = SimpleDateFormat("dd", Locale.US) // Tampilkan Tanggal saja (lebih singkat)
+            override fun getAxisLabel(value: Float, axis: AxisBase?): String {
+                return try { format.format(Date(value.toLong())) } catch(e: Exception) { "" }
+            }
+        }
+
+        // --- Sumbu Y Kiri (Nominal) ---
+        val leftAxis = lineChart.axisLeft
+        leftAxis.textColor = Color.parseColor("#A0AEC0")
+        leftAxis.textSize = 10f
+        leftAxis.setDrawGridLines(true) // Tetap tampilkan grid horizontal
+        leftAxis.gridColor = Color.parseColor("#F7FAFC") // Grid warna sangat muda (hampir putih)
+        leftAxis.enableGridDashedLine(10f, 10f, 0f) // Grid putus-putus
+        leftAxis.setDrawAxisLine(false) // Hilangkan garis sumbu vertikal
+        leftAxis.axisMinimum = 0f // Mulai dari 0
+
+        // Custom Formatter (Jt/Rb)
+        leftAxis.valueFormatter = object : ValueFormatter() {
+            override fun getAxisLabel(value: Float, axis: AxisBase?): String {
+                return if (value >= 1000000) String.format("%.0fjt", value / 1000000)
+                else if (value >= 1000) String.format("%.0frb", value / 1000)
+                else String.format("%.0f", value)
+            }
+        }
+
+        // Matikan Sumbu Kanan
+        lineChart.axisRight.isEnabled = false
+
+        // Interaksi
+        lineChart.setTouchEnabled(true)
+        lineChart.isDragEnabled = true
+        lineChart.setScaleEnabled(false) // Matikan zoom agar tampilan tetap rapi
+        lineChart.setPinchZoom(false)
+
+        // Marker (Tooltip saat ditekan)
+        try {
+            val markerView = CustomMarkerView(requireContext(), R.layout.custom_marker_view)
+            markerView.chartView = lineChart
+            lineChart.marker = markerView
+        } catch (e: Exception) { }
+    }
+
+    private fun updatePieChart(transactions: List<Transaction>) {
+        val targetType = if (isExpenseMode) TransactionType.EXPENSE else TransactionType.INCOME
+        val filteredList = transactions.filter { it.type == targetType }
+        val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        pieChart.highlightValues(null)
+
+        if (filteredList.isEmpty()) { pieChart.clear(); pieChart.centerText = if(isExpenseMode) "No Expense" else "No Income"; tvTopCategory.text = "-"; return }
+
+        val totalAmount = filteredList.sumOf { it.amount }
+        val groupedData = filteredList.groupBy { it.category }.mapValues { entry -> entry.value.sumOf { it.amount } }
+        val maxEntry = groupedData.maxByOrNull { it.value }
+        if (maxEntry != null) { tvTopCategory.text = "${maxEntry.key} (${formatRp.format(maxEntry.value)})" }
+
+        val entries = groupedData.map { PieEntry(it.value.toFloat(), it.key) }
+        val dataSet = PieDataSet(entries, "")
+        if (isExpenseMode) {
+            dataSet.colors = listOf(Color.parseColor("#E53E3E"), Color.parseColor("#ED8936"), Color.parseColor("#ECC94B"), Color.parseColor("#805AD5"), Color.parseColor("#38B2AC"))
+        } else {
+            dataSet.colors = listOf(Color.parseColor("#38A169"), Color.parseColor("#3182CE"), Color.parseColor("#319795"), Color.parseColor("#D69E2E"), Color.parseColor("#805AD5"))
+        }
+        dataSet.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE; dataSet.xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+        dataSet.valueLinePart1OffsetPercentage = 80f; dataSet.valueLinePart1Length = 0.4f; dataSet.valueLinePart2Length = 0.4f
+        dataSet.valueLineWidth = 1f; dataSet.valueLineColor = Color.parseColor("#CBD5E0"); dataSet.valueTextColor = Color.parseColor("#2D3748"); dataSet.valueTextSize = 11f; dataSet.sliceSpace = 2f
+
+        val data = PieData(dataSet); data.setValueFormatter(PercentFormatter(pieChart)); pieChart.data = data
+        val defaultCenterText = "${if(isExpenseMode) "Pengeluaran" else "Pemasukan"}\n${formatRp.format(totalAmount)}"
+        pieChart.centerText = defaultCenterText
+
+        pieChart.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+            override fun onValueSelected(e: Entry?, h: Highlight?) { if (e is PieEntry) { pieChart.centerText = "${e.label}\n${formatRp.format(e.value)}" } }
+            override fun onNothingSelected() { pieChart.centerText = defaultCenterText }
         })
-        tabTimeFilter.getTabAt(1)?.select()
+        pieChart.animateY(1000, Easing.EaseInOutQuad); pieChart.invalidate()
     }
 
-    private fun updateCharts(transactions: List<Transaction>, tabPosition: Int) {
-        val range = when (tabPosition) {
-            0 -> "weekly"
-            1 -> "monthly"
-            else -> "yearly"
-        }
-        setupLineChart(transactions, range)
-        setupBarScoreChart(transactions, range) // Using this for Income vs Expense
-        setupBranchesChart(transactions, range) // Using this for Categories
-    }
+    private fun updateLineChart(transactions: List<Transaction>) {
+        val entries = viewModel.getFinancialTrendData(transactions)
+        val sortedEntries = entries.sortedBy { it.x }
 
-    private fun setupLineChart(transactions: List<Transaction>, range: String) {
-        // Group transactions by date/time based on range
-        // For simplicity, let's just show income trend
-        val groupedData = groupTransactionsByDate(transactions, range)
-        val sortedKeys = groupedData.keys.sorted()
-        
-        val entries = ArrayList<Entry>()
-        val labels = ArrayList<String>()
-
-        sortedKeys.forEachIndexed { index, key ->
-            val amount = groupedData[key] ?: 0.0
-            entries.add(Entry(index.toFloat(), amount.toFloat()))
-            labels.add(key)
+        // Jika data kosong, bersihkan chart
+        if (sortedEntries.isEmpty()) {
+            lineChart.clear()
+            return
         }
 
-        val set = LineDataSet(entries, "Income Trend")
-        set.color = resources.getColor(android.R.color.holo_blue_dark)
-        set.lineWidth = 2f
-        set.setDrawCircles(true)
-        set.circleRadius = 4f
-        set.setDrawValues(false)
+        val dataSet = LineDataSet(sortedEntries, "Saldo")
 
-        val lineData = LineData(set)
-        lineChartTrend.data = lineData
+        // --- GAYA GARIS (STYLE) ---
+        dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER // Garis melengkung halus (Curve)
+        dataSet.cubicIntensity = 0.2f
 
-        val xAxis = lineChartTrend.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.granularity = 1f
-        xAxis.valueFormatter = object : ValueFormatter() {
-            override fun getFormattedValue(value: Float): String {
-                val idx = value.toInt()
-                return if (idx >= 0 && idx < labels.size) labels[idx] else ""
-            }
-        }
+        // Warna Garis (Ungu Solid)
+        dataSet.color = Color.parseColor("#805AD5")
+        dataSet.lineWidth = 3f // Garis lebih tebal
 
-        lineChartTrend.axisRight.isEnabled = false
-        lineChartTrend.description.isEnabled = false
-        lineChartTrend.legend.isEnabled = false
-        lineChartTrend.invalidate()
-    }
+        // --- BAGIAN TITIK (CIRCLES) ---
+        dataSet.setDrawCircles(false) // Hilangkan titik-titik (clean look)
+        dataSet.setDrawValues(false)  // Hilangkan teks angka di atas garis
 
-    private fun setupBarScoreChart(transactions: List<Transaction>, range: String) {
-        // Show Income vs Expense comparison
-        var totalIncome = 0.0
-        var totalExpense = 0.0
+        // Jika ingin titik muncul HANYA saat di-klik (highlight):
+        dataSet.setDrawHorizontalHighlightIndicator(false)
+        dataSet.highLightColor = Color.parseColor("#805AD5") // Warna garis sorot
+        dataSet.highlightLineWidth = 1.5f
 
-        transactions.forEach {
-            if (it.type == TransactionType.INCOME) totalIncome += it.amount
-            else totalExpense += it.amount
-        }
+        // --- AREA ISI (GRADIENT FILL) ---
+        dataSet.setDrawFilled(true) // Aktifkan isi warna di bawah garis
+        // Gunakan Drawable Gradient yang baru dibuat
+        dataSet.fillDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.gradient_chart_purple)
+        // (Opsional) Jika drawable gagal load, gunakan warna solid transparan:
+        // dataSet.fillColor = Color.parseColor("#805AD5")
+        // dataSet.fillAlpha = 50
 
-        val entries = listOf(
-            BarEntry(0f, totalIncome.toFloat()),
-            BarEntry(1f, totalExpense.toFloat())
-        )
+        val data = LineData(dataSet)
+        lineChart.data = data
 
-        val set = BarDataSet(entries, "Income vs Expense")
-        set.colors = listOf(
-            Color.parseColor("#FFC107"), // Income Yellow
-            Color.parseColor("#EF5350")  // Expense Red
-        )
-        set.valueTextSize = 12f
-        set.setDrawValues(true)
-
-        val data = BarData(set)
-        data.barWidth = 0.6f
-        barChartScore.data = data
-        barChartScore.description.isEnabled = false
-        barChartScore.legend.isEnabled = false
-
-        val xAxis = barChartScore.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.granularity = 1f
-        xAxis.setDrawGridLines(false)
-        xAxis.valueFormatter = object : ValueFormatter() {
-            override fun getFormattedValue(value: Float): String {
-                return when (value.toInt()) {
-                    0 -> "Income"
-                    1 -> "Expense"
-                    else -> ""
-                }
-            }
-        }
-
-        barChartScore.axisRight.isEnabled = false
-        barChartScore.invalidate()
-    }
-
-    private fun setupBranchesChart(transactions: List<Transaction>, range: String) {
-        // Show Expenses by Category
-        val expenseByCategory = transactions
-            .filter { it.type == TransactionType.EXPENSE }
-            .groupBy { it.category }
-            .mapValues { entry -> entry.value.sumOf { it.amount } }
-
-        val entries = ArrayList<BarEntry>()
-        val labels = ArrayList<String>()
-
-        expenseByCategory.entries.forEachIndexed { index, entry ->
-            entries.add(BarEntry(index.toFloat(), entry.value.toFloat()))
-            labels.add(entry.key)
-        }
-
-        val set = BarDataSet(entries, "Expense by Category")
-        set.color = resources.getColor(android.R.color.holo_blue_dark)
-        set.valueTextSize = 12f
-        val data = BarData(set)
-        data.barWidth = 0.6f
-        hbarChartBranches.data = data
-
-        val xAxis = hbarChartBranches.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.granularity = 1f
-        xAxis.valueFormatter = object : ValueFormatter() {
-            override fun getFormattedValue(value: Float): String {
-                val idx = value.toInt()
-                return if (idx >= 0 && idx < labels.size) labels[idx] else ""
-            }
-        }
-        hbarChartBranches.axisRight.isEnabled = false
-        hbarChartBranches.description.isEnabled = false
-        hbarChartBranches.invalidate()
-    }
-
-    private fun groupTransactionsByDate(transactions: List<Transaction>, range: String): Map<String, Double> {
-        val dateFormat = when (range) {
-            "weekly" -> SimpleDateFormat("w", Locale.US) // Week of year
-            "monthly" -> SimpleDateFormat("MMM", Locale.US) // Month name
-            else -> SimpleDateFormat("yyyy", Locale.US) // Year
-        }
-        
-        // We need to parse the stored date string first
-        val inputFormat = SimpleDateFormat("MMM dd, yyyy", Locale.US)
-
-        return transactions
-            .filter { it.type == TransactionType.INCOME }
-            .groupBy { 
-                try {
-                    val date = inputFormat.parse(it.date) ?: Date()
-                    dateFormat.format(date)
-                } catch (e: Exception) {
-                    "Unknown"
-                }
-            }
-            .mapValues { entry -> entry.value.sumOf { it.amount } }
-    }
-
-    // 🔹 Popup menu logic untuk export
-    private fun setupExportMenu(view: View) {
-        val btnExport = view.findViewById<MaterialButton>(R.id.btn_export)
-        btnExport.setOnClickListener {
-            val popup = PopupMenu(requireContext(), btnExport)
-            popup.menuInflater.inflate(R.menu.menu_export_options, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.export_pdf -> {
-                        exportToPdf(view)
-                        true
-                    }
-                    R.id.export_csv -> {
-                        exportToCsv(requireContext())
-                        true
-                    }
-                    R.id.export_excel -> {
-                        exportToExcel(requireContext())
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popup.show()
-        }
-    }
-
-    private fun exportToPdf(viewRoot: View) {
-        try {
-            val scroll = viewRoot.findViewById<View>(R.id.scrollMain)
-            val totalHeight = scroll.height
-            val totalWidth = scroll.width
-
-            val bitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            // Draw background to avoid black background in PDF
-            canvas.drawColor(Color.WHITE) 
-            scroll.draw(canvas)
-
-            val pdfDocument = PdfDocument()
-            val pageInfo = PdfDocument.PageInfo.Builder(totalWidth, totalHeight, 1).create()
-            val page = pdfDocument.startPage(pageInfo)
-            val pdfCanvas = page.canvas
-            pdfCanvas.drawBitmap(bitmap, 0f, 0f, Paint())
-            pdfDocument.finishPage(page)
-
-            val fileName = "report_${timeStamp()}.pdf"
-            val file = File(requireContext().getExternalFilesDir(null), fileName)
-            pdfDocument.writeTo(FileOutputStream(file))
-            pdfDocument.close()
-
-            Toast.makeText(requireContext(), "PDF saved: ${file.absolutePath}", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(requireContext(), "PDF export failed: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun exportToCsv(ctx: Context) {
-        try {
-            val csvBuilder = StringBuilder()
-            csvBuilder.append("Date, Title, Amount, Type, Category\n")
-            
-            val transactions = viewModel.displayedTransactions.value ?: emptyList()
-            for (t in transactions) {
-                csvBuilder.append("${t.date},${t.title},${t.amount},${t.type},${t.category}\n")
-            }
-
-            val fileName = "report_${timeStamp()}.csv"
-            val file = File(ctx.getExternalFilesDir(null), fileName)
-            val writer = OutputStreamWriter(FileOutputStream(file))
-            writer.write(csvBuilder.toString())
-            writer.flush()
-            writer.close()
-
-            Toast.makeText(ctx, "CSV saved: ${file.absolutePath}", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(ctx, "CSV export failed: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun exportToExcel(ctx: Context) {
-        try {
-            val workbook: Workbook = XSSFWorkbook()
-            val sheet: Sheet = workbook.createSheet("Transactions")
-
-            val headerStyle: CellStyle = workbook.createCellStyle()
-            val headerFont: Font = workbook.createFont()
-            headerFont.bold = true
-            headerStyle.setFont(headerFont)
-            headerStyle.fillForegroundColor = IndexedColors.GREY_25_PERCENT.index
-            headerStyle.fillPattern = FillPatternType.SOLID_FOREGROUND
-
-            val headerRow = sheet.createRow(0)
-            val headers = listOf("Date", "Title", "Amount", "Type", "Category")
-            for ((i, header) in headers.withIndex()) {
-                val cell = headerRow.createCell(i)
-                cell.setCellValue(header)
-                cell.cellStyle = headerStyle
-            }
-
-            val transactions = viewModel.displayedTransactions.value ?: emptyList()
-            for ((i, t) in transactions.withIndex()) {
-                val row = sheet.createRow(i + 1)
-                row.createCell(0).setCellValue(t.date)
-                row.createCell(1).setCellValue(t.title)
-                row.createCell(2).setCellValue(t.amount)
-                row.createCell(3).setCellValue(t.type.toString())
-                row.createCell(4).setCellValue(t.category)
-            }
-            
-            for (i in headers.indices) sheet.autoSizeColumn(i)
-
-            val fileName = "report_${timeStamp()}.xlsx"
-            val file = File(ctx.getExternalFilesDir(null), fileName)
-            val fos = FileOutputStream(file)
-            workbook.write(fos)
-            fos.flush()
-            fos.close()
-            workbook.close()
-
-            Toast.makeText(ctx, "Excel saved: ${file.absolutePath}", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(ctx, "Excel export failed: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun timeStamp(): String {
-        val df = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-        return df.format(Date())
+        // Refresh & Animate
+        lineChart.invalidate()
+        lineChart.animateX(1200, Easing.EaseInOutSine) // Animasi muncul dari kiri
     }
 }

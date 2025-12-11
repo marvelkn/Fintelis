@@ -9,7 +9,7 @@
     <item
         android:id="@+id/customerListFragment"
         android:icon="@drawable/users_alt"
-        android:title="Customer" />
+        android:title="Transactions" />
 
     <item
         android:id="@+id/analysisFragment"
@@ -19,7 +19,7 @@
     <item
         android:id="@+id/nav_visualization"
         android:icon="@drawable/chart"
-        android:title="Visualization" />
+        android:title="Statistics" />
 
     <item
         android:id="@+id/settingsFragment"
