@@ -1,11 +1,13 @@
 package com.example.fintelis
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -14,7 +16,13 @@ import com.example.fintelis.data.Wallet
 import com.example.fintelis.databinding.FragmentDashboardBinding
 import com.example.fintelis.viewmodel.DashboardViewModel
 import com.example.fintelis.viewmodel.TransactionViewModel
+import com.github.mikephil.charting.animation.Easing
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.textfield.TextInputEditText
+import java.text.NumberFormat
+import java.util.Locale
 
 class DashboardFragment : Fragment() {
 
@@ -35,6 +43,8 @@ class DashboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupPieChart()
 
         dashboardViewModel.totalBalance.observe(viewLifecycleOwner) { totalBalance ->
             binding.tvBalanceNominal.text = dashboardViewModel.formatRupiah(totalBalance ?: 0.0)
@@ -68,6 +78,57 @@ class DashboardFragment : Fragment() {
         binding.cardAddWallet.root.setOnClickListener {
             showAddWalletDialog()
         }
+
+        val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+
+        transactionViewModel.incomePercentage.observe(viewLifecycleOwner) { percentage ->
+            binding.tvIncomePercentage.text = String.format("%.0f%%", percentage)
+        }
+
+        transactionViewModel.expensePercentage.observe(viewLifecycleOwner) { percentage ->
+            binding.tvExpensePercentage.text = String.format("%.0f%%", percentage)
+        }
+
+        transactionViewModel.incomeNominal.observe(viewLifecycleOwner) { nominal ->
+            binding.tvIncomeNominal.text = format.format(nominal)
+        }
+
+        transactionViewModel.expenseNominal.observe(viewLifecycleOwner) { nominal ->
+            binding.tvExpenseNominal.text = format.format(nominal)
+        }
+
+        transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) { pieEntries ->
+            val dataSet = PieDataSet(pieEntries, "").apply {
+                colors = listOf(
+                    ContextCompat.getColor(requireContext(), R.color.yellow_500),
+                    ContextCompat.getColor(requireContext(), R.color.red_500)
+                )
+                setDrawValues(false)
+            }
+
+            val pieData = PieData(dataSet)
+            binding.pieChartFinancial.data = pieData
+            binding.pieChartFinancial.invalidate()
+        }
+    }
+
+    private fun setupPieChart() {
+        binding.pieChartFinancial.apply {
+            setUsePercentValues(true)
+            description.isEnabled = false
+            legend.isEnabled = false
+            isDrawHoleEnabled = true
+            setHoleColor(Color.TRANSPARENT)
+            setTransparentCircleColor(Color.TRANSPARENT)
+            setTransparentCircleAlpha(0)
+            holeRadius = 80f
+            transparentCircleRadius = 80f
+            setDrawCenterText(false)
+            rotationAngle = 0f
+            isRotationEnabled = false
+            isHighlightPerTapEnabled = false
+            animateY(1400, Easing.EaseInOutQuad)
+        }
     }
 
     private fun updateCard(cardView: View, wallet: Wallet) {
@@ -79,7 +140,7 @@ class DashboardFragment : Fragment() {
 
         cardView.setOnClickListener {
             transactionViewModel.setActiveWallet(wallet.id)
-            findNavController().navigate(R.id.action_dashboardFragment_to_transactionListFragment)
+            findNavController().navigate(R.id.action_mainDashboard_to_customerListFragment)
         }
     }
 

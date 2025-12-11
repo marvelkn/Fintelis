@@ -7,7 +7,11 @@
     android:id="@+id/mainDashboard"
     android:name="com.example.fintelis.DashboardFragment"
     android:label="Dashboard"
-    tools:layout="@layout/fragment_dashboard" />
+    tools:layout="@layout/fragment_dashboard" >
+    <action
+        android:id="@+id/action_mainDashboard_to_customerListFragment"
+        app:destination="@id/customerListFragment" />
+</fragment>
 
     <fragment
         android:id="@+id/analysisFragment"

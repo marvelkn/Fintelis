@@ -1,42 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="blue_200">#FF64B5F6</color>
-    <color name="color_ripple_effect">#FFCCCCCC</color>
 
-    <color name="primary_dark">#1E3A8A</color>
-    <color name="primary_light">#3B82F6</color>
-    <color name="gray_soft">#F3F4F6</color>
+    <color name="fintelis_primary">#5735A3</color>
+    <color name="fintelis_primary_light">#EDE7F6</color>
+    <color name="fintelis_accent">#FFC107</color>
 
-    <color name="fintelis_text_dark">#282b34</color>
-    <color name="fintelis_background">#f1f5fd</color>
-    <color name="fintelis_primary">#7179c3</color>
-    <color name="fintelis_text_secondary">#a297af</color>
-    <color name="fintelis_primary_light">#bac1f5</color>
-    <color name="fintelis_accent">#3c2fb9</color>
+    <color name="status_approved">#38A169</color>
+    <color name="status_rejected">#C53030</color>
 
-    <color name="status_approved">#22c55e</color>
-    <color name="status_rejected">#ef4444</color>
-    <color name="status_pending">#f97316</color>
+    <color name="yellow_500">#FFC107</color>
+    <color name="red_500">#F44336</color>
+    <color name="blue_200">#FF90CAF9</color>
 
-    <!-- Icon Background Colors -->
-    <color name="bg_income_icon">#A7F3D0</color>
-    <color name="bg_expense_icon">#FECDD3</color>
+    <color name="bg_screen">#F8FAFC</color>
+    <color name="bg_income_icon">#1A38A169</color>
+    <color name="bg_expense_icon">#1AC53030</color>
 
-    <color name="chart_income">#2ecc71</color>
-    <color name="chart_expense">#e74c3c</color>
-    <color name="chart_line">#3498db</color>
-    <color name="chart_fill_start">#3498db</color>
-    <color name="bg_screen">#F7F9FC</color>
-    <color name="text_primary">#1A202C</color>
-    <color name="text_secondary">#718096</color>
-    <color name="chart_1">#4C6EF5</color>
-    <color name="chart_2">#22B8CF</color>
-    <color name="chart_3">#FAB005</color>
-    <color name="chart_4">#FF6B6B</color>
-    <color name="chart_5">#BE4BDB</color>
-    <color name="success_green">#27AE60</color>
-    <color name="error_red">#EB5757</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="fintelis_text_dark">#1E293B</color>
+    <color name="fintelis_text_secondary">#64748B</color>
+    <color name="text_secondary">#64748B</color>
+
+    <color name="primary_dark">#4527A0</color>
+    <color name="color_ripple_effect">#1A000000</color>
+
 </resources>

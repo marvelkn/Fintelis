@@ -13,7 +13,6 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieEntry
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.toObjects
@@ -38,6 +37,12 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     val income = MediatorLiveData<Double>()
     val expense = MediatorLiveData<Double>()
     val total = MediatorLiveData<Double>()
+
+    val incomePercentage = MutableLiveData<Float>()
+    val expensePercentage = MutableLiveData<Float>()
+    val incomeNominal = MutableLiveData<Double>()
+    val expenseNominal = MutableLiveData<Double>()
+    val incomeExpensePieData = MutableLiveData<List<PieEntry>>()
 
     private val _currentMonth = MutableLiveData<Calendar>()
     val currentMonth: LiveData<Calendar> = _currentMonth
@@ -70,7 +75,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private fun fetchWallets() {
         val userId = auth.currentUser?.uid ?: return
 
-        // Define the wallets that the hardcoded dashboard UI supports.
         val supportedWalletNames = setOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
 
         firestore.collection("users").document(userId).collection("wallets")
@@ -81,7 +85,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 }
                 val allWallets = snapshot?.toObjects<Wallet>() ?: emptyList()
 
-                // Only show wallets that are supported by the dashboard UI.
                 val supportedWallets = allWallets.filter { supportedWalletNames.contains(it.name.uppercase()) }
                 wallets.value = supportedWallets
 
@@ -192,12 +195,33 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
         displayedTransactions.postValue(sorted)
 
-        var inc = 0.0
-        var exp = 0.0
-        sorted.forEach { if (it.type == TransactionType.INCOME) inc += it.amount else exp += it.amount }
+        val inc = sorted.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+        val exp = sorted.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        val totalTransactions = inc + exp
+
         income.postValue(inc)
         expense.postValue(exp)
         total.postValue(inc - exp)
+
+        incomeNominal.postValue(inc)
+        expenseNominal.postValue(exp)
+
+        if (totalTransactions > 0) {
+            incomePercentage.postValue(((inc / totalTransactions) * 100).toFloat())
+            expensePercentage.postValue(((exp / totalTransactions) * 100).toFloat())
+        } else {
+            incomePercentage.postValue(0f)
+            expensePercentage.postValue(0f)
+        }
+
+        val pieEntries = mutableListOf<PieEntry>()
+        if (inc > 0) {
+            pieEntries.add(PieEntry(inc.toFloat(), "Income"))
+        }
+        if (exp > 0) {
+            pieEntries.add(PieEntry(exp.toFloat(), "Expense"))
+        }
+        incomeExpensePieData.postValue(pieEntries)
     }
 
     private fun seedFirebaseIfEmpty() {

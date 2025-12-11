@@ -1,79 +1,92 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="@drawable/bg_onboarding"
-    android:id="@+id/mainDashboard"
+    android:background="@drawable/bg_page_gradient"
+    android:fillViewport="true"
     tools:context=".DashboardFragment">
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:padding="20dp">
 
         <ImageView
             android:id="@+id/img_logo"
             android:layout_width="190dp"
-            android:layout_height="80dp"
-            android:layout_marginBottom="8dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="10dp"
             android:contentDescription="App Logo"
+            android:layout_gravity="center_horizontal"
             android:src="@drawable/logo_app" />
 
         <TextView
-            android:id="@+id/tv_greeting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hi, Fintelis Buddy!"
-            android:textColor="#1E293B"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_gravity="start"
-            android:layout_marginTop="4dp" />
+        android:id="@+id/tv_greeting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Good morning,"
+        android:fontFamily="@font/lato_bold"
+        android:textColor="#000"
+        android:textSize="22sp" />
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Thursday, 04 December 2025"
-            android:textSize="14sp"
-            android:textColor="#64748B"
-            android:layout_gravity="start"
-            android:layout_marginBottom="20dp" />
+            android:text="Thrusday, 11 December 2025,"
+            android:textColor="#94A3B8"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tv_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Marvel!"
+            android:fontFamily="@font/lato_bold"
+            android:textColor="#1E293B"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="180dp"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="#5735A3"
             app:cardCornerRadius="20dp"
-            app:cardElevation="6dp"
-            android:layout_marginBottom="12dp">
+            app:cardElevation="8dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/bg_card_gradient">
 
-                <TextView
-                    android:id="@+id/tv_label_balance"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginBottom="8dp"
-                    android:text="Your Total Balances"
-                    android:textColor="#FFFF"
-                    android:textSize="20sp"
-                    app:layout_constraintBottom_toTopOf="@+id/container_balance"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    android:orientation="vertical"
+                    android:gravity="start"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Balance"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+                </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/container_balance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginBottom="20dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -85,7 +98,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
                         android:text="IDR •••••••••••"
-                        android:textColor="#FFFFFF"
+                        android:textColor="#000"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -99,7 +112,7 @@
                         android:contentDescription="Toggle Balance Visibility"
                         android:focusable="true"
                         android:src="@drawable/ic_visibility_off"
-                        app:tint="#FFFFFF" />
+                        app:tint="#000" />
 
                 </LinearLayout>
                 <LinearLayout
@@ -141,22 +154,59 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scrollbars="none"
-                android:clipToPadding="false">
+                android:clipToPadding="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="8dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <include android:id="@+id/card_bca" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_blu" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_bni" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_mandiri" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_dana" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_gopay" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_ovo" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_spay" layout="@layout/item_card_wallet_dashboard" />
-                    <include android:id="@+id/card_add_wallet" layout="@layout/item_card_add_wallet" />
+                    <include
+                        android:id="@+id/card_bca"
+                        layout="@layout/item_card_bca"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_blu"
+                        layout="@layout/item_card_blu"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_bni"
+                        layout="@layout/item_card_bni"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_mandiri"
+                        layout="@layout/item_card_mandiri"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_dana"
+                        layout="@layout/item_card_dana"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_gopay"
+                        layout="@layout/item_card_gopay"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_ovo"
+                        layout="@layout/item_card_ovo"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_spay"
+                        layout="@layout/item_card_spay"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/card_add_wallet"
+                        layout="@layout/item_card_add_wallet" />
 
                 </LinearLayout>
             </HorizontalScrollView>
@@ -277,6 +327,7 @@
                         android:textSize="14sp"
                         android:textColor="#64748B"/>
                     <TextView
+                        android:id="@+id/tv_income_percentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="35%"
@@ -313,6 +364,7 @@
                         android:textSize="14sp"
                         android:textColor="#64748B"/>
                     <TextView
+                        android:id="@+id/tv_expense_percentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="45%"

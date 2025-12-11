@@ -34,6 +34,16 @@ class WalletAdapter(
         notifyDataSetChanged()
     }
 
+    fun setSelectedWallet(walletId: String?) {
+        val position = wallets.indexOfFirst { it.id == walletId }
+        if (position != -1) {
+            val previousPosition = selectedPosition
+            selectedPosition = position
+            notifyItemChanged(previousPosition)
+            notifyItemChanged(selectedPosition)
+        }
+    }
+
     inner class WalletViewHolder(private val binding: ItemWalletChipBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(wallet: Wallet, isSelected: Boolean) {
             binding.tvWalletName.text = wallet.name

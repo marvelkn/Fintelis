@@ -65,6 +65,10 @@ class TransactionListFragment : Fragment() {
         viewModel.expense.observe(viewLifecycleOwner) { binding.tvSummaryExpense.text = fmt.format(it) }
         viewModel.total.observe(viewLifecycleOwner) { binding.tvSummaryTotal.text = fmt.format(it) }
 
+        viewModel.activeWalletId.observe(viewLifecycleOwner) { walletId ->
+            walletAdapter.setSelectedWallet(walletId)
+        }
+
         // Click Listeners
         binding.fabAddTransaction.setOnClickListener {
             if (viewModel.activeWalletId.value == null || viewModel.activeWalletId.value == "ALL") {
