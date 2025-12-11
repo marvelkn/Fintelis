@@ -1,338 +1,343 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/settingsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_onboarding"
-    android:scrollbars="none"
+    android:background="#F8FAFC"
     tools:context=".SettingsFragment">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="40dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="60dp"
-            android:paddingBottom="24dp"
-            android:elevation="2dp">
-
-            <TextView
-                android:id="@+id/tvSettingsTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-black"
-                android:text="Settings"
-                android:textColor="@color/text_primary"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/lato_regular"
-                android:text="Manage your financial preferences"
-                android:textColor="#64748B"
-                android:textSize="14sp" />
-        </LinearLayout>
+        android:layout_height="match_parent"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:paddingBottom="40dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp"
-                android:fontFamily="@font/lato_bold"
-                android:text="ACCOUNT"
-                android:letterSpacing="0.05"
-                android:textColor="#475569"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:backgroundTint="#FFFFFF"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp">
+                android:background="#FFFFFF"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="60dp"
+                android:paddingBottom="24dp"
+                android:elevation="2dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/tvSettingsTitle"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:fontFamily="sans-serif-black"
+                    android:text="Settings"
+                    android:textColor="#0F172A"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:id="@+id/layoutEditProfile"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground"
-                        android:gravity="center_vertical"
-                        android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/lato_regular"
+                    android:text="Manage your financial preferences"
+                    android:textColor="#64748B"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_person"
-                            app:tint="#1E3A8A"
-                            android:layout_marginEnd="16dp" />
-
-                        <TextView
-                            android:id="@+id/tvEditProfile"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:fontFamily="@font/lato_regular"
-                            android:text="Edit Profile"
-                            android:textColor="#334155"
-                            android:textSize="16sp" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_chevron_right"
-                            app:tint="#94A3B8"/>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#F1F5F9"
-                        android:layout_marginHorizontal="16dp"/>
-
-                    <LinearLayout
-                        android:id="@+id/layoutChangePassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground"
-                        android:gravity="center_vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_lock"
-                            app:tint="#1E3A8A"
-                            android:layout_marginEnd="16dp" />
-
-                        <TextView
-                            android:id="@+id/tvChangePassword"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:fontFamily="@font/lato_regular"
-                            android:text="Change Password"
-                            android:textColor="#334155"
-                            android:textSize="16sp" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_chevron_right"
-                            app:tint="#94A3B8"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp"
-                android:fontFamily="@font/lato_bold"
-                android:text="PREFERENCES"
-                android:letterSpacing="0.05"
-                android:textColor="#475569"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:backgroundTint="#FFFFFF"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp">
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <LinearLayout
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/lato_bold"
+                    android:text="ACCOUNT"
+                    android:letterSpacing="0.05"
+                    android:textColor="#475569"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_marginBottom="24dp"
+                    android:backgroundTint="#FFFFFF"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E2E8F0"
+                    app:strokeWidth="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_notifications"
-                            app:tint="#1E3A8A"
-                            android:layout_marginEnd="16dp" />
+                        android:orientation="vertical">
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:id="@+id/layoutEditProfile"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground"
+                            android:gravity="center_vertical"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_person"
+                                app:tint="#1E3A8A"
+                                android:layout_marginEnd="16dp" />
 
                             <TextView
-                                android:id="@+id/tvNotificationsLabel"
+                                android:id="@+id/tvEditProfile"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/lato_regular"
+                                android:text="Edit Profile"
+                                android:textColor="#334155"
+                                android:textSize="16sp" />
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="#94A3B8"/>
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#F1F5F9"
+                            android:layout_marginHorizontal="16dp"/>
+
+                        <LinearLayout
+                            android:id="@+id/layoutChangePassword"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground"
+                            android:gravity="center_vertical"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_lock"
+                                app:tint="#1E3A8A"
+                                android:layout_marginEnd="16dp" />
+
+                            <TextView
+                                android:id="@+id/tvChangePassword"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/lato_regular"
+                                android:text="Change Password"
+                                android:textColor="#334155"
+                                android:textSize="16sp" />
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="#94A3B8"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/lato_bold"
+                    android:text="PREFERENCES"
+                    android:letterSpacing="0.05"
+                    android:textColor="#475569"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:backgroundTint="#FFFFFF"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E2E8F0"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_notifications"
+                                app:tint="#1E3A8A"
+                                android:layout_marginEnd="16dp" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvNotificationsLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/lato_regular"
+                                    android:text="Daily Reminder"
+                                    android:textColor="#334155"
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Alert at 13:00 and 19:00"
+                                    android:textSize="12sp"
+                                    android:textColor="#64748B"/>
+                            </LinearLayout>
+
+                            <com.google.android.material.switchmaterial.SwitchMaterial
+                                android:id="@+id/switchNotifications"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:checked="false"
+                                app:trackTint="#CBD5E1"
+                                app:thumbTint="#1E3A8A"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/lato_bold"
+                    android:text="SUPPORT"
+                    android:letterSpacing="0.05"
+                    android:textColor="#475569"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#FFFFFF"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E2E8F0"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:id="@+id/layoutAboutApp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground"
+                            android:gravity="center_vertical"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_info"
+                                app:tint="#1E3A8A"
+                                android:layout_marginEnd="16dp" />
+
+                            <TextView
+                                android:id="@+id/tvAboutApp"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:fontFamily="@font/lato_regular"
-                                android:text="Notifications"
+                                android:text="About Financial App"
                                 android:textColor="#334155"
                                 android:textSize="16sp" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Receive alerts and updates"
+                                android:text="v1.0.2"
                                 android:textSize="12sp"
-                                android:textColor="#64748B"/>
+                                android:textColor="#94A3B8"
+                                android:layout_marginEnd="8dp"/>
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="#94A3B8"/>
                         </LinearLayout>
-
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switchNotifications"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"
-                            app:trackTint="#CBD5E1"
-                            app:thumbTint="#1E3A8A"/>
                     </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp"
-                android:fontFamily="@font/lato_bold"
-                android:text="SUPPORT"
-                android:letterSpacing="0.05"
-                android:textColor="#475569"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLogout"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="32dp"
+                    android:text="Log Out"
+                    android:textAllCaps="false"
+                    android:textColor="#B91C1C"
+                    app:strokeColor="#FECACA"
+                    app:rippleColor="#FEE2E2"
+                    app:strokeWidth="1dp"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/lato_bold"
+                    app:cornerRadius="12dp"
+                    app:elevation="0dp"/>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:backgroundTint="#FFFFFF"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvUserEmailDisplay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:text="Securely logged in..."
+                    android:gravity="center"
+                    android:layout_marginTop="16dp"
+                    android:textSize="12sp"
+                    android:textColor="#94A3B8"/>
 
-                    <LinearLayout
-                        android:id="@+id/layoutAboutApp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground"
-                        android:gravity="center_vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_info"
-                            app:tint="#1E3A8A"
-                            android:layout_marginEnd="16dp" />
-
-                        <TextView
-                            android:id="@+id/tvAboutApp"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:fontFamily="@font/lato_regular"
-                            android:text="About Financial App"
-                            android:textColor="#334155"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="v1.0.2"
-                            android:textSize="12sp"
-                            android:textColor="#94A3B8"
-                            android:layout_marginEnd="8dp"/>
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_chevron_right"
-                            app:tint="#94A3B8"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnLogout"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="32dp"
-                android:text="Log Out"
-                android:textAllCaps="false"
-                android:textColor="#B91C1C"
-                app:strokeColor="#C53030"
-                app:rippleColor="#FEE2E2"
-                app:strokeWidth="1dp"
-                android:textSize="16sp"
-                android:fontFamily="@font/lato_bold"
-                app:cornerRadius="12dp"
-                app:elevation="0dp"/>
-
-            <TextView
-                android:id="@+id/tvUserEmailDisplay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Securely logged in as user@example.com"
-                android:gravity="center"
-                android:layout_marginTop="16dp"
-                android:textSize="12sp"
-                android:textColor="#94A3B8"/>
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:visibility="gone"
-                android:layout_marginTop="16dp"/>
-
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminateTint="#1E3A8A"/>
+
+</FrameLayout>
