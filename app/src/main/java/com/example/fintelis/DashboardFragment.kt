@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.fintelis.R
 import com.example.fintelis.data.Wallet
 import com.example.fintelis.databinding.FragmentDashboardBinding
 import com.example.fintelis.viewmodel.DashboardViewModel
@@ -80,7 +79,7 @@ class DashboardFragment : Fragment() {
 
         cardView.setOnClickListener {
             transactionViewModel.setActiveWallet(wallet.id)
-            findNavController().navigate(R.id.customerListFragment)
+            findNavController().navigate(R.id.action_dashboardFragment_to_transactionListFragment)
         }
     }
 

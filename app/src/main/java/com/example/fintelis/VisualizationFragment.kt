@@ -179,29 +179,27 @@ class VisualizationFragment : Fragment() {
     // --- OBSERVE DATA ---
     private fun observeData() {
         viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
-            if (transactions != null) {
-                currentTransactions = transactions
-                updateSummaryText(transactions)
+            currentTransactions = transactions ?: emptyList()
+            updateSummaryText(currentTransactions)
 
-                if (transactions.isNotEmpty()) {
-                    layoutCharts.isVisible = true
-                    layoutEmptyState.isVisible = false
+            if (currentTransactions.isNotEmpty()) {
+                layoutCharts.isVisible = true
+                layoutEmptyState.isVisible = false
 
-                    updatePieChart(transactions)
-                    updateLineChart(transactions)
+                updatePieChart(currentTransactions)
+                updateLineChart(currentTransactions)
 
-                    // Button selalu terlihat jika ada data
-                    btnSeeDetail.isVisible = true
+                // Button selalu terlihat jika ada data
+                btnSeeDetail.isVisible = true
 
-                } else {
-                    layoutCharts.isVisible = false
-                    layoutEmptyState.isVisible = true
-                    pieChart.clear()
-                    lineChart.clear()
+            } else {
+                layoutCharts.isVisible = false
+                layoutEmptyState.isVisible = true
+                pieChart.clear()
+                lineChart.clear()
 
-                    // Sembunyikan tombol detail jika tidak ada data
-                    btnSeeDetail.isVisible = false
-                }
+                // Sembunyikan tombol detail jika tidak ada data
+                btnSeeDetail.isVisible = false
             }
         }
     }
@@ -210,8 +208,8 @@ class VisualizationFragment : Fragment() {
 
     private fun updateSummaryText(transactions: List<Transaction>) {
         val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-        val totalInc = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
-        val totalExp = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        val totalInc: Double = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+        val totalExp: Double = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
         tvTotalIncome.text = formatRp.format(totalInc)
         tvTotalExpense.text = formatRp.format(totalExp)
     }
@@ -307,7 +305,7 @@ class VisualizationFragment : Fragment() {
 
         if (filteredList.isEmpty()) { pieChart.clear(); pieChart.centerText = if(isExpenseMode) "No Expense" else "No Income"; tvTopCategory.text = "-"; return }
 
-        val totalAmount = filteredList.sumOf { it.amount }
+        val totalAmount: Double = filteredList.sumOf { it.amount }
         val groupedData = filteredList.groupBy { it.category }.mapValues { entry -> entry.value.sumOf { it.amount } }
         val maxEntry = groupedData.maxByOrNull { it.value }
         if (maxEntry != null) { tvTopCategory.text = "${maxEntry.key} (${formatRp.format(maxEntry.value)})" }

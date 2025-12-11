@@ -19,7 +19,7 @@ class TransactionDetailFragment : Fragment() {
     private var _binding: FragmentTransactionDetailBinding? = null
     private val binding get() = _binding!!
 
-    // Menerima data 'transactionData' dari Safe Args
+    // Menerima data 'transaction' dari Safe Args
     private val args: TransactionDetailFragmentArgs by navArgs()
 
     override fun onCreateView(
@@ -39,7 +39,7 @@ class TransactionDetailFragment : Fragment() {
         }
 
         // Ambil data dan tampilkan
-        val transaction = args.transactionData
+        val transaction = args.transaction
         displayTransactionData(transaction)
     }
 

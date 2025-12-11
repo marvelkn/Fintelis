@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_login_to_signup"
             app:destination="@id/signupFragment"/>
+        <action
+            android:id="@+id/action_loginFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment" />
     </fragment>
 
     <fragment
@@ -22,5 +25,53 @@
             android:id="@+id/action_signup_to_login"
             app:destination="@id/loginFragment"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.example.fintelis.DashboardFragment"
+        android:label="Dashboard"
+        tools:layout="@layout/fragment_dashboard">
+        <action
+            android:id="@+id/action_dashboardFragment_to_transactionListFragment"
+            app:destination="@id/transactionListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transactionListFragment"
+        android:name="com.example.fintelis.TransactionListFragment"
+        android:label="Transactions"
+        tools:layout="@layout/fragment_transaction_list">
+        <action
+            android:id="@+id/action_transactionListFragment_to_addTransactionFragment"
+            app:destination="@id/addTransactionFragment" />
+        <action
+            android:id="@+id/action_transactionListFragment_to_transactionDetailFragment"
+            app:destination="@id/transactionDetailFragment" />
+        <argument
+            android:name="transaction"
+            app:argType="com.example.fintelis.data.Transaction" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addTransactionFragment"
+        android:name="com.example.fintelis.AddTransactionFragment"
+        android:label="Add Transaction"
+        tools:layout="@layout/fragment_add_transaction" />
+
+    <fragment
+        android:id="@+id/transactionDetailFragment"
+        android:name="com.example.fintelis.TransactionDetailFragment"
+        android:label="Transaction Detail"
+        tools:layout="@layout/fragment_transaction_detail">
+        <argument
+            android:name="transaction"
+            app:argType="com.example.fintelis.data.Transaction" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/visualizationFragment"
+        android:name="com.example.fintelis.VisualizationFragment"
+        android:label="Visualization"
+        tools:layout="@layout/fragment_visualization" />
 
 </navigation>

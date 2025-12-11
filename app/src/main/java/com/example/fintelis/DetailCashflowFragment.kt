@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -98,10 +97,10 @@ class DetailCashflowFragment : Fragment() {
                 // Filter Data
                 val filteredList = transactions
                     .filter { it.type == targetType }
-                    .sortedByDescending { it.date }
+                    .sortedByDescending { viewModel.parseDatePublic(it.date) }
 
                 // Update Total Text
-                val total = filteredList.sumOf { it.amount }
+                val total: Double = filteredList.sumOf { it.amount }
                 val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
                 tvTotalAmount.text = formatRp.format(total)
 

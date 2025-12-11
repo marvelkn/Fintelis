@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.fintelis.R
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.databinding.FragmentAddTransactionBinding
@@ -54,7 +53,8 @@ class AddTransactionFragment : Fragment() {
                 amount = amountStr.toDouble(),
                 type = type,
                 date = date,
-                category = category
+                category = category,
+                walletId = ""
             )
             viewModel.addTransaction(transaction)
             Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
