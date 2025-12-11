@@ -70,8 +70,7 @@ class TransactionListFragment : Fragment() {
             if (viewModel.activeWalletId.value == null || viewModel.activeWalletId.value == "ALL") {
                 Toast.makeText(context, "Please select a specific wallet to add a transaction", Toast.LENGTH_SHORT).show()
             } else {
-                val action = TransactionListFragmentDirections.actionTransactionListFragmentToAddTransactionFragment()
-                findNavController().navigate(action)
+                findNavController().navigate(R.id.action_customerListFragment_to_addCustomerFragment)
             }
         }
         binding.btnPrevMonth.setOnClickListener { viewModel.changeMonth(-1) }
@@ -88,7 +87,7 @@ class TransactionListFragment : Fragment() {
         // Transaction list adapter
         transactionAdapter = TransactionAdapter(mutableListOf()) {
             if (!isDeleteMode) {
-                val action = TransactionListFragmentDirections.actionTransactionListFragmentToTransactionDetailFragment(it)
+                val action = TransactionListFragmentDirections.actionCustomerListFragmentToCustomerDetailFragment(it)
                 findNavController().navigate(action)
             }
         }

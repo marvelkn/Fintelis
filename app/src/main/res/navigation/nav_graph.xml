@@ -47,9 +47,6 @@
         <action
             android:id="@+id/action_transactionListFragment_to_transactionDetailFragment"
             app:destination="@id/transactionDetailFragment" />
-        <argument
-            android:name="transaction"
-            app:argType="com.example.fintelis.data.Transaction" />
     </fragment>
 
     <fragment

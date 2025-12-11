@@ -48,7 +48,7 @@
         tools:layout="@layout/fragment_transaction_detail" >
 
         <argument
-            android:name="transactionData"
+            android:name="transaction"
             app:argType="com.example.fintelis.data.Transaction" />
     </fragment>
 
