@@ -45,6 +45,21 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
+        <!-- ✅ ICON TOGGLE VISIBILITY (ditambahkan di sini) -->
+        <ImageView
+            android:id="@+id/img_toggle_wallet_balance"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_visibility_off"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:tint="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:ignore="ContentDescription" />
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"

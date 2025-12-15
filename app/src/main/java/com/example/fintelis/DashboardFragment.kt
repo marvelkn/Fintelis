@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -19,7 +20,6 @@ import com.example.fintelis.viewmodel.TransactionViewModel
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -36,6 +36,15 @@ class DashboardFragment : Fragment() {
     private val dashboardViewModel: DashboardViewModel by viewModels()
     private val transactionViewModel: TransactionViewModel by activityViewModels()
 
+    // === STATE TRACKING ===
+    // 1. Main Balance State
+    private var isMainBalanceVisible = false
+    private var actualMainBalanceFormatted: String = "IDR •••••••••••"
+
+    // 2. Wallet Visibility State Map (Key: WalletID, Value: IsVisible)
+    // We use this so that when data updates, the toggle state doesn't reset to false.
+    private val walletVisibilityStates = mutableMapOf<String, Boolean>()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,20 +58,23 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
-
         tvGreeting = view.findViewById(R.id.tv_greeting)
 
-        if(auth.currentUser != null){
+        if (auth.currentUser != null) {
             val user = auth.currentUser
             displayUserName(user)
         }
 
         setupPieChart()
 
+        // Observe total balance and store real value
         dashboardViewModel.totalBalance.observe(viewLifecycleOwner) { totalBalance ->
-            binding.tvBalanceNominal.text = dashboardViewModel.formatRupiah(totalBalance ?: 0.0)
+            val formatted = dashboardViewModel.formatRupiah(totalBalance ?: 0.0)
+            actualMainBalanceFormatted = formatted
+            updateMainBalanceDisplay()
         }
 
+        // Observe wallets and update UI
         dashboardViewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             if (wallets == null) return@observe
 
@@ -77,8 +89,10 @@ class DashboardFragment : Fragment() {
                 "SPAY" to binding.cardSpay.root
             )
 
+            // Hide all initially
             cardMap.values.forEach { it.visibility = View.GONE }
 
+            // Show and update only active wallets
             wallets.forEach { wallet ->
                 val cardView = cardMap[wallet.name.uppercase()]
                 cardView?.let {
@@ -88,10 +102,12 @@ class DashboardFragment : Fragment() {
             }
         }
 
+        // Add Wallet button
         binding.cardAddWallet.root.setOnClickListener {
             showAddWalletDialog()
         }
 
+        // Financial data observers
         val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
         transactionViewModel.incomePercentage.observe(viewLifecycleOwner) { percentage ->
@@ -123,17 +139,19 @@ class DashboardFragment : Fragment() {
             binding.pieChartFinancial.data = pieData
             binding.pieChartFinancial.invalidate()
         }
+
+        // === SETUP MAIN TOGGLE BUTTON ===
+        binding.imgToggleBalance.setOnClickListener {
+            isMainBalanceVisible = !isMainBalanceVisible
+            updateMainBalanceDisplay()
+        }
     }
 
     private fun displayUserName(user: FirebaseUser?) {
-        // Ambil nama pengguna (displayName)
         val userName = user?.displayName
-
-        // Cek jika nama tidak kosong, jika kosong, gunakan sapaan default
         if (!userName.isNullOrEmpty()) {
             tvGreeting.text = "Hi, $userName!"
         } else {
-            // Fallback jika nama tidak ada
             tvGreeting.text = "Hi, Fintelis Buddy!"
         }
     }
@@ -157,13 +175,43 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    // === UPDATED FUNCTION: ROBUST WALLET TOGGLE ===
     private fun updateCard(cardView: View, wallet: Wallet) {
+        // Use safe calls (?) to prevent crashes if IDs are missing in some XMLs
         val tvWalletName = cardView.findViewById<TextView>(R.id.tv_wallet_name)
         val tvWalletBalance = cardView.findViewById<TextView>(R.id.tv_wallet_balance)
+        val imgToggleWallet = cardView.findViewById<ImageView>(R.id.img_toggle_wallet_balance)
 
         tvWalletName?.text = wallet.name
-        tvWalletBalance?.text = dashboardViewModel.formatRupiah(wallet.balance)
 
+        val realBalance = dashboardViewModel.formatRupiah(wallet.balance)
+        val hiddenBalance = "Rp •••••••"
+
+        // 1. Get current state from Map, default to false (hidden) if not set
+        var isVisible = walletVisibilityStates[wallet.id] ?: false
+
+        // 2. Helper to set UI based on boolean state
+        fun setUIState(visible: Boolean) {
+            if (visible) {
+                tvWalletBalance?.text = realBalance
+                imgToggleWallet?.setImageResource(R.drawable.ic_visibility)
+            } else {
+                tvWalletBalance?.text = hiddenBalance
+                imgToggleWallet?.setImageResource(R.drawable.ic_visibility_off)
+            }
+        }
+
+        // 3. Apply initial state immediately
+        setUIState(isVisible)
+
+        // 4. Toggle Click Listener
+        imgToggleWallet?.setOnClickListener {
+            isVisible = !isVisible // Flip state
+            walletVisibilityStates[wallet.id] = isVisible // Save to map
+            setUIState(isVisible) // Update UI
+        }
+
+        // 5. Card Navigation Click Listener
         cardView.setOnClickListener {
             transactionViewModel.setActiveWallet(wallet.id)
             findNavController().navigate(R.id.action_mainDashboard_to_customerListFragment)
@@ -179,14 +227,13 @@ class DashboardFragment : Fragment() {
 
         AlertDialog.Builder(requireContext())
             .setTitle("Add New Wallet")
-            .setItems(dialogOptions) { dialog, which ->
+            .setItems(dialogOptions) { _, which ->
                 val selected = dialogOptions[which]
                 if (selected == "Other...") {
                     showCustomWalletDialog()
                 } else {
                     dashboardViewModel.addNewWallet(selected)
                 }
-                dialog.dismiss()
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -199,17 +246,26 @@ class DashboardFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("Add Custom Wallet")
             .setView(editText)
-            .setPositiveButton("Add") { dialog, _ ->
+            .setPositiveButton("Add") { _, _ ->
                 val walletName = editText.text.toString().trim()
                 if (walletName.isNotEmpty()) {
                     dashboardViewModel.addNewWallet(walletName)
                 }
-                dialog.dismiss()
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
+    // === MAIN BALANCE UPDATE ===
+    private fun updateMainBalanceDisplay() {
+        if (isMainBalanceVisible) {
+            binding.tvBalanceNominal.text = actualMainBalanceFormatted
+            binding.imgToggleBalance.setImageResource(R.drawable.ic_visibility)
+        } else {
+            binding.tvBalanceNominal.text = "IDR •••••••••••"
+            binding.imgToggleBalance.setImageResource(R.drawable.ic_visibility_off)
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

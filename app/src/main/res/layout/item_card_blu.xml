@@ -22,8 +22,7 @@
             android:src="@drawable/logo_blu"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:backgroundTint="#20FFFFFF"/>
-
+            android:backgroundTint="#20FFFFFF" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -33,7 +32,7 @@
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/tv_wallet_balance"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/tv_wallet_balance"
@@ -46,6 +45,21 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
+        <!-- ✅ ICON TOGGLE VISIBILITY (ditambahkan di sini) -->
+        <ImageView
+            android:id="@+id/img_toggle_wallet_balance"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_visibility_off"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:tint="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:ignore="ContentDescription" />
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
@@ -53,7 +67,7 @@
             android:alpha="0.2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:tint="@color/white"/>
+            app:tint="@color/white" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
