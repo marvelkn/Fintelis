@@ -156,41 +156,54 @@
                     <include
                         android:id="@+id/card_bca"
                         layout="@layout/item_card_bca"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
                         android:id="@+id/card_blu"
                         layout="@layout/item_card_blu"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
                         android:id="@+id/card_bni"
                         layout="@layout/item_card_bni"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
                         android:id="@+id/card_mandiri"
                         layout="@layout/item_card_mandiri"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
                         android:id="@+id/card_dana"
                         layout="@layout/item_card_dana"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
                         android:id="@+id/card_gopay"
                         layout="@layout/item_card_gopay"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
                         android:id="@+id/card_ovo"
                         layout="@layout/item_card_ovo"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
                         android:id="@+id/card_spay"
                         layout="@layout/item_card_spay"
+                        android:src="@drawable/ic_visibility_off"
+                        android:visibility="gone" />
+                    <include
+                        android:id="@+id/card_other"
+                        layout="@layout/item_card_spay"
+                        android:src="@drawable/ic_visibility_off"
                         android:visibility="gone" />
 
                     <include
@@ -229,15 +242,16 @@
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:progress="70"
-                        android:rotation="-90"
+                        android:max="100"
+                        android:progress="0"
                         android:progressDrawable="@drawable/circle_progress_purple" />
 
                     <TextView
+                        android:id="@+id/tv_limit_percentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
-                        android:text="70%"
+                        android:text="%"
                         android:textColor="#B39DDB"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -255,9 +269,10 @@
                         android:textSize="16sp"
                         android:layout_marginBottom="4dp"/>
                     <TextView
+                        android:id="@+id/tv_limit_nominal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="IDR700,000 of IDR1,000,000"
+                        android:text="Choose your wallet first"
                         android:textColor="#64748B"
                         android:textSize="13sp"/>
                 </LinearLayout>
@@ -319,7 +334,7 @@
                         android:id="@+id/tv_income_percentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="35%"
+                        android:text="0%"
                         android:textStyle="bold"
                         android:textColor="#1E293B"
                         android:layout_marginEnd="16dp"/>
@@ -327,7 +342,7 @@
                         android:id="@+id/tv_income_nominal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="IDR 12.500.000"
+                        android:text="Choose your wallet first"
                         android:textStyle="bold"
                         android:textColor="#1E293B"/>
                 </LinearLayout>
@@ -356,7 +371,7 @@
                         android:id="@+id/tv_expense_percentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="45%"
+                        android:text="0%"
                         android:textStyle="bold"
                         android:textColor="#1E293B"
                         android:layout_marginEnd="16dp"/>
@@ -364,7 +379,7 @@
                         android:id="@+id/tv_expense_nominal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="IDR 8.200.000"
+                        android:text="Choose your wallet first"
                         android:textStyle="bold"
                         android:textColor="#1E293B"/>
                 </LinearLayout>

@@ -1,10 +1,12 @@
 package com.example.fintelis
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -30,6 +32,8 @@ class DashboardFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var tvGreeting: TextView
 
+    private var isBalanceVisible = false
+    private var currentBalance: Double = 0.0
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
 
@@ -58,34 +62,21 @@ class DashboardFragment : Fragment() {
         }
 
         setupPieChart()
+        setupLimitCalculation()
 
         dashboardViewModel.totalBalance.observe(viewLifecycleOwner) { totalBalance ->
-            binding.tvBalanceNominal.text = dashboardViewModel.formatRupiah(totalBalance ?: 0.0)
+            currentBalance = totalBalance ?: 0.0
+            updateBalanceUI()
+        }
+
+        binding.imgToggleBalance.setOnClickListener {
+            isBalanceVisible = !isBalanceVisible
+            updateBalanceUI()
+            refreshWalletsUI()
         }
 
         dashboardViewModel.wallets.observe(viewLifecycleOwner) { wallets ->
-            if (wallets == null) return@observe
-
-            val cardMap = mapOf(
-                "BCA" to binding.cardBca.root,
-                "BLU" to binding.cardBlu.root,
-                "BNI" to binding.cardBni.root,
-                "MANDIRI" to binding.cardMandiri.root,
-                "DANA" to binding.cardDana.root,
-                "GOPAY" to binding.cardGopay.root,
-                "OVO" to binding.cardOvo.root,
-                "SPAY" to binding.cardSpay.root
-            )
-
-            cardMap.values.forEach { it.visibility = View.GONE }
-
-            wallets.forEach { wallet ->
-                val cardView = cardMap[wallet.name.uppercase()]
-                cardView?.let {
-                    it.visibility = View.VISIBLE
-                    updateCard(it, wallet)
-                }
-            }
+            refreshWalletsUI()
         }
 
         binding.cardAddWallet.root.setOnClickListener {
@@ -93,6 +84,7 @@ class DashboardFragment : Fragment() {
         }
 
         val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        transactionViewModel.setActiveWallet(null)
 
         transactionViewModel.incomePercentage.observe(viewLifecycleOwner) { percentage ->
             binding.tvIncomePercentage.text = String.format("%.0f%%", percentage)
@@ -162,7 +154,13 @@ class DashboardFragment : Fragment() {
         val tvWalletBalance = cardView.findViewById<TextView>(R.id.tv_wallet_balance)
 
         tvWalletName?.text = wallet.name
-        tvWalletBalance?.text = dashboardViewModel.formatRupiah(wallet.balance)
+        if (isBalanceVisible) {
+            // Jika mata terbuka: Tampilkan saldo asli
+            tvWalletBalance?.text = dashboardViewModel.formatRupiah(wallet.balance)
+        } else {
+            // Jika mata tertutup: Tampilkan sensor
+            tvWalletBalance?.text = "IDR •••••••"
+        }
 
         cardView.setOnClickListener {
             transactionViewModel.setActiveWallet(wallet.id)
@@ -208,6 +206,108 @@ class DashboardFragment : Fragment() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun setupLimitCalculation() {
+        // 1. Ambil LIMIT dari LOKAL (SharedPreferences)
+        val sharedPref = requireContext().getSharedPreferences("FinancialPrefs", Context.MODE_PRIVATE)
+        // Default 1 rupiah agar tidak error pembagian nol jika belum diset
+        val limitLocal = sharedPref.getLong("monthly_limit", 0).toDouble()
+
+        // Jika user belum pernah set limit, kita bisa set UI default atau return
+        if (limitLocal == 0.0) {
+            binding.tvLimitPercentage.text = "Set Limit"
+            binding.progressBarLimit.progress = 0
+        }
+
+        // 2. Ambil PENGELUARAN dari FIREBASE
+        // Kita gunakan data yang sudah ada di TransactionViewModel agar lebih efisien
+        // Asumsi: TransactionViewModel sudah menghitung total expense dari database
+        transactionViewModel.expenseNominal.observe(viewLifecycleOwner) { totalExpense ->
+
+            // 3. Lakukan Perhitungan
+            if (limitLocal > 0) {
+                val percentage = ((totalExpense / limitLocal) * 100).toInt()
+
+                // Update UI
+                binding.progressBarLimit.progress = if (percentage > 100) 100 else percentage
+                binding.tvLimitPercentage.text = "$percentage%"
+
+                // Opsional: Ubah warna jika over limit
+                if (percentage >= 100) {
+                    binding.progressBarLimit.progressDrawable.setColorFilter(
+                        android.graphics.Color.RED, android.graphics.PorterDuff.Mode.SRC_IN
+                    )
+                    binding.tvLimitPercentage.setTextColor(android.graphics.Color.RED)
+                } else {
+                    // Reset warna (misal ke default biru/hijau)
+                    binding.progressBarLimit.progressDrawable.clearColorFilter()
+                    binding.tvLimitPercentage.setTextColor(ContextCompat.getColor(requireContext(), R.color.black)) // Atau warna default
+                }
+
+                // Tampilkan detail angka (misal: "500rb / 1Jt")
+                // Pastikan Anda punya TextView untuk ini, misal binding.tvLimitDetails
+                val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+                binding.tvLimitNominal.text = "${dashboardViewModel.formatRupiah(totalExpense)} / ${dashboardViewModel.formatRupiah(limitLocal)}"
+            }
+        }
+    }
+
+    // Fungsi helper untuk mengatur tampilan teks dan icon
+    private fun updateBalanceUI() {
+        if (isBalanceVisible) {
+            // TAMPILKAN SALDO
+            // Format ke rupiah
+            val formattedBalance = dashboardViewModel.formatRupiah(currentBalance)
+            binding.tvBalanceNominal.text = "$formattedBalance"
+
+            // Ganti icon menjadi mata terbuka (visibility on)
+            // Pastikan Anda punya drawable ic_visibility_on
+            binding.imgToggleBalance.setImageResource(R.drawable.ic_visibility_on)
+        } else {
+            // SEMBUNYIKAN SALDO
+            binding.tvBalanceNominal.text = "IDR •••••••••••"
+
+            // Ganti icon menjadi mata tertutup (visibility off)
+            binding.imgToggleBalance.setImageResource(R.drawable.ic_visibility_off)
+        }
+    }
+
+    private fun refreshWalletsUI() {
+        // Ambil data wallet terakhir dari ViewModel
+        val wallets = dashboardViewModel.wallets.value ?: return
+
+        val cardMap = mapOf(
+            "BCA" to binding.cardBca.root,
+            "BLU" to binding.cardBlu.root,
+            "BNI" to binding.cardBni.root,
+            "MANDIRI" to binding.cardMandiri.root,
+            "DANA" to binding.cardDana.root,
+            "GOPAY" to binding.cardGopay.root,
+            "OVO" to binding.cardOvo.root,
+            "SPAY" to binding.cardSpay.root
+        )
+
+        // Sembunyikan semua kartu dulu
+        cardMap.values.forEach { it.visibility = View.GONE }
+
+        // Tampilkan hanya kartu yang dimiliki user
+        wallets.forEach { wallet ->
+            val cardView = cardMap[wallet.name.uppercase()]
+            cardView?.let {
+                it.visibility = View.VISIBLE
+                updateCard(it, wallet) // <-- Fungsi updateCard sekarang sudah pakai logika isBalanceVisible
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Memastikan setiap kali kembali ke halaman ini, mode kembali ke "All Wallets"
+        transactionViewModel.setActiveWallet(null)
+
+        // Refresh perhitungan limit (dari kode sebelumnya)
+        setupLimitCalculation()
     }
 
 

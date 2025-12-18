@@ -9,18 +9,23 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.fintelis.adapter.TransactionAdapter
 import com.example.fintelis.adapter.WalletAdapter
+import com.example.fintelis.data.Transaction
 import com.example.fintelis.databinding.DialogDisplayOptionsBinding
 import com.example.fintelis.databinding.FragmentTransactionListBinding
 import com.example.fintelis.viewmodel.FilterType
@@ -36,6 +41,11 @@ class TransactionListFragment : Fragment() {
     private val viewModel: TransactionViewModel by activityViewModels()
     private lateinit var transactionAdapter: TransactionAdapter
     private lateinit var walletAdapter: WalletAdapter
+
+    private lateinit var layoutTransactionList: RecyclerView
+    private lateinit var layoutEmptyState: LinearLayout
+    private lateinit var layoutSearch: EditText
+    private var currentTransactions: List<Transaction> = emptyList()
     private var isDeleteMode = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -46,6 +56,10 @@ class TransactionListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        layoutTransactionList = binding.recyclerViewTransactions
+        layoutEmptyState = binding.layoutEmptyState
+        layoutSearch = binding.searchBar
+
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         setupMenu()
         setupAdapters()
@@ -54,7 +68,23 @@ class TransactionListFragment : Fragment() {
         viewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             walletAdapter.updateWallets(wallets ?: emptyList())
         }
-        viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactionAdapter.updateData(it) }
+        // 3. Observer dipindah ke sini
+        viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
+            // Update Adapter
+            transactionAdapter.updateData(transactions)
+
+            // Logika Empty State
+            currentTransactions = transactions ?: emptyList()
+            if (currentTransactions.isNotEmpty()) {
+                layoutTransactionList.isVisible = true
+                layoutEmptyState.isVisible = false
+                layoutSearch.isVisible = true
+            } else {
+                layoutTransactionList.isVisible = false
+                layoutEmptyState.isVisible = true
+                layoutSearch.isVisible = false
+            }
+        }
         viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->
             val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.US)
             binding.tvCurrentMonth.text = monthFormat.format(calendar.time)

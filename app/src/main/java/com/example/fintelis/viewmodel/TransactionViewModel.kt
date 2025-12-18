@@ -59,6 +59,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private var currentSearchQuery = ""
 
     init {
+        _activeWalletId.value = "ALL"
         _currentMonth.value = Calendar.getInstance()
         fetchWallets()
 
@@ -87,10 +88,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
                 val supportedWallets = allWallets.filter { supportedWalletNames.contains(it.name.uppercase()) }
                 wallets.value = supportedWallets
-
-                if (_activeWalletId.value == null) {
-                    _activeWalletId.value = "ALL"
-                }
             }
     }
 
@@ -117,9 +114,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 return@addSnapshotListener
             }
             _allData.value = snapshot?.toObjects() ?: emptyList()
-            if (_allData.value?.isEmpty() == true) {
-                seedFirebaseIfEmpty()
-            }
+            // Removed seedFirebaseIfEmpty call to prevent auto-population of initial balance
         }
     }
 
@@ -222,14 +217,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             pieEntries.add(PieEntry(exp.toFloat(), "Expense"))
         }
         incomeExpensePieData.postValue(pieEntries)
-    }
-
-    private fun seedFirebaseIfEmpty() {
-        val cal = Calendar.getInstance()
-        val dummyList = mutableListOf<Transaction>()
-        cal.time = Date()
-        dummyList.add(Transaction(UUID.randomUUID().toString(), "Initial Balance", 0.0, TransactionType.INCOME, formatDate(cal), "System", "Cash"))
-        dummyList.forEach { addTransaction(it) }
     }
 
     private fun formatDate(calendar: Calendar): String {

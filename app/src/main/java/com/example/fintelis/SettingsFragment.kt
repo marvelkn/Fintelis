@@ -6,15 +6,19 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -79,6 +83,9 @@ class SettingsFragment : Fragment() {
             val intent = Intent(requireContext(), ReminderReceiver::class.java)
             requireContext().sendBroadcast(intent)
             Toast.makeText(requireContext(), "Mencoba memunculkan notifikasi...", Toast.LENGTH_SHORT).show()
+        }
+        binding.layoutSetLimit.setOnClickListener {
+            showSetLimitDialog()
         }
     }
 
@@ -174,7 +181,7 @@ class SettingsFragment : Fragment() {
         // Juga matikan reminder saat logout (Opsional, tergantung kebutuhan bisnis)
         // NotificationScheduler.setReminderStatus(requireContext(), false)
 
-        Toast.makeText(requireContext(), "Anda telah logout", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "You're Logged Out", Toast.LENGTH_SHORT).show()
 
         val intent = Intent(requireActivity(), AuthActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -182,8 +189,47 @@ class SettingsFragment : Fragment() {
         requireActivity().finish()
     }
 
+    private fun showSetLimitDialog() {
+        val context = requireContext()
+
+        // 1. Buat EditText untuk input angka
+        val input = EditText(context)
+        input.inputType = InputType.TYPE_CLASS_NUMBER // Hanya boleh angka
+        input.hint = "Example: 1000000"
+        input.setPadding(50, 30, 50, 30) // Sedikit padding agar rapi
+
+        // 2. Buat Dialog
+        val dialog = AlertDialog.Builder(context)
+            .setTitle("Set your monthly limit")
+            .setMessage("Set your money spending limit")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val limitStr = input.text.toString()
+                if (limitStr.isNotEmpty()) {
+                    val limitAmount = limitStr.toDouble()
+                    saveLimitLocally(limitAmount)
+                } else {
+                    Toast.makeText(context, "You need to enter your monthly limit", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
+    }
+
+    private fun saveLimitLocally(limit: Double) {
+        val sharedPref = requireContext().getSharedPreferences("FinancialPrefs", android.content.Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putLong("monthly_limit", limit.toLong())
+            apply()
+        }
+        Toast.makeText(context, "Your monthly limit has been set", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 }
