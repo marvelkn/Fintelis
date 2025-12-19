@@ -19,23 +19,11 @@
             android:layout_height="wrap_content"
             android:text="Financial Insights"
             android:fontFamily="sans-serif-black"
-            android:textColor="#334155"
+            android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="16dp"/>
-
-        <!-- Wallet List (Added) -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_wallets"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="16dp"
-            android:textColor="#334155"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:layout_marginBottom="20dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -70,7 +58,7 @@
                     android:text="January"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="#334155"/>
+                    android:textColor="@color/text_primary"/>
                 <TextView
                     android:id="@+id/tvYearNumber"
                     android:layout_width="wrap_content"
@@ -250,7 +238,7 @@
                             android:layout_weight="1"
                             android:text="Cashflow"
                             android:textStyle="bold"
-                            android:textColor="#334155"
+                            android:textColor="@color/text_primary"
                             android:textSize="16sp"/>
 
                         <LinearLayout
@@ -279,64 +267,97 @@
                                 android:paddingHorizontal="12dp"
                                 android:textSize="12sp"
                                 android:textColor="@color/text_secondary"
-                                android:textStyle="normal"
-                                android:background="@android:color/transparent" />
+                                android:background="@android:color/transparent"/>
                         </LinearLayout>
                     </LinearLayout>
 
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/lineChart"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="220dp"/>
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Top Category: "
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"/>
+                        <TextView
+                            android:id="@+id/tvTopCategory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="-"
+                            android:textStyle="bold"
+                            android:layout_marginStart="4dp"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"/>
+                    </LinearLayout>
+
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="280dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#EDF2F7"
+                        android:layout_marginVertical="16dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSeeDetail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="View Expense Details"
+                        android:textColor="@android:color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_chevron_right"
+                        app:iconGravity="textEnd"
+                        app:iconTint="@android:color/white"
+                        app:backgroundTint="#C53030"
+                        android:minHeight="50dp"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTransactions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:overScrollMode="never"
+                        android:visibility="gone"
+                        android:layout_marginTop="12dp"/>
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="40dp"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@android:color/white">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="20dp">
-
                     <TextView
-                        android:id="@+id/tvTopCategory"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Expense Categories"
+                        android:text="Balance Trend"
                         android:textStyle="bold"
-                        android:textColor="#334155"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:layout_marginBottom="16dp"/>
-
-                    <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/pieChart"
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/lineChart"
                         android:layout_width="match_parent"
-                        android:layout_height="250dp"/>
-
+                        android:layout_height="200dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSeeDetail"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="See Expense Detail"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-medium"
-                app:cornerRadius="16dp"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#C53030"
-                app:elevation="4dp"
-                android:layout_marginBottom="24dp"/>
 
         </LinearLayout>
     </LinearLayout>

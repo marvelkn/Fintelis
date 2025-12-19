@@ -26,6 +26,10 @@ android {
         viewBinding = true
     }
 
+    aaptOptions {
+        noCompress("onnx")
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -83,6 +87,9 @@ dependencies {
     // Dependensi realtime-database
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-firestore")
+
+    // ONNX Runtime (Otak AI)
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.15.0")
 
     // material components (tablayout)
     testImplementation(libs.junit)
