@@ -197,7 +197,7 @@ class DashboardFragment : Fragment() {
 
         tvName?.text = wallet.name
         val real = formatRupiah(wallet.balance)
-        val hidden = "Rp •••••••"
+        val hidden = "IDR •••••••"
 
         var isVisible = walletVisibilityStates[wallet.id] ?: false
 
@@ -246,7 +246,7 @@ class DashboardFragment : Fragment() {
 
     private fun formatRupiah(amount: Number): String {
         val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-        return format.format(amount)
+        return format.format(amount).replace("Rp", "IDR ")
     }
 
     private fun showAddWalletDialog() {

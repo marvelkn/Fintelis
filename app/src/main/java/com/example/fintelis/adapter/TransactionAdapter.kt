@@ -47,7 +47,7 @@ class TransactionAdapter(
             }
 
             val fmt = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
-            binding.tvAmount.text = fmt.format(item.amount)
+            binding.tvAmount.text = fmt.format(item.amount).replace("Rp", "IDR ")
 
             val (amountColor, iconRes, iconBgRes) = if (item.type == TransactionType.INCOME) {
                 Triple(R.color.status_approved, R.drawable.ic_income, R.drawable.bg_icon_income)

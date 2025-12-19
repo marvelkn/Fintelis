@@ -88,7 +88,6 @@ class SignupFragment : Fragment() {
 
                         user?.updateProfile(profileUpdates)?.addOnCompleteListener { updateTask ->
                             if (updateTask.isSuccessful) {
-                                createDefaultDataForNewUser(user)
                                 Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
                                 findNavController().navigate(R.id.action_signup_to_login)
                             }
@@ -113,56 +112,12 @@ class SignupFragment : Fragment() {
             .addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    // Check if the user is new
-                    if (task.result?.additionalUserInfo?.isNewUser == true) {
-                        createDefaultDataForNewUser(user)
-                    }
                     Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
                     findNavController().navigate(R.id.action_signup_to_login)
                 } else {
                     Toast.makeText(context, "Authentication Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
-    }
-
-    private fun createDefaultDataForNewUser(user: FirebaseUser?) {
-        val userId = user?.uid ?: return
-        val batch = firestore.batch()
-        val walletCollection = firestore.collection("users").document(userId).collection("wallets")
-
-        // Define all default wallets
-        val walletNames = listOf("MAIN", "BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
-        val wallets = walletNames.map { Wallet(name = it) }
-
-        var mainWalletId = ""
-        wallets.forEach { wallet ->
-            val walletRef = walletCollection.document()
-            if (wallet.name == "MAIN") {
-                mainWalletId = walletRef.id
-            }
-            batch.set(walletRef, wallet)
-        }
-
-        // Add an initial deposit to the MAIN wallet
-        if (mainWalletId.isNotEmpty()) {
-            val transactionsCollection = firestore.collection("users").document(userId).collection("transactions")
-            val cal = Calendar.getInstance()
-            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
-
-            val welcomeDeposit = Transaction(
-                title = "Initial Deposit",
-                amount = 1500000.0,
-                type = TransactionType.INCOME,
-                date = sdf.format(cal.time),
-                category = "Gaji",
-                walletId = mainWalletId
-            )
-            batch.set(transactionsCollection.document(), welcomeDeposit)
-        }
-
-        batch.commit().addOnFailureListener {
-            Log.e("SignupFragment", "Failed to create default data", it)
-        }
     }
 
     override fun onDestroyView() {

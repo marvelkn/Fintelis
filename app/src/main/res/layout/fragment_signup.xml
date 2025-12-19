@@ -71,10 +71,10 @@
             android:paddingHorizontal="12dp">
 
             <ImageView
-                android:src="@drawable/ic_phone"
+                android:src="@drawable/ic_email"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:contentDescription="Phone icon" />
+                android:contentDescription="Email icon" />
 
             <EditText
                 android:id="@+id/etemail"

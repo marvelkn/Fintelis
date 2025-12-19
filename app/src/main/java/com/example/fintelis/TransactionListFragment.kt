@@ -89,11 +89,18 @@ class TransactionListFragment : Fragment() {
         // 3. SUMMARY CARD (SUDAH STICK KARENA LOGIKA DI VIEWMODEL)
         // Kita cukup observe viewModel.income/expense karena nilainya sudah dihitung
         // berdasarkan BULAN, bukan berdasarkan FILTER.
-        val fmt = NumberFormat.getCurrencyInstance(Locale.Builder().setLanguage("in").setRegion("ID").build())
+        // Di dalam onViewCreated observer
+        val fmt = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
-        viewModel.income.observe(viewLifecycleOwner) { binding.tvSummaryIncome.text = fmt.format(it) }
-        viewModel.expense.observe(viewLifecycleOwner) { binding.tvSummaryExpense.text = fmt.format(it) }
-        viewModel.total.observe(viewLifecycleOwner) { binding.tvSummaryTotal.text = fmt.format(it) }
+        viewModel.income.observe(viewLifecycleOwner) {
+            binding.tvSummaryIncome.text = fmt.format(it).replace("Rp", "IDR ")
+        }
+        viewModel.expense.observe(viewLifecycleOwner) {
+            binding.tvSummaryExpense.text = fmt.format(it).replace("Rp", "IDR ")
+        }
+        viewModel.total.observe(viewLifecycleOwner) {
+            binding.tvSummaryTotal.text = fmt.format(it).replace("Rp", "IDR ")
+        }
 
         // 4. Bulan & Tahun
         viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->

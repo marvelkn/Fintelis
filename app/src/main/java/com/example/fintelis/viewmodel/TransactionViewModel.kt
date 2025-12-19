@@ -128,11 +128,36 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     fun addTransaction(t: Transaction) {
         val userId = auth.currentUser?.uid ?: return
-        val walletId = _activeWalletId.value ?: return
-        if (walletId == "ALL") return
+        val db = FirebaseFirestore.getInstance()
 
-        val transactionWithWallet = t.copy(walletId = walletId)
-        firestore.collection("users").document(userId).collection("transactions").add(transactionWithWallet)
+        // Mencari dokumen wallet berdasarkan walletId yang dipilih saat input transaksi
+        val walletRef = db.collection("users").document(userId)
+            .collection("wallets").document(t.walletId)
+
+        val transRef = db.collection("users").document(userId)
+            .collection("transactions").document()
+
+        db.runTransaction { transaction ->
+            val walletSnapshot = transaction.get(walletRef)
+
+            // Mengambil saldo saat ini dari wallet yang bersangkutan
+            val currentBalance = walletSnapshot.getDouble("balance") ?: 0.0
+
+            // Menghitung saldo baru (Income + / Expense -)
+            val newBalance = if (t.type == TransactionType.INCOME) {
+                currentBalance + t.amount
+            } else {
+                currentBalance - t.amount
+            }
+
+            // 1. Simpan detail transaksi ke riwayat
+            transaction.set(transRef, t.copy(id = transRef.id))
+
+            // 2. Update field 'balance' pada dokumen wallet tersebut
+            transaction.update(walletRef, "balance", newBalance)
+
+            null
+        }
     }
 
     fun deleteTransactions(items: Set<Transaction>) {
