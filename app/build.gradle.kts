@@ -58,7 +58,6 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.viewpager2)
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
     // tambahkan viewpager2 manual karena belum selalu diinclude
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.lifecycle.livedata.ktx)
@@ -84,17 +83,19 @@ dependencies {
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-storage") // Corrected Firebase Storage
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
-    // Facebook Login
-    implementation("com.facebook.android:facebook-login:16.0.0")
     // Dependensi realtime-database
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-firestore")
 
     // ONNX Runtime (Otak AI)
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.15.0")
+
+    // Glide for image loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
     // material components (tablayout)
     testImplementation(libs.junit)

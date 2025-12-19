@@ -59,10 +59,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="24dp"
             android:text="Salary June"
             android:textColor="@color/fintelis_text_secondary"
             android:textSize="16sp" />
+
+        <!-- Receipt Image -->
+        <ImageView
+            android:id="@+id/iv_receipt_image"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginBottom="24dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:background="#E0E0E0"/>
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
