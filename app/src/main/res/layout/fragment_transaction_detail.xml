@@ -16,7 +16,6 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:title="Transaction Detail"
             app:titleTextColor="@color/fintelis_text_dark" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -81,32 +80,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Status"
-                android:textColor="@color/fintelis_text_secondary"
-                android:textSize="16sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_pill_green"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
-                android:text="Success"
-                android:textColor="@color/status_approved"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="Date"
                 android:textColor="@color/fintelis_text_secondary"
                 android:textSize="16sp" />
@@ -144,7 +117,7 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
-        
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -164,30 +137,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Salary"
-                android:textColor="@color/fintelis_text_dark"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Wallet"
-                android:textColor="@color/fintelis_text_secondary"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tv_detail_wallet"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cash"
                 android:textColor="@color/fintelis_text_dark"
                 android:textSize="16sp"
                 android:textStyle="bold" />

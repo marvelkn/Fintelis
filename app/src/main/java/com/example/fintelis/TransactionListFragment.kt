@@ -11,9 +11,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -60,7 +62,22 @@ class TransactionListFragment : Fragment() {
         layoutEmptyState = binding.layoutEmptyState
         layoutSearch = binding.searchBar
 
-        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
+        val activity = activity as? AppCompatActivity
+        activity?.setSupportActionBar(binding.toolbar)
+
+        // Set custom toolbar title and font
+        activity?.supportActionBar?.title = "Transaction History"
+        for (i in 0 until binding.toolbar.childCount) {
+            val child = binding.toolbar.getChildAt(i)
+            if (child is TextView) {
+                if (child.text == activity?.supportActionBar?.title) {
+                    val typeface = ResourcesCompat.getFont(requireContext(), R.font.lato_bold)
+                    child.typeface = typeface
+                    break
+                }
+            }
+        }
+
         setupMenu()
         setupAdapters()
 
@@ -68,7 +85,7 @@ class TransactionListFragment : Fragment() {
         viewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             walletAdapter.updateWallets(wallets ?: emptyList())
         }
-        
+
         viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
             // Update Adapter
             transactionAdapter.updateData(transactions)
@@ -85,7 +102,7 @@ class TransactionListFragment : Fragment() {
                 layoutSearch.isVisible = false
             }
         }
-        
+
         // Updated Month Observer logic to match VisualizationFragment
         viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->
             val fmtMonth = SimpleDateFormat("MMMM", Locale.US)
