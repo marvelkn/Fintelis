@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.viewpager2)
-
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
     // tambahkan viewpager2 manual karena belum selalu diinclude
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.lifecycle.livedata.ktx)
