@@ -68,7 +68,7 @@ class TransactionListFragment : Fragment() {
         viewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             walletAdapter.updateWallets(wallets ?: emptyList())
         }
-        // 3. Observer dipindah ke sini
+        
         viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
             // Update Adapter
             transactionAdapter.updateData(transactions)
@@ -85,9 +85,13 @@ class TransactionListFragment : Fragment() {
                 layoutSearch.isVisible = false
             }
         }
+        
+        // Updated Month Observer logic to match VisualizationFragment
         viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->
-            val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.US)
-            binding.tvCurrentMonth.text = monthFormat.format(calendar.time)
+            val fmtMonth = SimpleDateFormat("MMMM", Locale.US)
+            val fmtYear = SimpleDateFormat("yyyy", Locale.US)
+            binding.tvMonthName.text = fmtMonth.format(calendar.time)
+            binding.tvYearNumber.text = fmtYear.format(calendar.time)
         }
 
         val fmt = NumberFormat.getCurrencyInstance(Locale.Builder().setLanguage("in").setRegion("ID").build())

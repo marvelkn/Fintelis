@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -21,11 +20,12 @@ import com.example.fintelis.viewmodel.TransactionViewModel
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class DashboardFragment : Fragment() {
@@ -84,7 +84,15 @@ class DashboardFragment : Fragment() {
         }
 
         val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-        transactionViewModel.setActiveWallet(null)
+        
+        // Set ke "ALL" agar konsisten mengambil semua data
+        transactionViewModel.setActiveWallet("ALL")
+        
+        // PENTING: Observasi displayedTransactions agar MediatorLiveData aktif dan processList berjalan
+        // Tanpa ini, incomePercentage dll tidak akan terupdate karena processList tidak dipanggil
+        transactionViewModel.displayedTransactions.observe(viewLifecycleOwner) { 
+            // Data list transaksi tidak ditampilkan di sini, tapi perlu diobservasi
+        }
 
         transactionViewModel.incomePercentage.observe(viewLifecycleOwner) { percentage ->
             binding.tvIncomePercentage.text = String.format("%.0f%%", percentage)
@@ -105,16 +113,23 @@ class DashboardFragment : Fragment() {
         transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) { pieEntries ->
             val dataSet = PieDataSet(pieEntries, "").apply {
                 colors = listOf(
-                    ContextCompat.getColor(requireContext(), R.color.yellow_500),
+                    ContextCompat.getColor(requireContext(), R.color.status_approved),
                     ContextCompat.getColor(requireContext(), R.color.red_500)
                 )
-                setDrawValues(false)
+                setDrawValues(false) // Tidak menggambar nilai di dalam slice (karena sudah ada label)
             }
 
             val pieData = PieData(dataSet)
+            // Mengatur warna teks label (Income/Expense) menjadi HITAM
+            pieData.setValueTextColor(Color.BLACK) 
+            
             binding.pieChartFinancial.data = pieData
             binding.pieChartFinancial.invalidate()
         }
+        
+        // Set current date
+        val currentDate = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.US).format(Date())
+        binding.tvDate.text = currentDate
     }
 
     private fun displayUserName(user: FirebaseUser?) {
@@ -146,6 +161,10 @@ class DashboardFragment : Fragment() {
             isRotationEnabled = false
             isHighlightPerTapEnabled = false
             animateY(1400, Easing.EaseInOutQuad)
+            
+            // Mengatur warna label entry (Income/Expense) menjadi HITAM
+            setEntryLabelColor(Color.BLACK) 
+            setEntryLabelTextSize(12f)
         }
     }
 
@@ -234,11 +253,22 @@ class DashboardFragment : Fragment() {
                 binding.tvLimitPercentage.text = "$percentage%"
 
                 // Opsional: Ubah warna jika over limit
-                if (percentage >= 100) {
+                if (percentage >= 90) {
                     binding.progressBarLimit.progressDrawable.setColorFilter(
                         android.graphics.Color.RED, android.graphics.PorterDuff.Mode.SRC_IN
                     )
                     binding.tvLimitPercentage.setTextColor(android.graphics.Color.RED)
+                } else if(percentage >= 50 && percentage < 90){
+                    binding.progressBarLimit.progressDrawable.setColorFilter(
+                        android.graphics.Color.YELLOW, android.graphics.PorterDuff.Mode.SRC_IN
+                    )
+                    binding.tvLimitPercentage.setTextColor(android.graphics.Color.YELLOW)
+                } else if(percentage >= 10 && percentage < 50){
+                    val approvedColor = ContextCompat.getColor(requireContext(), R.color.status_approved)
+                    binding.progressBarLimit.progressDrawable.setColorFilter(
+                        approvedColor, android.graphics.PorterDuff.Mode.SRC_IN
+                    )
+                    binding.tvLimitPercentage.setTextColor(approvedColor)
                 } else {
                     // Reset warna (misal ke default biru/hijau)
                     binding.progressBarLimit.progressDrawable.clearColorFilter()
@@ -301,10 +331,11 @@ class DashboardFragment : Fragment() {
         }
     }
 
+
     override fun onResume() {
         super.onResume()
         // Memastikan setiap kali kembali ke halaman ini, mode kembali ke "All Wallets"
-        transactionViewModel.setActiveWallet(null)
+        transactionViewModel.setActiveWallet("ALL")
 
         // Refresh perhitungan limit (dari kode sebelumnya)
         setupLimitCalculation()

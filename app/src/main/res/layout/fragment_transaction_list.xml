@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Transaction History"
-            app:titleTextColor="@color/fintelis_text_dark" />
+            app:titleTextColor="#334155" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_wallets"
@@ -27,40 +27,62 @@
             android:clipToPadding="false"
             android:orientation="horizontal"
             android:paddingHorizontal="12dp"
+            android:textColor="#334155"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        <!-- Month Navigator -->
+        <!-- Month Navigator (Copied from VisualizationFragment) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="16dp">
+            android:gravity="center_vertical"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_pill_white_outline"
+            android:padding="8dp">
 
             <ImageButton
                 android:id="@+id/btn_prev_month"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_arrow_back" />
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_circle_ripple"
+                android:src="@drawable/ic_chevron_left"
+                app:tint="@color/text_secondary"
+                android:contentDescription="Previous Month" />
 
-            <TextView
-                android:id="@+id/tv_current_month"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:textColor="@color/fintelis_text_dark"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="December 2025" />
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tv_month_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="January"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#334155"/>
+                <TextView
+                    android:id="@+id/tv_year_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2025"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"/>
+            </LinearLayout>
 
             <ImageButton
                 android:id="@+id/btn_next_month"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/arrow_right" />
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_circle_ripple"
+                android:src="@drawable/ic_chevron_right"
+                app:tint="@color/text_secondary"
+                android:contentDescription="Next Month" />
         </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView
@@ -88,6 +110,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Income"
+                        android:textColor="#334155"
                         android:textSize="12sp" />
 
                     <TextView
@@ -105,7 +128,7 @@
                     android:layout_height="300dp"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:visibility="visible">
+                    android:visibility="gone">
 
                     <ImageView
                         android:layout_width="80dp"
@@ -141,6 +164,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Expense"
+                        android:textColor="#334155"
                         android:textSize="12sp" />
 
                     <TextView
@@ -163,6 +187,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total"
+                        android:textColor="#334155"
                         android:textSize="12sp" />
 
                     <TextView
@@ -192,7 +217,8 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:padding="8dp"
-        android:visibility="gone"
+        android:visibility="visible"
+        android:textColor="#334155"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
