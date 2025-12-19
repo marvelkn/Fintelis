@@ -9,6 +9,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController // PENTING
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fintelis.adapter.TransactionAdapter
@@ -23,25 +24,13 @@ class DetailCashflowFragment : Fragment() {
     private val viewModel: TransactionViewModel by activityViewModels()
     private lateinit var transactionAdapter: TransactionAdapter
 
-    // Arguments
     private var isExpenseMode: Boolean = true
-
-    companion object {
-        const val ARG_IS_EXPENSE = "arg_is_expense"
-
-        fun newInstance(isExpense: Boolean): DetailCashflowFragment {
-            val fragment = DetailCashflowFragment()
-            val args = Bundle()
-            args.putBoolean(ARG_IS_EXPENSE, isExpense)
-            fragment.arguments = args
-            return fragment
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Ambil data dari arguments Navigation Component
         arguments?.let {
-            isExpenseMode = it.getBoolean(ARG_IS_EXPENSE, true)
+            isExpenseMode = it.getBoolean("isExpense", true)
         }
     }
 
@@ -55,7 +44,6 @@ class DetailCashflowFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Init Views
         val viewHeaderBg: View = view.findViewById(R.id.viewHeaderBg)
         val tvPageTitle: TextView = view.findViewById(R.id.tvPageTitle)
         val tvTotalAmount: TextView = view.findViewById(R.id.tvTotalAmount)
@@ -63,22 +51,24 @@ class DetailCashflowFragment : Fragment() {
         val btnBack: ImageButton = view.findViewById(R.id.btnBack)
         val rvDetailTransactions: RecyclerView = view.findViewById(R.id.rvDetailTransactions)
 
-        // 1. Setup UI Theme based on Type
+        // 1. Setup UI
         if (isExpenseMode) {
-            viewHeaderBg.setBackgroundColor(Color.parseColor("#C53030")) // Merah
+            viewHeaderBg.setBackgroundColor(Color.parseColor("#C53030"))
             tvPageTitle.text = "Expense Details"
         } else {
-            viewHeaderBg.setBackgroundColor(Color.parseColor("#38A169")) // Hijau
+            viewHeaderBg.setBackgroundColor(Color.parseColor("#38A169"))
             tvPageTitle.text = "Income Details"
         }
 
-        // 2. Setup Back Button
+        // 2. Setup Back Button (FIXED: Menggunakan NavController)
         btnBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
+            // Ini akan kembali ke halaman sebelumnya dalam graph (Visualization)
+            // tanpa me-reset dashboard.
+            findNavController().navigateUp()
         }
 
         // 3. Setup RecyclerView
-        transactionAdapter = TransactionAdapter(mutableListOf()) { /* Handle click item */ }
+        transactionAdapter = TransactionAdapter(mutableListOf()) { /* Click Listener */ }
         rvDetailTransactions.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = transactionAdapter
@@ -93,18 +83,14 @@ class DetailCashflowFragment : Fragment() {
         viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
             if (transactions != null) {
                 val targetType = if (isExpenseMode) TransactionType.EXPENSE else TransactionType.INCOME
-
-                // Filter Data
                 val filteredList = transactions
                     .filter { it.type == targetType }
                     .sortedByDescending { viewModel.parseDatePublic(it.date) }
 
-                // Update Total Text
                 val total: Double = filteredList.sumOf { it.amount }
                 val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
                 tvTotalAmount.text = formatRp.format(total)
 
-                // Update List
                 transactionAdapter.updateData(filteredList)
             }
         }

@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.viewmodel.TransactionViewModel
@@ -110,21 +111,13 @@ class VisualizationFragment : Fragment() {
         updateDetailButtonUI()
 
         btnSeeDetail.setOnClickListener {
-            val detailFragment = DetailCashflowFragment.newInstance(isExpenseMode)
+            // Siapkan data yang mau dikirim
+            val bundle = Bundle().apply {
+                putBoolean("isExpense", isExpenseMode)
+            }
 
-            // Gunakan 'requireActivity().supportFragmentManager'
-            // Jangan gunakan 'parentFragmentManager' agar tidak konflik dengan NavHost
-            requireActivity().supportFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    android.R.anim.slide_in_left,
-                    android.R.anim.fade_out,
-                    android.R.anim.fade_in,
-                    android.R.anim.slide_out_right
-                )
-                // Gunakan android.R.id.content untuk menimpa satu layar penuh
-                .replace(android.R.id.content, detailFragment)
-                .addToBackStack(null)
-                .commit()
+            // Pindah halaman menggunakan NavController (Sesuai ID di nav_graph_dash.xml)
+            findNavController().navigate(R.id.action_visualization_to_detailCashflow, bundle)
         }
     }
 
