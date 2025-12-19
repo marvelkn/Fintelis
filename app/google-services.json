@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "827935796526",
+    "firebase_url": "https://fintelis-c0b85-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "fintelis-c0b85",
     "storage_bucket": "fintelis-c0b85.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.fintelis"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "827935796526-vrbjd3nsf1knh0i114310f2pbr7atsmi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fintelis",
+            "certificate_hash": "f869c64bf487310bcc53ebd2efc5842080a9f449"
+          }
+        },
+        {
+          "client_id": "827935796526-put69pk09hvst5jni5g5amf1a60krtml.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB6jlqwXID5IiupRFyoOQigjwTobGd3h2o"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "827935796526-put69pk09hvst5jni5g5amf1a60krtml.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
