@@ -9,7 +9,6 @@ import androidx.lifecycle.MutableLiveData
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.data.Wallet
-import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieEntry
 import com.google.firebase.auth.FirebaseAuth
@@ -20,7 +19,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
 enum class SortOrder { DATE_DESC, DATE_ASC, AMOUNT_DESC, AMOUNT_ASC }
 enum class FilterType { ALL, INCOME, EXPENSE }
@@ -30,7 +28,12 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    // Data Master (Semua data dari Firestore)
     private val _allData = MutableLiveData<List<Transaction>>()
+
+    // Expose variabel ini agar Fragment bisa mengaksesnya
+    val transactions: LiveData<List<Transaction>> = _allData
+
     val wallets = MutableLiveData<List<Wallet>>()
 
     val displayedTransactions = MediatorLiveData<List<Transaction>>()
@@ -75,19 +78,19 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun fetchWallets() {
         val userId = auth.currentUser?.uid ?: return
-
-        val supportedWalletNames = setOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
+        // Daftar nama wallet yang kita dukung di UI
+        val supportedNames = setOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
 
         firestore.collection("users").document(userId).collection("wallets")
             .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.w("TransactionViewModel", "Wallets listen failed.", e)
-                    return@addSnapshotListener
-                }
-                val allWallets = snapshot?.toObjects<Wallet>() ?: emptyList()
+                if (e != null) return@addSnapshotListener
 
-                val supportedWallets = allWallets.filter { supportedWalletNames.contains(it.name.uppercase()) }
-                wallets.value = supportedWallets
+                val walletList = snapshot?.toObjects<Wallet>() ?: emptyList()
+                // Filter agar hanya wallet yang namanya ada di UI yang masuk
+                val filtered = walletList.filter { supportedNames.contains(it.name.uppercase()) }
+
+                // Update LiveData wallets
+                wallets.postValue(filtered)
             }
     }
 
@@ -99,7 +102,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun fetchTransactions(walletId: String?) {
         transactionListener?.remove()
-
         val userId = auth.currentUser?.uid ?: return
         val query = if (walletId == null || walletId == "ALL") {
             firestore.collection("users").document(userId).collection("transactions")
@@ -114,7 +116,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 return@addSnapshotListener
             }
             _allData.value = snapshot?.toObjects() ?: emptyList()
-            // Removed seedFirebaseIfEmpty call to prevent auto-population of initial balance
         }
     }
 
@@ -127,15 +128,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     fun addTransaction(t: Transaction) {
         val userId = auth.currentUser?.uid ?: return
-        val walletId = _activeWalletId.value ?: run {
-            Log.e("TransactionViewModel", "Cannot add transaction without an active wallet.")
-            return
-        }
-
-        if (walletId == "ALL") {
-            Log.e("TransactionViewModel", "An active wallet must be selected to add a transaction.")
-            return
-        }
+        val walletId = _activeWalletId.value ?: return
+        if (walletId == "ALL") return
 
         val transactionWithWallet = t.copy(walletId = walletId)
         firestore.collection("users").document(userId).collection("transactions").add(transactionWithWallet)
@@ -158,17 +152,56 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         _allData.value?.let { processList(it) }
     }
 
+    // --- FUNGSI UTAMA YANG DIPERBAIKI ---
     private fun processList(list: List<Transaction>) {
         val cal = _currentMonth.value ?: return
 
-        val filteredList = list.filter { transaction ->
+        // 1. Ambil data HANYA berdasarkan BULAN (Tanpa Filter Type/Search)
+        val monthlyList = list.filter { transaction ->
             val transCal = Calendar.getInstance()
             try {
                 transCal.time = parseDate(transaction.date)
+                transCal.get(Calendar.MONTH) == cal.get(Calendar.MONTH) &&
+                        transCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
             } catch (e: Exception) {
-                return@filter false
+                false
             }
-            val dateMatch = transCal.get(Calendar.MONTH) == cal.get(Calendar.MONTH) && transCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
+        }
+
+        // 2. Hitung Total Income & Expense (Data Murni)
+        val inc = monthlyList.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+        val exp = monthlyList.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+
+        // Update LiveData Summary
+        income.postValue(inc)
+        expense.postValue(exp)
+        total.postValue(inc - exp)
+        incomeNominal.postValue(inc)
+        expenseNominal.postValue(exp)
+
+        val totalTransactions = inc + exp
+        if (totalTransactions > 0) {
+            incomePercentage.postValue(((inc / totalTransactions) * 100).toFloat())
+            expensePercentage.postValue(((exp / totalTransactions) * 100).toFloat())
+        } else {
+            incomePercentage.postValue(0f)
+            expensePercentage.postValue(0f)
+        }
+
+        // --- BAGIAN INI YANG SEBELUMNYA HILANG ---
+        // Kita harus mengisi incomeExpensePieData agar Chart di Dashboard muncul
+        val pieEntries = ArrayList<PieEntry>()
+        if (inc > 0) {
+            pieEntries.add(PieEntry(inc.toFloat(), "Income"))
+        }
+        if (exp > 0) {
+            pieEntries.add(PieEntry(exp.toFloat(), "Expense"))
+        }
+        incomeExpensePieData.postValue(pieEntries)
+        // -----------------------------------------
+
+        // 3. Filter berdasarkan Search & Filter Type (Untuk RecyclerView List Transaksi)
+        val filteredList = monthlyList.filter { transaction ->
             val searchMatch = if (currentSearchQuery.isBlank()) true else {
                 transaction.title.contains(currentSearchQuery, true) ||
                         transaction.category.contains(currentSearchQuery, true)
@@ -178,9 +211,10 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 FilterType.EXPENSE -> transaction.type == TransactionType.EXPENSE
                 else -> true
             }
-            dateMatch && searchMatch && typeMatch
+            searchMatch && typeMatch
         }
 
+        // 4. Sorting Data Filtered
         val sorted = when (currentSortOrder) {
             SortOrder.AMOUNT_DESC -> filteredList.sortedByDescending { it.amount }
             SortOrder.AMOUNT_ASC -> filteredList.sortedBy { it.amount }
@@ -189,71 +223,10 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         }
 
         displayedTransactions.postValue(sorted)
-
-        val inc = sorted.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
-        val exp = sorted.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
-        val totalTransactions = inc + exp
-
-        income.postValue(inc)
-        expense.postValue(exp)
-        total.postValue(inc - exp)
-
-        incomeNominal.postValue(inc)
-        expenseNominal.postValue(exp)
-
-        if (totalTransactions > 0) {
-            incomePercentage.postValue(((inc / totalTransactions) * 100).toFloat())
-            expensePercentage.postValue(((exp / totalTransactions) * 100).toFloat())
-        } else {
-            incomePercentage.postValue(0f)
-            expensePercentage.postValue(0f)
-        }
-
-        val pieEntries = mutableListOf<PieEntry>()
-        if (inc > 0) {
-            pieEntries.add(PieEntry(inc.toFloat(), "Income"))
-        }
-        if (exp > 0) {
-            pieEntries.add(PieEntry(exp.toFloat(), "Expense"))
-        }
-        incomeExpensePieData.postValue(pieEntries)
     }
 
-    private fun formatDate(calendar: Calendar): String {
-        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
-        return sdf.format(calendar.time)
-    }
-
-    fun getExpenseByCategoryData(transactions: List<Transaction>): List<PieEntry> {
-        val expenseMap = transactions
-            .filter { it.type == TransactionType.EXPENSE }
-            .groupBy { it.category }
-            .mapValues { entry -> entry.value.sumOf { it.amount } }
-
-        val entries = ArrayList<PieEntry>()
-        for ((category, amount) in expenseMap) {
-            entries.add(PieEntry(amount.toFloat(), category))
-        }
-        return entries
-    }
-
-    fun getIncomeExpenseBarData(transactions: List<Transaction>): Pair<List<String>, List<BarEntry>> {
-        val fmt = SimpleDateFormat("MMM yyyy", Locale.US)
-        val sortedList = transactions.sortedBy { parseDate(it.date) }
-        val groupedData = sortedList.groupBy { fmt.format(parseDate(it.date)) }
-
-        val entries = ArrayList<BarEntry>()
-        val labels = ArrayList<String>()
-        var index = 0f
-
-        for ((dateLabel, transList) in groupedData) {
-            val income = transList.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }.toFloat()
-            val expense = transList.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }.toFloat()
-            entries.add(BarEntry(index, floatArrayOf(income, expense)))
-            labels.add(dateLabel)
-            index++
-        }
-        return Pair(labels, entries)
+    private fun parseDate(d: String): Date {
+        return SimpleDateFormat("MMM dd, yyyy", Locale.US).parse(d)!!
     }
 
     fun getFinancialTrendData(transactions: List<Transaction>): List<Entry> {
@@ -272,14 +245,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             entries.add(Entry(date.time.toFloat(), currentBalance.toFloat()))
         }
         return entries
-    }
-
-    fun parseDatePublic(d: String): Date {
-        return parseDate(d)
-    }
-
-    private fun parseDate(d: String): Date {
-        return SimpleDateFormat("MMM dd, yyyy", Locale.US).parse(d)!!
     }
 
     override fun onCleared() {

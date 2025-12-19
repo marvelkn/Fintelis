@@ -4,24 +4,15 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -48,6 +39,7 @@ class TransactionListFragment : Fragment() {
     private lateinit var layoutEmptyState: LinearLayout
     private lateinit var layoutSearch: EditText
     private var currentTransactions: List<Transaction> = emptyList()
+
     private var isDeleteMode = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -62,48 +54,48 @@ class TransactionListFragment : Fragment() {
         layoutEmptyState = binding.layoutEmptyState
         layoutSearch = binding.searchBar
 
-        val activity = activity as? AppCompatActivity
-        activity?.setSupportActionBar(binding.toolbar)
+        // --- TITLE FONT ---
+        try {
+            val typeface = ResourcesCompat.getFont(requireContext(), R.font.lato_bold)
+            binding.tvPageTitle.typeface = typeface
+        } catch (e: Exception) { }
 
-        // Set custom toolbar title and font
-        activity?.supportActionBar?.title = "Transaction History"
-        for (i in 0 until binding.toolbar.childCount) {
-            val child = binding.toolbar.getChildAt(i)
-            if (child is TextView) {
-                if (child.text == activity?.supportActionBar?.title) {
-                    val typeface = ResourcesCompat.getFont(requireContext(), R.font.lato_bold)
-                    child.typeface = typeface
-                    break
-                }
-            }
-        }
-
-        setupMenu()
+        setupHeaderButtons()
         setupAdapters()
 
-        // Observers
+        // --- OBSERVERS ---
+
+        // 1. Wallets
         viewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             walletAdapter.updateWallets(wallets ?: emptyList())
         }
 
+        // 2. LIST TRANSAKSI (Ini akan berubah saat difilter)
         viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
-            // Update Adapter
             transactionAdapter.updateData(transactions)
-
-            // Logika Empty State
             currentTransactions = transactions ?: emptyList()
+
             if (currentTransactions.isNotEmpty()) {
-                layoutTransactionList.isVisible = true
-                layoutEmptyState.isVisible = false
-                layoutSearch.isVisible = true
+                layoutTransactionList.visibility = View.VISIBLE
+                layoutEmptyState.visibility = View.GONE
+                layoutSearch.visibility = View.VISIBLE
             } else {
-                layoutTransactionList.isVisible = false
-                layoutEmptyState.isVisible = true
-                layoutSearch.isVisible = false
+                layoutTransactionList.visibility = View.GONE
+                layoutEmptyState.visibility = View.VISIBLE
+                layoutSearch.visibility = View.GONE
             }
         }
 
-        // Updated Month Observer logic to match VisualizationFragment
+        // 3. SUMMARY CARD (SUDAH STICK KARENA LOGIKA DI VIEWMODEL)
+        // Kita cukup observe viewModel.income/expense karena nilainya sudah dihitung
+        // berdasarkan BULAN, bukan berdasarkan FILTER.
+        val fmt = NumberFormat.getCurrencyInstance(Locale.Builder().setLanguage("in").setRegion("ID").build())
+
+        viewModel.income.observe(viewLifecycleOwner) { binding.tvSummaryIncome.text = fmt.format(it) }
+        viewModel.expense.observe(viewLifecycleOwner) { binding.tvSummaryExpense.text = fmt.format(it) }
+        viewModel.total.observe(viewLifecycleOwner) { binding.tvSummaryTotal.text = fmt.format(it) }
+
+        // 4. Bulan & Tahun
         viewModel.currentMonth.observe(viewLifecycleOwner) { calendar ->
             val fmtMonth = SimpleDateFormat("MMMM", Locale.US)
             val fmtYear = SimpleDateFormat("yyyy", Locale.US)
@@ -111,16 +103,11 @@ class TransactionListFragment : Fragment() {
             binding.tvYearNumber.text = fmtYear.format(calendar.time)
         }
 
-        val fmt = NumberFormat.getCurrencyInstance(Locale.Builder().setLanguage("in").setRegion("ID").build())
-        viewModel.income.observe(viewLifecycleOwner) { binding.tvSummaryIncome.text = fmt.format(it) }
-        viewModel.expense.observe(viewLifecycleOwner) { binding.tvSummaryExpense.text = fmt.format(it) }
-        viewModel.total.observe(viewLifecycleOwner) { binding.tvSummaryTotal.text = fmt.format(it) }
-
         viewModel.activeWalletId.observe(viewLifecycleOwner) { walletId ->
             walletAdapter.setSelectedWallet(walletId)
         }
 
-        // Click Listeners
+        // --- CLICK LISTENERS ---
         binding.fabAddTransaction.setOnClickListener {
             if (viewModel.activeWalletId.value == null || viewModel.activeWalletId.value == "ALL") {
                 Toast.makeText(context, "Please select a specific wallet to add a transaction", Toast.LENGTH_SHORT).show()
@@ -139,10 +126,9 @@ class TransactionListFragment : Fragment() {
     }
 
     private fun setupAdapters() {
-        // Transaction list adapter
-        transactionAdapter = TransactionAdapter(mutableListOf()) {
+        transactionAdapter = TransactionAdapter(mutableListOf()) { transaction ->
             if (!isDeleteMode) {
-                val action = TransactionListFragmentDirections.actionCustomerListFragmentToCustomerDetailFragment(it)
+                val action = TransactionListFragmentDirections.actionCustomerListFragmentToCustomerDetailFragment(transaction)
                 findNavController().navigate(action)
             }
         }
@@ -151,7 +137,6 @@ class TransactionListFragment : Fragment() {
             adapter = transactionAdapter
         }
 
-        // Wallet slider adapter
         walletAdapter = WalletAdapter(requireContext(), emptyList()) { wallet ->
             viewModel.setActiveWallet(wallet?.id)
         }
@@ -161,44 +146,39 @@ class TransactionListFragment : Fragment() {
         }
     }
 
-    private fun setupMenu() {
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.transaction_list_menu, menu)
-            }
+    // --- HEADER BUTTONS ---
+    private fun setupHeaderButtons() {
+        binding.btnHeaderFilter.setOnClickListener { showDisplayOptionsDialog() }
+        binding.btnHeaderDelete.setOnClickListener { handleDeleteAction() }
+        updateHeaderState()
+    }
 
-            override fun onPrepareMenu(menu: Menu) {
-                val deleteItem = menu.findItem(R.id.action_delete)
-                val filterItem = menu.findItem(R.id.action_filter)
-
-                deleteItem.setIcon(if (isDeleteMode) R.drawable.ic_check_circle else R.drawable.ic_delete)
-                filterItem.isVisible = !isDeleteMode
+    private fun handleDeleteAction() {
+        if (!isDeleteMode) {
+            isDeleteMode = true
+            transactionAdapter.toggleDeleteMode(true)
+            updateHeaderState()
+        } else {
+            if (transactionAdapter.selectedItems.isNotEmpty()) {
+                showDeleteConfirmationDialog()
+            } else {
+                isDeleteMode = false
+                transactionAdapter.toggleDeleteMode(false)
+                updateHeaderState()
             }
+        }
+    }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_filter -> { showDisplayOptionsDialog(); true }
-                    R.id.action_delete -> {
-                        if (!isDeleteMode) {
-                            isDeleteMode = true
-                            transactionAdapter.toggleDeleteMode(true)
-                            requireActivity().invalidateOptionsMenu()
-                        } else {
-                            if (transactionAdapter.selectedItems.isNotEmpty()) {
-                                showDeleteConfirmationDialog()
-                            } else {
-                                isDeleteMode = false
-                                transactionAdapter.toggleDeleteMode(false)
-                                requireActivity().invalidateOptionsMenu()
-                            }
-                        }
-                        true
-                    }
-                    else -> false
-                }
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    private fun updateHeaderState() {
+        if (isDeleteMode) {
+            binding.btnHeaderFilter.visibility = View.GONE
+            binding.btnHeaderDelete.setImageResource(R.drawable.ic_check_circle)
+            binding.btnHeaderDelete.setColorFilter(ResourcesCompat.getColor(resources, R.color.status_approved, null))
+        } else {
+            binding.btnHeaderFilter.visibility = View.VISIBLE
+            binding.btnHeaderDelete.setImageResource(R.drawable.ic_delete)
+            binding.btnHeaderDelete.setColorFilter(ResourcesCompat.getColor(resources, R.color.status_rejected, null))
+        }
     }
 
     private fun showDisplayOptionsDialog() {
@@ -245,7 +225,7 @@ class TransactionListFragment : Fragment() {
                 viewModel.deleteTransactions(transactionAdapter.selectedItems.toSet())
                 isDeleteMode = false
                 transactionAdapter.toggleDeleteMode(false)
-                requireActivity().invalidateOptionsMenu()
+                updateHeaderState()
             }
             .setNegativeButton("No", null)
             .show()

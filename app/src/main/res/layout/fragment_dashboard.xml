@@ -256,7 +256,7 @@
                         android:id="@+id/tvLimitInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="IDR 0 of IDR 0"
+                        android:text="Click to set your monthly limit"
                         android:textColor="#64748B"
                         android:textSize="13sp" />
                 </LinearLayout>

@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -41,13 +42,10 @@ class AddTransactionFragment : Fragment() {
     private var imageUri: Uri? = null
     private lateinit var currentPhotoPath: String
 
-    // --- ActivityResultLaunchers ---
+    // --- Permissions & Launchers ---
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-        if (isGranted) {
-            openCamera()
-        } else {
-            Toast.makeText(context, "Camera permission is required to take pictures.", Toast.LENGTH_SHORT).show()
-        }
+        if (isGranted) openCamera()
+        else Toast.makeText(context, "Camera permission is required.", Toast.LENGTH_SHORT).show()
     }
 
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -72,16 +70,53 @@ class AddTransactionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // 1. Setup Toolbar
         binding.toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
 
-        val categories = resources.getStringArray(R.array.transaction_categories)
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
-        binding.etCategory.setAdapter(adapter)
+        // 2. Setup Default State (Expense Mode)
+        updateCategoryList(isExpense = true)
 
-        binding.btnAddImage.setOnClickListener { showImageSourceDialog() }
+        // 3. Listener Perubahan Tipe (Expense/Income)
+        binding.rgType.setOnCheckedChangeListener { _, checkedId ->
+            val isExpense = checkedId == R.id.rb_expense
+
+            if (isExpense) {
+                // Mode Expense: Text Putih, Income Abu-abu
+                binding.rbExpense.setTextColor(Color.WHITE)
+                binding.rbIncome.setTextColor(Color.parseColor("#64748B"))
+                updateCategoryList(true)
+            } else {
+                // Mode Income: Text Putih, Expense Abu-abu
+                binding.rbExpense.setTextColor(Color.parseColor("#64748B"))
+                binding.rbIncome.setTextColor(Color.WHITE)
+                updateCategoryList(false)
+            }
+        }
+
+        // 4. Listener Upload & Hapus Gambar
+        binding.layoutPlaceholder.setOnClickListener { showImageSourceDialog() }
+        binding.btnRemoveImage.setOnClickListener { removeImage() }
+
+        // 5. Listener Save
         binding.btnSave.setOnClickListener { saveTransaction() }
     }
 
+    private fun updateCategoryList(isExpense: Boolean) {
+        val arrayResId = if (isExpense) R.array.expense_categories else R.array.income_categories
+
+        // Pastikan array ini ada di strings.xml
+        try {
+            val categories = resources.getStringArray(arrayResId)
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
+            binding.etCategory.setAdapter(adapter)
+            binding.etCategory.setText("") // Reset text saat ganti tipe
+        } catch (e: Exception) {
+            // Fallback jika array belum dibuat
+        }
+    }
+
+    // --- LOGIKA GAMBAR ---
     private fun showImageSourceDialog() {
         val options = arrayOf("Take Photo", "Choose from Gallery")
         AlertDialog.Builder(requireContext())
@@ -97,13 +132,10 @@ class AddTransactionFragment : Fragment() {
     }
 
     private fun checkCameraPermissionAndOpenCamera() {
-        when {
-            requireContext().checkSelfPermission(Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
-                openCamera()
-            }
-            else -> {
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
+        if (requireContext().checkSelfPermission(Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            openCamera()
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -119,17 +151,9 @@ class AddTransactionFragment : Fragment() {
     private fun openCamera() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             takePictureIntent.resolveActivity(requireActivity().packageManager)?.also {
-                val photoFile: File? = try {
-                    createImageFile()
-                } catch (ex: IOException) {
-                    null
-                }
+                val photoFile: File? = try { createImageFile() } catch (ex: IOException) { null }
                 photoFile?.also {
-                    val photoURI: Uri = FileProvider.getUriForFile(
-                        requireContext(),
-                        "com.example.fintelis.fileprovider",
-                        it
-                    )
+                    val photoURI: Uri = FileProvider.getUriForFile(requireContext(), "com.example.fintelis.fileprovider", it)
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                     cameraLauncher.launch(takePictureIntent)
                 }
@@ -144,11 +168,22 @@ class AddTransactionFragment : Fragment() {
 
     private fun showImagePreview() {
         imageUri?.let {
+            binding.layoutPlaceholder.isVisible = false
             binding.ivReceiptPreview.isVisible = true
+            binding.btnRemoveImage.isVisible = true
             Glide.with(this).load(it).into(binding.ivReceiptPreview)
         }
     }
 
+    private fun removeImage() {
+        imageUri = null
+        binding.ivReceiptPreview.setImageDrawable(null)
+        binding.ivReceiptPreview.isVisible = false
+        binding.btnRemoveImage.isVisible = false
+        binding.layoutPlaceholder.isVisible = true
+    }
+
+    // --- LOGIKA SIMPAN ---
     private fun saveTransaction() {
         val title = binding.etTitle.text.toString().trim()
         val amountStr = binding.etAmount.text.toString().trim()
@@ -159,7 +194,7 @@ class AddTransactionFragment : Fragment() {
             return
         }
 
-        setLoading(true)
+        binding.btnSave.isEnabled = false // Disable tombol saat proses
 
         var localImageUrl: String? = null
         if (imageUri != null) {
@@ -167,56 +202,45 @@ class AddTransactionFragment : Fragment() {
                 localImageUrl = saveImageToInternalStorage(imageUri!!)
             } catch (e: IOException) {
                 Toast.makeText(context, "Failed to save image.", Toast.LENGTH_SHORT).show()
-                setLoading(false)
+                binding.btnSave.isEnabled = true
                 return
             }
         }
 
-        createAndSaveTransaction(title, amountStr.toDouble(), category, localImageUrl)
+        val type = if (binding.rbIncome.isChecked) TransactionType.INCOME else TransactionType.EXPENSE
+        val date = SimpleDateFormat("MMM dd, yyyy", Locale.US).format(Date())
+
+        val transaction = Transaction(
+            title = title,
+            amount = amountStr.toDouble(),
+            type = type,
+            date = date,
+            category = category,
+            walletId = viewModel.activeWalletId.value ?: "",
+            imageUrl = localImageUrl
+        )
+
+        viewModel.addTransaction(transaction)
+        Toast.makeText(context, "Transaction Saved", Toast.LENGTH_SHORT).show()
+        findNavController().popBackStack()
     }
 
     @Throws(IOException::class)
     private fun saveImageToInternalStorage(uri: Uri): String {
         val inputStream = requireContext().contentResolver.openInputStream(uri)!!
-
-        // Create a destination file in the app's private storage
         val receiptsDir = File(requireContext().filesDir, "receipts")
-        if (!receiptsDir.exists()) {
-            receiptsDir.mkdirs()
-        }
-        val destinationFile = File(receiptsDir, "${UUID.randomUUID()}.jpg")
+        if (!receiptsDir.exists()) receiptsDir.mkdirs()
 
-        // Compress and copy the file
+        val destinationFile = File(receiptsDir, "${UUID.randomUUID()}.jpg")
         val bitmap = BitmapFactory.decodeStream(inputStream)
         val outputStream = FileOutputStream(destinationFile)
+
         bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
         outputStream.flush()
         outputStream.close()
         inputStream.close()
 
         return Uri.fromFile(destinationFile).toString()
-    }
-
-    private fun createAndSaveTransaction(title: String, amount: Double, category: String, imageUrl: String?) {
-        val type = if (binding.rbIncome.isChecked) TransactionType.INCOME else TransactionType.EXPENSE
-        val date = SimpleDateFormat("MMM dd, yyyy", Locale.US).format(Date())
-
-        val transaction = Transaction(
-            title = title,
-            amount = amount,
-            type = type,
-            date = date,
-            category = category,
-            walletId = viewModel.activeWalletId.value ?: "",
-            imageUrl = imageUrl
-        )
-        viewModel.addTransaction(transaction)
-        Toast.makeText(context, "Transaction Saved", Toast.LENGTH_SHORT).show()
-        findNavController().popBackStack()
-    }
-
-    private fun setLoading(isLoading: Boolean) {
-        binding.btnSave.isEnabled = !isLoading
     }
 
     override fun onDestroyView() {

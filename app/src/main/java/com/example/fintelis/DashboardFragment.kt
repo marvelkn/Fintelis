@@ -20,6 +20,8 @@ import com.example.fintelis.viewmodel.TransactionViewModel
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -41,14 +43,14 @@ class DashboardFragment : Fragment() {
 
     // === MAIN BALANCE ===
     private var isMainBalanceVisible = false
-    private var actualMainBalanceFormatted = "IDR •••••••••••"
+    private var actualMainBalanceFormatted = "Rp 0"
 
-    // === WALLET VISIBILITY ===
+    // === WALLET VISIBILITY STATE ===
     private val walletVisibilityStates = mutableMapOf<String, Boolean>()
 
     // === MONTHLY LIMIT ===
     private var monthlyLimit = 1_000_000
-    private var usedAmount = 0 // total expenses from all wallets
+    private var usedAmount = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,23 +65,20 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
-        tvGreeting = view.findViewById(R.id.tv_greeting)
-
-
+        tvGreeting = binding.tvGreeting
 
         auth.currentUser?.let { displayUserName(it) }
 
         setupPieChart()
 
-        // === TOTAL BALANCE ===
-        dashboardViewModel.totalBalance.observe(viewLifecycleOwner) {
-            actualMainBalanceFormatted =
-                dashboardViewModel.formatRupiah(it ?: 0.0)
+        // === 1. OBSERVE TOTAL BALANCE (UTAMA) ===
+        dashboardViewModel.totalBalance.observe(viewLifecycleOwner) { balance ->
+            actualMainBalanceFormatted = formatRupiah(balance ?: 0.0)
             updateMainBalanceDisplay()
         }
 
-        // === WALLETS ===
-        dashboardViewModel.wallets.observe(viewLifecycleOwner) { wallets ->
+        // === 2. OBSERVE WALLETS (SINKRONISASI SALDO WALLET) ===
+        transactionViewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             if (wallets == null) return@observe
 
             val cardMap = mapOf(
@@ -96,265 +95,196 @@ class DashboardFragment : Fragment() {
             cardMap.values.forEach { it.visibility = View.GONE }
 
             wallets.forEach { wallet ->
-                cardMap[wallet.name.uppercase()]?.let {
-                    it.visibility = View.VISIBLE
-                    updateCard(it, wallet)
+                cardMap[wallet.name.uppercase()]?.let { cardView ->
+                    cardView.visibility = View.VISIBLE
+                    updateCard(cardView, wallet)
                 }
             }
         }
 
-        binding.cardAddWallet.root.setOnClickListener {
-            showAddWalletDialog()
-        }
-
-        val currencyFormat =
-            NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-
-        // Set ke "ALL" agar konsisten mengambil semua data
+        // === 3. FINANCIAL CHART DATA ===
         transactionViewModel.setActiveWallet("ALL")
 
-        // PENTING: Observasi displayedTransactions agar MediatorLiveData aktif dan processList berjalan
-        // Tanpa ini, incomePercentage dll tidak akan terupdate karena processList tidak dipanggil
-        transactionViewModel.displayedTransactions.observe(viewLifecycleOwner) {
-            // Data list transaksi tidak ditampilkan di sini, tapi perlu diobservasi
-        }
-        // === FINANCIAL DATA ===
+        // Trigger MediatorLiveData
+        transactionViewModel.displayedTransactions.observe(viewLifecycleOwner) {}
+
         transactionViewModel.incomePercentage.observe(viewLifecycleOwner) {
             binding.tvIncomePercentage.text = "${it.toInt()}%"
         }
-
         transactionViewModel.expensePercentage.observe(viewLifecycleOwner) {
             binding.tvExpensePercentage.text = "${it.toInt()}%"
         }
-
         transactionViewModel.incomeNominal.observe(viewLifecycleOwner) {
-            binding.tvIncomeNominal.text = currencyFormat.format(it)
+            binding.tvIncomeNominal.text = formatRupiah(it)
         }
-
-        // === EXPENSES (ALL WALLET) ===
         transactionViewModel.expenseNominal.observe(viewLifecycleOwner) { expense ->
-            binding.tvExpenseNominal.text = currencyFormat.format(expense)
-
+            binding.tvExpenseNominal.text = formatRupiah(expense)
             usedAmount = expense.toInt()
             updateMonthlyLimitUI()
         }
 
-        transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) {
-            val dataSet = PieDataSet(it, "").apply {
-                colors = listOf(
-                    ContextCompat.getColor(requireContext(), R.color.status_approved),
-                    ContextCompat.getColor(requireContext(), R.color.red_500)
-                )
-                setDrawValues(false)
+        transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) { entries ->
+            if (entries.isNullOrEmpty()) {
+                binding.pieChartFinancial.clear()
+                return@observe
             }
 
-            val pieData = PieData(dataSet)
-            // Mengatur warna teks label (Income/Expense) menjadi HITAM
-            pieData.setValueTextColor(Color.BLACK)
+            val colors = ArrayList<Int>()
+            for (entry in entries) {
+                if (entry.label.equals("Income", ignoreCase = true)) {
+                    colors.add(ContextCompat.getColor(requireContext(), R.color.status_approved))
+                } else {
+                    colors.add(ContextCompat.getColor(requireContext(), R.color.red_500))
+                }
+            }
+
+            val dataSet = PieDataSet(entries, "").apply {
+                this.colors = colors
+                yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+                xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+                valueLinePart1OffsetPercentage = 80f
+                valueLinePart1Length = 0.4f
+                valueLinePart2Length = 0.4f
+                valueLineWidth = 1f
+                valueLineColor = Color.GRAY
+                sliceSpace = 3f
+            }
+
+            val pieData = PieData(dataSet).apply {
+                setValueFormatter(PercentFormatter(binding.pieChartFinancial))
+                setValueTextSize(11f)
+                setValueTextColor(Color.BLACK)
+            }
+
             binding.pieChartFinancial.data = pieData
+            binding.pieChartFinancial.animateY(1400, Easing.EaseInOutQuad)
             binding.pieChartFinancial.invalidate()
         }
 
-        // === MAIN BALANCE TOGGLE ===
+        // === INTERAKSI UI ===
         binding.imgToggleBalance.setOnClickListener {
             isMainBalanceVisible = !isMainBalanceVisible
             updateMainBalanceDisplay()
         }
 
-        // === TAP LIMIT TO SET MANUAL ===
-        binding.progressBarLimit.setOnClickListener {
-            showSetLimitDialog()
-        }
+        binding.cardAddWallet.root.setOnClickListener { showAddWalletDialog() }
+        binding.progressBarLimit.setOnClickListener { showSetLimitDialog() }
 
         updateMonthlyLimitUI()
-
-        // Set current date
-        val currentDate = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.US).format(Date())
-        binding.tvDate.text = currentDate
+        binding.tvDate.text = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.US).format(Date())
     }
 
     private fun setupPieChart() {
         binding.pieChartFinancial.apply {
             setUsePercentValues(true)
             description.isEnabled = false
-            legend.isEnabled = false
+            setExtraOffsets(35f, 10f, 35f, 10f)
             isDrawHoleEnabled = true
-            holeRadius = 80f
-            setDrawCenterText(false)
-            isRotationEnabled = false
-            animateY(1400, Easing.EaseInOutQuad)
-
-            // Mengatur warna label entry (Income/Expense) menjadi HITAM
+            setHoleColor(Color.TRANSPARENT)
+            holeRadius = 55f
+            transparentCircleRadius = 60f
+            legend.isEnabled = false
+            setDrawEntryLabels(true)
             setEntryLabelColor(Color.BLACK)
-            setEntryLabelTextSize(13f)
+            setEntryLabelTextSize(11f)
         }
-    }
-
-    // === MONTHLY LIMIT UI ===
-    private fun updateMonthlyLimitUI() {
-        val percentage =
-            if (monthlyLimit > 0)
-                ((usedAmount.toFloat() / monthlyLimit) * 100)
-                    .toInt()
-                    .coerceIn(0, 100)
-            else 0
-
-        binding.progressBarLimit.progress = percentage
-        binding.tvLimitPercentage.text = "$percentage%"
-        if (percentage >= 90) {
-            binding.progressBarLimit.progressDrawable.setColorFilter(
-                android.graphics.Color.RED, android.graphics.PorterDuff.Mode.SRC_IN
-            )
-            binding.tvLimitPercentage.setTextColor(android.graphics.Color.RED)
-        } else if(percentage >= 50 && percentage < 90){
-            binding.progressBarLimit.progressDrawable.setColorFilter(
-                android.graphics.Color.YELLOW, android.graphics.PorterDuff.Mode.SRC_IN
-            )
-            binding.tvLimitPercentage.setTextColor(android.graphics.Color.YELLOW)
-        } else if(percentage >= 10 && percentage < 50) {
-            val approvedColor = ContextCompat.getColor(requireContext(), R.color.status_approved)
-            binding.progressBarLimit.progressDrawable.setColorFilter(
-                approvedColor, android.graphics.PorterDuff.Mode.SRC_IN
-            )
-            binding.tvLimitPercentage.setTextColor(approvedColor)
-        } else {
-            // Reset warna (misal ke default biru/hijau)
-            binding.progressBarLimit.progressDrawable.clearColorFilter()
-        }
-        binding.tvLimitInfo.text =
-            "IDR ${formatRupiah(usedAmount)} of IDR ${formatRupiah(monthlyLimit)}"
-    }
-
-    // === SET LIMIT DIALOG ===
-    private fun showSetLimitDialog() {
-        val dialogView = LayoutInflater.from(requireContext())
-            .inflate(R.layout.dialog_set_monthly_limit, null, false)
-
-        val etLimit = dialogView.findViewById<TextInputEditText>(R.id.etLimit)
-
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .setPositiveButton("Save", null)
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val input = etLimit.text?.toString()?.trim()
-
-                if (input.isNullOrEmpty()) {
-                    etLimit.error = "Limit cannot be empty"
-                    return@setOnClickListener
-                }
-
-                val value = input.toIntOrNull()
-                if (value == null || value <= 0) {
-                    etLimit.error = "Invalid amount"
-                    return@setOnClickListener
-                }
-
-                monthlyLimit = value
-                updateMonthlyLimitUI()
-                dialog.dismiss()
-            }
-        }
-
-        dialog.show()
     }
 
     private fun updateCard(cardView: View, wallet: Wallet) {
         val tvName = cardView.findViewById<TextView>(R.id.tv_wallet_name)
         val tvBalance = cardView.findViewById<TextView>(R.id.tv_wallet_balance)
-        val imgToggle =
-            cardView.findViewById<ImageView>(R.id.img_toggle_wallet_balance)
+        val imgToggle = cardView.findViewById<ImageView>(R.id.img_toggle_wallet_balance)
 
         tvName?.text = wallet.name
-
-        val real = dashboardViewModel.formatRupiah(wallet.balance)
+        val real = formatRupiah(wallet.balance)
         val hidden = "Rp •••••••"
 
-        var visible = walletVisibilityStates[wallet.id] ?: false
+        var isVisible = walletVisibilityStates[wallet.id] ?: false
 
         fun render() {
-            tvBalance?.text = if (visible) real else hidden
+            tvBalance?.text = if (isVisible) real else hidden
             imgToggle?.setImageResource(
-                if (visible) R.drawable.ic_visibility
-                else R.drawable.ic_visibility_off
+                if (isVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
             )
         }
-
         render()
 
         imgToggle?.setOnClickListener {
-            visible = !visible
-            walletVisibilityStates[wallet.id] = visible
+            isVisible = !isVisible
+            walletVisibilityStates[wallet.id] = isVisible
             render()
         }
 
         cardView.setOnClickListener {
             transactionViewModel.setActiveWallet(wallet.id)
-            findNavController()
-                .navigate(R.id.action_mainDashboard_to_customerListFragment)
+            findNavController().navigate(R.id.action_mainDashboard_to_customerListFragment)
         }
-    }
-
-    private fun displayUserName(user: FirebaseUser) {
-        tvGreeting.text =
-            user.displayName?.let { "Hi, $it!" }
-                ?: "Hi, Fintelis Buddy!"
     }
 
     private fun updateMainBalanceDisplay() {
-        if (isMainBalanceVisible) {
-            binding.tvBalanceNominal.text = actualMainBalanceFormatted
-            binding.imgToggleBalance.setImageResource(R.drawable.ic_visibility)
-        } else {
-            binding.tvBalanceNominal.text = "IDR •••••••••••"
-            binding.imgToggleBalance.setImageResource(R.drawable.ic_visibility_off)
-        }
+        binding.tvBalanceNominal.text = if (isMainBalanceVisible) actualMainBalanceFormatted else "IDR •••••••••••"
+        binding.imgToggleBalance.setImageResource(
+            if (isMainBalanceVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
+        )
     }
 
-    private fun formatRupiah(amount: Int): String {
-        return NumberFormat.getInstance(Locale("id", "ID")).format(amount)
+    private fun updateMonthlyLimitUI() {
+        val percentage = if (monthlyLimit > 0) ((usedAmount.toFloat() / monthlyLimit) * 100).toInt().coerceIn(0, 100) else 0
+        binding.progressBarLimit.progress = percentage
+        binding.tvLimitPercentage.text = "$percentage%"
+
+        val color = when {
+            percentage >= 90 -> Color.RED
+            percentage >= 50 -> Color.YELLOW
+            else -> ContextCompat.getColor(requireContext(), R.color.status_approved)
+        }
+
+        binding.progressBarLimit.progressDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN)
+        binding.tvLimitPercentage.setTextColor(color)
+        binding.tvLimitInfo.text = "${formatRupiah(usedAmount)} of ${formatRupiah(monthlyLimit)}"
+    }
+
+    private fun formatRupiah(amount: Number): String {
+        val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        return format.format(amount)
     }
 
     private fun showAddWalletDialog() {
-        val wallets =
-            listOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
-
-        val existing =
-            dashboardViewModel.wallets.value
-                ?.map { it.name.uppercase() }
-                ?: emptyList()
-
-        val options =
-            (wallets.filterNot { it in existing } + "Other...")
-                .toTypedArray()
+        val allOptions = listOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
+        val existing = transactionViewModel.wallets.value?.map { it.name.uppercase() } ?: emptyList()
+        val available = allOptions.filterNot { it in existing } + "Other..."
 
         AlertDialog.Builder(requireContext())
             .setTitle("Add New Wallet")
-            .setItems(options) { _, which ->
-                if (options[which] == "Other...") showCustomWalletDialog()
-                else dashboardViewModel.addNewWallet(options[which])
+            .setItems(available.toTypedArray()) { _, which ->
+                if (available[which] == "Other...") showCustomWalletDialog()
+                else dashboardViewModel.addNewWallet(available[which])
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+            .setNegativeButton("Cancel", null).show()
     }
 
     private fun showCustomWalletDialog() {
-        val input = TextInputEditText(requireContext())
-        input.hint = "e.g., Jenius"
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Add Custom Wallet")
-            .setView(input)
+        val input = TextInputEditText(requireContext()).apply { hint = "e.g., Jenius" }
+        AlertDialog.Builder(requireContext()).setTitle("Add Custom Wallet").setView(input)
             .setPositiveButton("Add") { _, _ ->
-                input.text?.toString()?.trim()
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let { dashboardViewModel.addNewWallet(it) }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+                input.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.let { dashboardViewModel.addNewWallet(it) }
+            }.setNegativeButton("Cancel", null).show()
+    }
+
+    private fun showSetLimitDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_set_monthly_limit, null)
+        val etLimit = dialogView.findViewById<TextInputEditText>(R.id.etLimit)
+        AlertDialog.Builder(requireContext()).setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                etLimit.text?.toString()?.toIntOrNull()?.let {
+                    monthlyLimit = it
+                    updateMonthlyLimitUI()
+                }
+            }.setNegativeButton("Cancel", null).show()
+    }
+
+    private fun displayUserName(user: FirebaseUser) {
+        binding.tvGreeting.text = "Hi, ${user.displayName ?: "Fintelis Buddy"}!"
     }
 
     override fun onDestroyView() {

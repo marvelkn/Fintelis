@@ -37,12 +37,12 @@ class ReminderReceiver : BroadcastReceiver() {
 
         // Logika Pesan Siang vs Malam
         if (currentHour < 16) {
-            title = "Reminder Keuangan Siang ☀️"
-            message = "Sudah makan siang? Jangan lupa catat pengeluaranmu ya!"
+            title = "Afternoon Financial Reminder ☀️"
+            message = "Have you had lunch? Don't forget to record your expenses!"
             notifId = 2001
         } else {
-            title = "Reminder Keuangan Malam 🌙"
-            message = "Hari ini sudah berakhir. Yuk rekap transaksi hari ini sebelum tidur!"
+            title = "Evening Financial Reminder 🌙"
+            message = "The day is almost over, Let's recap today's transasctions before bed."
             notifId = 2002
         }
 
