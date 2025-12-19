@@ -30,5 +30,6 @@
 
     <color name="primary_dark">#4527A0</color>
     <color name="color_ripple_effect">#1A000000</color>
+    <color name="gray_600">#AFAEAE</color>
 
 </resources>

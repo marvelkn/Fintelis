@@ -226,13 +226,15 @@
                         android:rotation="-90" />
 
                     <TextView
+                        android:id="@+id/tvPercentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
-                        android:text="70%"
+                        android:text="0%"
                         android:textColor="#6D28D9"
                         android:textSize="15sp"
                         android:textStyle="bold" />
+
                 </RelativeLayout>
 
                 <LinearLayout
@@ -251,9 +253,10 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tvLimitInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="IDR 700,000 of IDR 1,000,000"
+                        android:text="IDR 0 of IDR 0"
                         android:textColor="#64748B"
                         android:textSize="13sp" />
                 </LinearLayout>

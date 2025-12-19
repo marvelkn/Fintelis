@@ -27,6 +27,7 @@ import java.text.NumberFormat
 import java.util.Locale
 
 class DashboardFragment : Fragment() {
+
     private lateinit var auth: FirebaseAuth
     private lateinit var tvGreeting: TextView
 
@@ -36,14 +37,16 @@ class DashboardFragment : Fragment() {
     private val dashboardViewModel: DashboardViewModel by viewModels()
     private val transactionViewModel: TransactionViewModel by activityViewModels()
 
-    // === STATE TRACKING ===
-    // 1. Main Balance State
+    // === MAIN BALANCE ===
     private var isMainBalanceVisible = false
-    private var actualMainBalanceFormatted: String = "IDR •••••••••••"
+    private var actualMainBalanceFormatted = "IDR •••••••••••"
 
-    // 2. Wallet Visibility State Map (Key: WalletID, Value: IsVisible)
-    // We use this so that when data updates, the toggle state doesn't reset to false.
+    // === WALLET VISIBILITY ===
     private val walletVisibilityStates = mutableMapOf<String, Boolean>()
+
+    // === MONTHLY LIMIT ===
+    private var monthlyLimit = 1_000_000
+    private var usedAmount = 0 // total expenses from all wallets
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,21 +63,18 @@ class DashboardFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         tvGreeting = view.findViewById(R.id.tv_greeting)
 
-        if (auth.currentUser != null) {
-            val user = auth.currentUser
-            displayUserName(user)
-        }
+        auth.currentUser?.let { displayUserName(it) }
 
         setupPieChart()
 
-        // Observe total balance and store real value
-        dashboardViewModel.totalBalance.observe(viewLifecycleOwner) { totalBalance ->
-            val formatted = dashboardViewModel.formatRupiah(totalBalance ?: 0.0)
-            actualMainBalanceFormatted = formatted
+        // === TOTAL BALANCE ===
+        dashboardViewModel.totalBalance.observe(viewLifecycleOwner) {
+            actualMainBalanceFormatted =
+                dashboardViewModel.formatRupiah(it ?: 0.0)
             updateMainBalanceDisplay()
         }
 
-        // Observe wallets and update UI
+        // === WALLETS ===
         dashboardViewModel.wallets.observe(viewLifecycleOwner) { wallets ->
             if (wallets == null) return@observe
 
@@ -89,45 +89,46 @@ class DashboardFragment : Fragment() {
                 "SPAY" to binding.cardSpay.root
             )
 
-            // Hide all initially
             cardMap.values.forEach { it.visibility = View.GONE }
 
-            // Show and update only active wallets
             wallets.forEach { wallet ->
-                val cardView = cardMap[wallet.name.uppercase()]
-                cardView?.let {
+                cardMap[wallet.name.uppercase()]?.let {
                     it.visibility = View.VISIBLE
                     updateCard(it, wallet)
                 }
             }
         }
 
-        // Add Wallet button
         binding.cardAddWallet.root.setOnClickListener {
             showAddWalletDialog()
         }
 
-        // Financial data observers
-        val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        val currencyFormat =
+            NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
-        transactionViewModel.incomePercentage.observe(viewLifecycleOwner) { percentage ->
-            binding.tvIncomePercentage.text = String.format("%.0f%%", percentage)
+        // === FINANCIAL DATA ===
+        transactionViewModel.incomePercentage.observe(viewLifecycleOwner) {
+            binding.tvIncomePercentage.text = "${it.toInt()}%"
         }
 
-        transactionViewModel.expensePercentage.observe(viewLifecycleOwner) { percentage ->
-            binding.tvExpensePercentage.text = String.format("%.0f%%", percentage)
+        transactionViewModel.expensePercentage.observe(viewLifecycleOwner) {
+            binding.tvExpensePercentage.text = "${it.toInt()}%"
         }
 
-        transactionViewModel.incomeNominal.observe(viewLifecycleOwner) { nominal ->
-            binding.tvIncomeNominal.text = format.format(nominal)
+        transactionViewModel.incomeNominal.observe(viewLifecycleOwner) {
+            binding.tvIncomeNominal.text = currencyFormat.format(it)
         }
 
-        transactionViewModel.expenseNominal.observe(viewLifecycleOwner) { nominal ->
-            binding.tvExpenseNominal.text = format.format(nominal)
+        // === EXPENSES (ALL WALLET) ===
+        transactionViewModel.expenseNominal.observe(viewLifecycleOwner) { expense ->
+            binding.tvExpenseNominal.text = currencyFormat.format(expense)
+
+            usedAmount = expense.toInt()
+            updateMonthlyLimitUI()
         }
 
-        transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) { pieEntries ->
-            val dataSet = PieDataSet(pieEntries, "").apply {
+        transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) {
+            val dataSet = PieDataSet(it, "").apply {
                 colors = listOf(
                     ContextCompat.getColor(requireContext(), R.color.yellow_500),
                     ContextCompat.getColor(requireContext(), R.color.red_500)
@@ -135,25 +136,22 @@ class DashboardFragment : Fragment() {
                 setDrawValues(false)
             }
 
-            val pieData = PieData(dataSet)
-            binding.pieChartFinancial.data = pieData
+            binding.pieChartFinancial.data = PieData(dataSet)
             binding.pieChartFinancial.invalidate()
         }
 
-        // === SETUP MAIN TOGGLE BUTTON ===
+        // === MAIN BALANCE TOGGLE ===
         binding.imgToggleBalance.setOnClickListener {
             isMainBalanceVisible = !isMainBalanceVisible
             updateMainBalanceDisplay()
         }
-    }
 
-    private fun displayUserName(user: FirebaseUser?) {
-        val userName = user?.displayName
-        if (!userName.isNullOrEmpty()) {
-            tvGreeting.text = "Hi, $userName!"
-        } else {
-            tvGreeting.text = "Hi, Fintelis Buddy!"
+        // === TAP LIMIT TO SET MANUAL ===
+        binding.progressBarLimit.setOnClickListener {
+            showSetLimitDialog()
         }
+
+        updateMonthlyLimitUI()
     }
 
     private fun setupPieChart() {
@@ -162,101 +160,107 @@ class DashboardFragment : Fragment() {
             description.isEnabled = false
             legend.isEnabled = false
             isDrawHoleEnabled = true
-            setHoleColor(Color.TRANSPARENT)
-            setTransparentCircleColor(Color.TRANSPARENT)
-            setTransparentCircleAlpha(0)
             holeRadius = 80f
-            transparentCircleRadius = 80f
             setDrawCenterText(false)
-            rotationAngle = 0f
             isRotationEnabled = false
-            isHighlightPerTapEnabled = false
             animateY(1400, Easing.EaseInOutQuad)
         }
     }
 
-    // === UPDATED FUNCTION: ROBUST WALLET TOGGLE ===
-    private fun updateCard(cardView: View, wallet: Wallet) {
-        // Use safe calls (?) to prevent crashes if IDs are missing in some XMLs
-        val tvWalletName = cardView.findViewById<TextView>(R.id.tv_wallet_name)
-        val tvWalletBalance = cardView.findViewById<TextView>(R.id.tv_wallet_balance)
-        val imgToggleWallet = cardView.findViewById<ImageView>(R.id.img_toggle_wallet_balance)
+    // === MONTHLY LIMIT UI ===
+    private fun updateMonthlyLimitUI() {
+        val percentage =
+            if (monthlyLimit > 0)
+                ((usedAmount.toFloat() / monthlyLimit) * 100)
+                    .toInt()
+                    .coerceIn(0, 100)
+            else 0
 
-        tvWalletName?.text = wallet.name
+        binding.progressBarLimit.progress = percentage
+        binding.tvPercentage.text = "$percentage%"
+        binding.tvLimitInfo.text =
+            "IDR ${formatRupiah(usedAmount)} of IDR ${formatRupiah(monthlyLimit)}"
+    }
 
-        val realBalance = dashboardViewModel.formatRupiah(wallet.balance)
-        val hiddenBalance = "Rp •••••••"
+    // === SET LIMIT DIALOG ===
+    private fun showSetLimitDialog() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_set_monthly_limit, null, false)
 
-        // 1. Get current state from Map, default to false (hidden) if not set
-        var isVisible = walletVisibilityStates[wallet.id] ?: false
+        val etLimit = dialogView.findViewById<TextInputEditText>(R.id.etLimit)
 
-        // 2. Helper to set UI based on boolean state
-        fun setUIState(visible: Boolean) {
-            if (visible) {
-                tvWalletBalance?.text = realBalance
-                imgToggleWallet?.setImageResource(R.drawable.ic_visibility)
-            } else {
-                tvWalletBalance?.text = hiddenBalance
-                imgToggleWallet?.setImageResource(R.drawable.ic_visibility_off)
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("Save", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val input = etLimit.text?.toString()?.trim()
+
+                if (input.isNullOrEmpty()) {
+                    etLimit.error = "Limit cannot be empty"
+                    return@setOnClickListener
+                }
+
+                val value = input.toIntOrNull()
+                if (value == null || value <= 0) {
+                    etLimit.error = "Invalid amount"
+                    return@setOnClickListener
+                }
+
+                monthlyLimit = value
+                updateMonthlyLimitUI()
+                dialog.dismiss()
             }
         }
 
-        // 3. Apply initial state immediately
-        setUIState(isVisible)
+        dialog.show()
+    }
 
-        // 4. Toggle Click Listener
-        imgToggleWallet?.setOnClickListener {
-            isVisible = !isVisible // Flip state
-            walletVisibilityStates[wallet.id] = isVisible // Save to map
-            setUIState(isVisible) // Update UI
+    private fun updateCard(cardView: View, wallet: Wallet) {
+        val tvName = cardView.findViewById<TextView>(R.id.tv_wallet_name)
+        val tvBalance = cardView.findViewById<TextView>(R.id.tv_wallet_balance)
+        val imgToggle =
+            cardView.findViewById<ImageView>(R.id.img_toggle_wallet_balance)
+
+        tvName?.text = wallet.name
+
+        val real = dashboardViewModel.formatRupiah(wallet.balance)
+        val hidden = "Rp •••••••"
+
+        var visible = walletVisibilityStates[wallet.id] ?: false
+
+        fun render() {
+            tvBalance?.text = if (visible) real else hidden
+            imgToggle?.setImageResource(
+                if (visible) R.drawable.ic_visibility
+                else R.drawable.ic_visibility_off
+            )
         }
 
-        // 5. Card Navigation Click Listener
+        render()
+
+        imgToggle?.setOnClickListener {
+            visible = !visible
+            walletVisibilityStates[wallet.id] = visible
+            render()
+        }
+
         cardView.setOnClickListener {
             transactionViewModel.setActiveWallet(wallet.id)
-            findNavController().navigate(R.id.action_mainDashboard_to_customerListFragment)
+            findNavController()
+                .navigate(R.id.action_mainDashboard_to_customerListFragment)
         }
     }
 
-    private fun showAddWalletDialog() {
-        val allPossibleWallets = listOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
-        val existingWalletNames = dashboardViewModel.wallets.value?.map { it.name.uppercase() } ?: emptyList()
-        val availableWallets = allPossibleWallets.filter { !existingWalletNames.contains(it) }
-
-        val dialogOptions = (availableWallets + "Other...").toTypedArray()
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Add New Wallet")
-            .setItems(dialogOptions) { _, which ->
-                val selected = dialogOptions[which]
-                if (selected == "Other...") {
-                    showCustomWalletDialog()
-                } else {
-                    dashboardViewModel.addNewWallet(selected)
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+    private fun displayUserName(user: FirebaseUser) {
+        tvGreeting.text =
+            user.displayName?.let { "Hi, $it!" }
+                ?: "Hi, Fintelis Buddy!"
     }
 
-    private fun showCustomWalletDialog() {
-        val editText = TextInputEditText(requireContext())
-        editText.hint = "e.g., Jenius"
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Add Custom Wallet")
-            .setView(editText)
-            .setPositiveButton("Add") { _, _ ->
-                val walletName = editText.text.toString().trim()
-                if (walletName.isNotEmpty()) {
-                    dashboardViewModel.addNewWallet(walletName)
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    // === MAIN BALANCE UPDATE ===
     private fun updateMainBalanceDisplay() {
         if (isMainBalanceVisible) {
             binding.tvBalanceNominal.text = actualMainBalanceFormatted
@@ -265,6 +269,49 @@ class DashboardFragment : Fragment() {
             binding.tvBalanceNominal.text = "IDR •••••••••••"
             binding.imgToggleBalance.setImageResource(R.drawable.ic_visibility_off)
         }
+    }
+
+    private fun formatRupiah(amount: Int): String {
+        return NumberFormat.getInstance(Locale("id", "ID")).format(amount)
+    }
+
+    private fun showAddWalletDialog() {
+        val wallets =
+            listOf("BCA", "BLU", "BNI", "MANDIRI", "DANA", "GOPAY", "OVO", "SPAY")
+
+        val existing =
+            dashboardViewModel.wallets.value
+                ?.map { it.name.uppercase() }
+                ?: emptyList()
+
+        val options =
+            (wallets.filterNot { it in existing } + "Other...")
+                .toTypedArray()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add New Wallet")
+            .setItems(options) { _, which ->
+                if (options[which] == "Other...") showCustomWalletDialog()
+                else dashboardViewModel.addNewWallet(options[which])
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCustomWalletDialog() {
+        val input = TextInputEditText(requireContext())
+        input.hint = "e.g., Jenius"
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add Custom Wallet")
+            .setView(input)
+            .setPositiveButton("Add") { _, _ ->
+                input.text?.toString()?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let { dashboardViewModel.addNewWallet(it) }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {
