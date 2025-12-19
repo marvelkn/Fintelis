@@ -4,7 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -33,9 +36,25 @@ class TransactionDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = activity as? AppCompatActivity
+        activity?.setSupportActionBar(binding.toolbar)
+
         // Setup Toolbar Back Button
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
+        }
+
+        // Set custom toolbar title and font
+        activity?.supportActionBar?.title = "Transaction Detail"
+        for (i in 0 until binding.toolbar.childCount) {
+            val child = binding.toolbar.getChildAt(i)
+            if (child is TextView) {
+                if (child.text == activity?.supportActionBar?.title) {
+                    val typeface = ResourcesCompat.getFont(requireContext(), R.font.lato_bold)
+                    child.typeface = typeface
+                    break
+                }
+            }
         }
 
         // Ambil data dan tampilkan
@@ -47,7 +66,6 @@ class TransactionDetailFragment : Fragment() {
         binding.tvDetailTitle.text = item.title
         binding.tvDetailDate.text = item.date
         binding.tvDetailCategory.text = item.category
-        binding.tvDetailWallet.text = item.walletId
 
         // Format Rupiah
         val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
