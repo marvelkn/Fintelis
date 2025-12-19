@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content" />
 
-        <!-- Phone -->
+        <!-- Email -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -46,10 +46,10 @@
             android:paddingHorizontal="12dp">
 
             <ImageView
-                android:src="@drawable/ic_phone"
+                android:src="@drawable/ic_email"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:contentDescription="Phone icon" />
+                android:contentDescription="Email icon" />
 
             <EditText
                 android:id="@+id/etemailLogin"

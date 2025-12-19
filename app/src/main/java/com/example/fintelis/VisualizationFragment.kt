@@ -14,6 +14,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.fintelis.adapter.WalletAdapter
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.viewmodel.TransactionViewModel
@@ -40,10 +43,9 @@ class VisualizationFragment : Fragment() {
     private lateinit var pieChart: PieChart
     private lateinit var lineChart: LineChart
 
-    // --- Components Button ---
+    // --- Components Button & Layouts ---
     private lateinit var btnSeeDetail: MaterialButton
-
-    // --- Containers ---
+    private lateinit var layoutDetailButton: LinearLayout // Wrapper tombol detail
     private lateinit var layoutCharts: LinearLayout
     private lateinit var layoutEmptyState: LinearLayout
 
@@ -58,12 +60,19 @@ class VisualizationFragment : Fragment() {
     private lateinit var tvMonthName: TextView
     private lateinit var tvYearNumber: TextView
 
-    // --- Switch Controls ---
+    // --- Switch Controls (BARU: Tambah btnSwitchComparison) ---
     private lateinit var btnSwitchExpense: TextView
     private lateinit var btnSwitchIncome: TextView
+    private lateinit var btnSwitchComparison: TextView
 
-    // --- State Variables ---
-    private var isExpenseMode = true // Default to Expense
+    // --- Wallet Components ---
+    private lateinit var walletAdapter: WalletAdapter
+    private lateinit var rvWallets: RecyclerView
+
+    // --- BARU: State Variables Menggunakan Enum ---
+    private enum class ChartMode { EXPENSE, INCOME, COMPARISON }
+    private var currentMode = ChartMode.EXPENSE // Default
+
     private var currentTransactions: List<Transaction> = emptyList()
 
     override fun onCreateView(
@@ -73,10 +82,11 @@ class VisualizationFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_visualization, container, false)
         initializeViews(view)
 
+        setupWalletAdapter()
         setupCharts()
         setupMonthNavigation()
         setupCategorySwitch()
-        setupDetailButton() // Logic Navigasi Baru
+        setupDetailButton()
         observeData()
 
         return view
@@ -85,7 +95,9 @@ class VisualizationFragment : Fragment() {
     private fun initializeViews(view: View) {
         pieChart = view.findViewById(R.id.pieChart)
         lineChart = view.findViewById(R.id.lineChart)
+
         btnSeeDetail = view.findViewById(R.id.btnSeeDetail)
+        layoutDetailButton = view.findViewById(R.id.layoutDetailButton) // Ambil LinearLayout wrapper
 
         layoutCharts = view.findViewById(R.id.layoutCharts)
         layoutEmptyState = view.findViewById(R.id.layoutEmptyState)
@@ -101,76 +113,127 @@ class VisualizationFragment : Fragment() {
 
         btnSwitchExpense = view.findViewById(R.id.btnSwitchExpense)
         btnSwitchIncome = view.findViewById(R.id.btnSwitchIncome)
+        btnSwitchComparison = view.findViewById(R.id.btnSwitchComparison) // Init tombol baru
 
-        // Animasi layout (opsional, untuk kehalusan jika ada perubahan visibilitas)
+        rvWallets = view.findViewById(R.id.rv_wallets)
+
         layoutCharts.layoutTransition = LayoutTransition()
     }
 
-    // --- LOGIC TOMBOL DETAIL (NAVIGASI KE HALAMAN BARU) ---
+    private fun setupWalletAdapter() {
+        walletAdapter = WalletAdapter(requireContext(), emptyList()) { wallet ->
+            viewModel.setActiveWallet(wallet?.id)
+        }
+        rvWallets.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = walletAdapter
+        }
+    }
+
+    // --- LOGIC TOMBOL DETAIL ---
     private fun setupDetailButton() {
+        // Panggil saat inisialisasi
         updateDetailButtonUI()
 
         btnSeeDetail.setOnClickListener {
-            // Siapkan data yang mau dikirim
+            // Hanya kirim Expense atau Income. Comparison mode tombolnya disembunyikan.
+            val isExpense = (currentMode == ChartMode.EXPENSE)
             val bundle = Bundle().apply {
-                putBoolean("isExpense", isExpenseMode)
+                putBoolean("isExpense", isExpense)
             }
-
-            // Pindah halaman menggunakan NavController (Sesuai ID di nav_graph_dash.xml)
             findNavController().navigate(R.id.action_visualization_to_detailCashflow, bundle)
         }
     }
 
-    // Update Teks dan Warna tombol berdasarkan mode
     private fun updateDetailButtonUI() {
-        val typeText = if (isExpenseMode) "Expense" else "Income"
-        btnSeeDetail.text = "View Full $typeText List"
+        // Tombol Detail hanya muncul jika bukan mode COMPARISON
+        if (currentMode == ChartMode.COMPARISON) {
+            layoutDetailButton.isVisible = false
+            return
+        }
 
-        // Icon Panah ke Kanan (Indikasi pindah halaman)
+        layoutDetailButton.isVisible = true
+        val typeText = if (currentMode == ChartMode.EXPENSE) "Expense" else "Income"
+        btnSeeDetail.text = "View Full $typeText List"
         btnSeeDetail.setIconResource(R.drawable.ic_chevron_right)
 
-        if (isExpenseMode) {
+        if (currentMode == ChartMode.EXPENSE) {
             btnSeeDetail.setBackgroundColor(Color.parseColor("#C53030")) // Merah
         } else {
             btnSeeDetail.setBackgroundColor(Color.parseColor("#38A169")) // Hijau
         }
     }
 
-    // --- LOGIC SWITCH CATEGORY ---
+    // --- LOGIC SWITCH CATEGORY (UPDATED UNTUK 3 MODE) ---
     private fun setupCategorySwitch() {
         btnSwitchExpense.setOnClickListener {
-            if (!isExpenseMode) {
-                isExpenseMode = true
+            if (currentMode != ChartMode.EXPENSE) {
+                currentMode = ChartMode.EXPENSE
                 updateSwitchUI()
                 updatePieChart(currentTransactions)
-                updateDetailButtonUI() // Update tombol agar merah
+                updateDetailButtonUI()
             }
         }
 
         btnSwitchIncome.setOnClickListener {
-            if (isExpenseMode) {
-                isExpenseMode = false
+            if (currentMode != ChartMode.INCOME) {
+                currentMode = ChartMode.INCOME
                 updateSwitchUI()
                 updatePieChart(currentTransactions)
-                updateDetailButtonUI() // Update tombol agar hijau
+                updateDetailButtonUI()
+            }
+        }
+
+        // BARU: Tombol Comparison
+        btnSwitchComparison.setOnClickListener {
+            if (currentMode != ChartMode.COMPARISON) {
+                currentMode = ChartMode.COMPARISON
+                updateSwitchUI()
+                updatePieChart(currentTransactions)
+                updateDetailButtonUI()
             }
         }
     }
 
     private fun updateSwitchUI() {
-        if (isExpenseMode) {
-            // Expense Active
-            btnSwitchExpense.setBackgroundResource(R.drawable.bg_pill_danger); btnSwitchExpense.setTextColor(Color.WHITE)
-            btnSwitchIncome.setBackgroundColor(Color.TRANSPARENT); btnSwitchIncome.setTextColor(Color.parseColor("#718096"))
-        } else {
-            // Income Active
-            btnSwitchExpense.setBackgroundColor(Color.TRANSPARENT); btnSwitchExpense.setTextColor(Color.parseColor("#718096"))
-            btnSwitchIncome.setBackgroundResource(R.drawable.bg_pill_success); btnSwitchIncome.setTextColor(Color.WHITE)
+        // Reset semua tombol ke transparan/abu-abu dulu
+        btnSwitchExpense.setBackgroundColor(Color.TRANSPARENT); btnSwitchExpense.setTextColor(Color.parseColor("#718096"))
+        btnSwitchIncome.setBackgroundColor(Color.TRANSPARENT); btnSwitchIncome.setTextColor(Color.parseColor("#718096"))
+        btnSwitchComparison.setBackgroundColor(Color.TRANSPARENT); btnSwitchComparison.setTextColor(Color.parseColor("#718096"))
+
+        // Highlight tombol yang aktif
+        when (currentMode) {
+            ChartMode.EXPENSE -> {
+                btnSwitchExpense.setBackgroundResource(R.drawable.bg_pill_danger)
+                btnSwitchExpense.setTextColor(Color.WHITE)
+            }
+            ChartMode.INCOME -> {
+                btnSwitchIncome.setBackgroundResource(R.drawable.bg_pill_success)
+                btnSwitchIncome.setTextColor(Color.WHITE)
+            }
+            ChartMode.COMPARISON -> {
+                // --- PERBAIKAN DI SINI (TAMBAHKAN .mutate()) ---
+                btnSwitchComparison.setBackgroundResource(R.drawable.bg_pill_white_outline)
+
+                // mutate() memastikan perubahan warna HANYA berlaku untuk tombol ini,
+                // tidak menular ke container induknya.
+                btnSwitchComparison.background.mutate().setTint(Color.parseColor("#3182CE")) // Biru
+
+                btnSwitchComparison.setTextColor(Color.WHITE)
+            }
         }
     }
 
     // --- OBSERVE DATA ---
     private fun observeData() {
+        viewModel.wallets.observe(viewLifecycleOwner) { wallets ->
+            walletAdapter.updateWallets(wallets ?: emptyList())
+        }
+
+        viewModel.activeWalletId.observe(viewLifecycleOwner) { walletId ->
+            walletAdapter.setSelectedWallet(walletId)
+        }
+
         viewModel.displayedTransactions.observe(viewLifecycleOwner) { transactions ->
             if (transactions != null) {
                 currentTransactions = transactions
@@ -182,24 +245,20 @@ class VisualizationFragment : Fragment() {
 
                     updatePieChart(transactions)
                     updateLineChart(transactions)
-
-                    // Button selalu terlihat jika ada data
-                    btnSeeDetail.isVisible = true
+                    updateDetailButtonUI() // Cek apakah tombol harus muncul
 
                 } else {
                     layoutCharts.isVisible = false
                     layoutEmptyState.isVisible = true
                     pieChart.clear()
                     lineChart.clear()
-
-                    // Sembunyikan tombol detail jika tidak ada data
-                    btnSeeDetail.isVisible = false
+                    layoutDetailButton.isVisible = false
                 }
             }
         }
     }
 
-    // --- HELPER FUNCTIONS (Sama seperti sebelumnya) ---
+    // --- HELPER FUNCTIONS ---
 
     private fun updateSummaryText(transactions: List<Transaction>) {
         val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
@@ -221,8 +280,6 @@ class VisualizationFragment : Fragment() {
     }
 
     private fun setupCharts() {
-        // ... (Kode Pie Chart biarkan saja seperti sebelumnya) ...
-        // Konfigurasi Pie Chart tetap sama...
         pieChart.setUsePercentValues(true); pieChart.description.isEnabled = false
         pieChart.setExtraOffsets(30f, 10f, 30f, 10f)
         pieChart.dragDecelerationFrictionCoef = 0.95f; pieChart.isDrawHoleEnabled = true
@@ -232,41 +289,35 @@ class VisualizationFragment : Fragment() {
         pieChart.setEntryLabelColor(Color.parseColor("#2D3748")); pieChart.setEntryLabelTextSize(11f)
         pieChart.animateY(1400, Easing.EaseInOutQuad)
 
-        // --- KONFIGURASI LINE CHART (BARU) ---
         lineChart.description.isEnabled = false
-        lineChart.legend.isEnabled = false // Hilangkan legend kotak di bawah (biar bersih)
-
-        // Hapus border kotak di sekeliling chart
+        lineChart.legend.isEnabled = false
         lineChart.setDrawGridBackground(false)
         lineChart.setDrawBorders(false)
 
-        // --- Sumbu X (Bawah) ---
         val xAxis = lineChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.textColor = Color.parseColor("#A0AEC0") // Abu-abu lembut
+        xAxis.textColor = Color.parseColor("#A0AEC0")
         xAxis.textSize = 10f
-        xAxis.setDrawGridLines(false) // Hilangkan garis grid vertikal
-        xAxis.setDrawAxisLine(false)  // Hilangkan garis sumbu hitam
+        xAxis.setDrawGridLines(false)
+        xAxis.setDrawAxisLine(false)
         xAxis.granularity = 1f
-        xAxis.yOffset = 10f // Beri jarak sedikit dari grafik
+        xAxis.yOffset = 10f
         xAxis.valueFormatter = object : ValueFormatter() {
-            private val format = SimpleDateFormat("dd", Locale.US) // Tampilkan Tanggal saja (lebih singkat)
+            private val format = SimpleDateFormat("dd", Locale.US)
             override fun getAxisLabel(value: Float, axis: AxisBase?): String {
                 return try { format.format(Date(value.toLong())) } catch(e: Exception) { "" }
             }
         }
 
-        // --- Sumbu Y Kiri (Nominal) ---
         val leftAxis = lineChart.axisLeft
         leftAxis.textColor = Color.parseColor("#A0AEC0")
         leftAxis.textSize = 10f
-        leftAxis.setDrawGridLines(true) // Tetap tampilkan grid horizontal
-        leftAxis.gridColor = Color.parseColor("#F7FAFC") // Grid warna sangat muda (hampir putih)
-        leftAxis.enableGridDashedLine(10f, 10f, 0f) // Grid putus-putus
-        leftAxis.setDrawAxisLine(false) // Hilangkan garis sumbu vertikal
-        leftAxis.axisMinimum = 0f // Mulai dari 0
+        leftAxis.setDrawGridLines(true)
+        leftAxis.gridColor = Color.parseColor("#F7FAFC")
+        leftAxis.enableGridDashedLine(10f, 10f, 0f)
+        leftAxis.setDrawAxisLine(false)
+        leftAxis.axisMinimum = 0f
 
-        // Custom Formatter (Jt/Rb)
         leftAxis.valueFormatter = object : ValueFormatter() {
             override fun getAxisLabel(value: Float, axis: AxisBase?): String {
                 return if (value >= 1000000) String.format("%.0fjt", value / 1000000)
@@ -275,16 +326,12 @@ class VisualizationFragment : Fragment() {
             }
         }
 
-        // Matikan Sumbu Kanan
         lineChart.axisRight.isEnabled = false
-
-        // Interaksi
         lineChart.setTouchEnabled(true)
         lineChart.isDragEnabled = true
-        lineChart.setScaleEnabled(false) // Matikan zoom agar tampilan tetap rapi
+        lineChart.setScaleEnabled(false)
         lineChart.setPinchZoom(false)
 
-        // Marker (Tooltip saat ditekan)
         try {
             val markerView = CustomMarkerView(requireContext(), R.layout.custom_marker_view)
             markerView.chartView = lineChart
@@ -292,32 +339,81 @@ class VisualizationFragment : Fragment() {
         } catch (e: Exception) { }
     }
 
+    // --- CHART LOGIC UTAMA (UPDATED) ---
     private fun updatePieChart(transactions: List<Transaction>) {
-        val targetType = if (isExpenseMode) TransactionType.EXPENSE else TransactionType.INCOME
-        val filteredList = transactions.filter { it.type == targetType }
         val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
         pieChart.highlightValues(null)
 
-        if (filteredList.isEmpty()) { pieChart.clear(); pieChart.centerText = if(isExpenseMode) "No Expense" else "No Income"; tvTopCategory.text = "-"; return }
+        val entries: List<PieEntry>
+        val colors: List<Int>
+        val centerTextLabel: String
+        val totalAmountForCenter: Double
 
-        val totalAmount = filteredList.sumOf { it.amount }
-        val groupedData = filteredList.groupBy { it.category }.mapValues { entry -> entry.value.sumOf { it.amount } }
-        val maxEntry = groupedData.maxByOrNull { it.value }
-        if (maxEntry != null) { tvTopCategory.text = "${maxEntry.key} (${formatRp.format(maxEntry.value)})" }
+        when (currentMode) {
+            // MODE 1: EXPENSE (Per Kategori)
+            ChartMode.EXPENSE -> {
+                val filteredList = transactions.filter { it.type == TransactionType.EXPENSE }
+                if (filteredList.isEmpty()) { showEmptyChart("No Expense"); return }
 
-        val entries = groupedData.map { PieEntry(it.value.toFloat(), it.key) }
-        val dataSet = PieDataSet(entries, "")
-        if (isExpenseMode) {
-            dataSet.colors = listOf(Color.parseColor("#E53E3E"), Color.parseColor("#ED8936"), Color.parseColor("#ECC94B"), Color.parseColor("#805AD5"), Color.parseColor("#38B2AC"))
-        } else {
-            dataSet.colors = listOf(Color.parseColor("#38A169"), Color.parseColor("#3182CE"), Color.parseColor("#319795"), Color.parseColor("#D69E2E"), Color.parseColor("#805AD5"))
+                totalAmountForCenter = filteredList.sumOf { it.amount }
+                val grouped = filteredList.groupBy { it.category }.mapValues { it.value.sumOf { t -> t.amount } }
+
+                // Set Top Category Text
+                val maxEntry = grouped.maxByOrNull { it.value }
+                tvTopCategory.text = if (maxEntry != null) "${maxEntry.key} (${formatRp.format(maxEntry.value)})" else "-"
+
+                entries = grouped.map { PieEntry(it.value.toFloat(), it.key) }
+                colors = listOf(Color.parseColor("#E53E3E"), Color.parseColor("#ED8936"), Color.parseColor("#ECC94B"), Color.parseColor("#805AD5"), Color.parseColor("#38B2AC"))
+                centerTextLabel = "Expenses"
+            }
+            // MODE 2: INCOME (Per Kategori)
+            ChartMode.INCOME -> {
+                val filteredList = transactions.filter { it.type == TransactionType.INCOME }
+                if (filteredList.isEmpty()) { showEmptyChart("No Income"); return }
+
+                totalAmountForCenter = filteredList.sumOf { it.amount }
+                val grouped = filteredList.groupBy { it.category }.mapValues { it.value.sumOf { t -> t.amount } }
+
+                val maxEntry = grouped.maxByOrNull { it.value }
+                tvTopCategory.text = if (maxEntry != null) "${maxEntry.key} (${formatRp.format(maxEntry.value)})" else "-"
+
+                entries = grouped.map { PieEntry(it.value.toFloat(), it.key) }
+                colors = listOf(Color.parseColor("#38A169"), Color.parseColor("#3182CE"), Color.parseColor("#319795"), Color.parseColor("#D69E2E"), Color.parseColor("#805AD5"))
+                centerTextLabel = "Incomes"
+            }
+            // MODE 3: COMPARISON (Income vs Expense)
+            ChartMode.COMPARISON -> {
+                val totalInc = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+                val totalExp = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+                val balance = totalInc - totalExp
+
+                if (totalInc == 0.0 && totalExp == 0.0) { showEmptyChart("No Data"); return }
+
+                tvTopCategory.text = "Balance: ${formatRp.format(balance)}"
+
+                entries = listOf(
+                    PieEntry(totalInc.toFloat(), "Income"),
+                    PieEntry(totalExp.toFloat(), "Expense")
+                )
+                // Hijau untuk Income, Merah untuk Expense
+                colors = listOf(Color.parseColor("#38A169"), Color.parseColor("#E53E3E"))
+
+                totalAmountForCenter = balance // Tampilkan saldo bersih di tengah
+                centerTextLabel = "Cashflow"
+            }
         }
-        dataSet.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE; dataSet.xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+
+        // Render Chart
+        val dataSet = PieDataSet(entries, "")
+        dataSet.colors = colors
+        dataSet.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+        dataSet.xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
         dataSet.valueLinePart1OffsetPercentage = 80f; dataSet.valueLinePart1Length = 0.4f; dataSet.valueLinePart2Length = 0.4f
         dataSet.valueLineWidth = 1f; dataSet.valueLineColor = Color.parseColor("#CBD5E0"); dataSet.valueTextColor = Color.parseColor("#2D3748"); dataSet.valueTextSize = 11f; dataSet.sliceSpace = 2f
 
         val data = PieData(dataSet); data.setValueFormatter(PercentFormatter(pieChart)); pieChart.data = data
-        val defaultCenterText = "${if(isExpenseMode) "Pengeluaran" else "Pemasukan"}\n${formatRp.format(totalAmount)}"
+
+        val defaultCenterText = "$centerTextLabel\n${formatRp.format(totalAmountForCenter)}"
         pieChart.centerText = defaultCenterText
 
         pieChart.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
@@ -327,48 +423,37 @@ class VisualizationFragment : Fragment() {
         pieChart.animateY(1000, Easing.EaseInOutQuad); pieChart.invalidate()
     }
 
+    private fun showEmptyChart(msg: String) {
+        pieChart.clear()
+        pieChart.centerText = msg
+        tvTopCategory.text = "-"
+    }
+
     private fun updateLineChart(transactions: List<Transaction>) {
         val entries = viewModel.getFinancialTrendData(transactions)
         val sortedEntries = entries.sortedBy { it.x }
 
-        // Jika data kosong, bersihkan chart
         if (sortedEntries.isEmpty()) {
             lineChart.clear()
             return
         }
 
         val dataSet = LineDataSet(sortedEntries, "Saldo")
-
-        // --- GAYA GARIS (STYLE) ---
-        dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER // Garis melengkung halus (Curve)
+        dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
         dataSet.cubicIntensity = 0.2f
-
-        // Warna Garis (Ungu Solid)
         dataSet.color = Color.parseColor("#805AD5")
-        dataSet.lineWidth = 3f // Garis lebih tebal
-
-        // --- BAGIAN TITIK (CIRCLES) ---
-        dataSet.setDrawCircles(false) // Hilangkan titik-titik (clean look)
-        dataSet.setDrawValues(false)  // Hilangkan teks angka di atas garis
-
-        // Jika ingin titik muncul HANYA saat di-klik (highlight):
+        dataSet.lineWidth = 3f
+        dataSet.setDrawCircles(false)
+        dataSet.setDrawValues(false)
         dataSet.setDrawHorizontalHighlightIndicator(false)
-        dataSet.highLightColor = Color.parseColor("#805AD5") // Warna garis sorot
+        dataSet.highLightColor = Color.parseColor("#805AD5")
         dataSet.highlightLineWidth = 1.5f
-
-        // --- AREA ISI (GRADIENT FILL) ---
-        dataSet.setDrawFilled(true) // Aktifkan isi warna di bawah garis
-        // Gunakan Drawable Gradient yang baru dibuat
+        dataSet.setDrawFilled(true)
         dataSet.fillDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.gradient_chart_purple)
-        // (Opsional) Jika drawable gagal load, gunakan warna solid transparan:
-        // dataSet.fillColor = Color.parseColor("#805AD5")
-        // dataSet.fillAlpha = 50
 
         val data = LineData(dataSet)
         lineChart.data = data
-
-        // Refresh & Animate
         lineChart.invalidate()
-        lineChart.animateX(1200, Easing.EaseInOutSine) // Animasi muncul dari kiri
+        lineChart.animateX(1200, Easing.EaseInOutSine)
     }
 }
