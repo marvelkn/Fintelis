@@ -84,9 +84,6 @@ class SettingsFragment : Fragment() {
             requireContext().sendBroadcast(intent)
             Toast.makeText(requireContext(), "Mencoba memunculkan notifikasi...", Toast.LENGTH_SHORT).show()
         }
-        binding.layoutSetLimit.setOnClickListener {
-            showSetLimitDialog()
-        }
     }
 
     // --- 2. Logika Switch Notifikasi ---
@@ -187,35 +184,6 @@ class SettingsFragment : Fragment() {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(intent)
         requireActivity().finish()
-    }
-
-    private fun showSetLimitDialog() {
-        val context = requireContext()
-
-        // 1. Buat EditText untuk input angka
-        val input = EditText(context)
-        input.inputType = InputType.TYPE_CLASS_NUMBER // Hanya boleh angka
-        input.hint = "Example: 1000000"
-        input.setPadding(50, 30, 50, 30) // Sedikit padding agar rapi
-
-        // 2. Buat Dialog
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("Set your monthly limit")
-            .setMessage("Set your money spending limit")
-            .setView(input)
-            .setPositiveButton("Save") { _, _ ->
-                val limitStr = input.text.toString()
-                if (limitStr.isNotEmpty()) {
-                    val limitAmount = limitStr.toDouble()
-                    saveLimitLocally(limitAmount)
-                } else {
-                    Toast.makeText(context, "You need to enter your monthly limit", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        dialog.show()
     }
 
     private fun saveLimitLocally(limit: Double) {

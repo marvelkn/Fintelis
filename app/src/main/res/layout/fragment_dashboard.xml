@@ -226,7 +226,7 @@
                         android:rotation="-90" />
 
                     <TextView
-                        android:id="@+id/tvPercentage"
+                        android:id="@+id/tvLimitPercentage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
@@ -304,7 +304,7 @@
                     <View
                         android:layout_width="14dp"
                         android:layout_height="14dp"
-                        android:background="#FFC107"
+                        android:background="@color/status_approved"
                         android:layout_marginEnd="12dp" />
 
                     <TextView

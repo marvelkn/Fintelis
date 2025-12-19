@@ -36,35 +36,19 @@ class DashboardViewModel : ViewModel() {
             if (e != null) return@addSnapshotListener
             val walletList = walletSnapshot?.toObjects<Wallet>() ?: emptyList()
 
-            userDocRef.collection("transactions").addSnapshotListener { transactionSnapshot, e2 ->
-                if (e2 != null) return@addSnapshotListener
-                val allTransactions = transactionSnapshot?.toObjects<Transaction>() ?: emptyList()
+            // Update local state directly from Firestore data
+            _wallets.value = walletList
+            _totalBalance.value = walletList.sumOf { it.balance }
 
-                updateBalances(walletList, allTransactions)
-            }
+            // We still listen to transactions if needed for other UI updates,
+            // but we no longer recalculate wallet balances from them locally.
+
         }
-    }
-
-    private fun updateBalances(wallets: List<Wallet>, transactions: List<Transaction>) {
-        val walletBalances = wallets.associate { it.id to 0.0 }.toMutableMap()
-        var total = 0.0
-
-        for (trx in transactions) {
-            val amount = if (trx.type == TransactionType.EXPENSE) -trx.amount else trx.amount
-            if (walletBalances.containsKey(trx.walletId)) {
-                walletBalances[trx.walletId] = walletBalances.getValue(trx.walletId) + amount
-            }
-            total += amount
-        }
-
-        val updatedWallets = wallets.map { it.copy(balance = walletBalances[it.id] ?: 0.0) }
-        _wallets.value = updatedWallets
-        _totalBalance.value = total
     }
 
     fun addNewWallet(walletName: String) {
         val userId = auth.currentUser?.uid ?: return
-        val newWallet = Wallet(name = walletName)
+        val newWallet = Wallet(name = walletName, balance = 0.0)
         firestore.collection("users").document(userId).collection("wallets").add(newWallet)
     }
 

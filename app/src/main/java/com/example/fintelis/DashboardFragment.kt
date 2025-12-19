@@ -24,6 +24,8 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class DashboardFragment : Fragment() {
@@ -62,6 +64,8 @@ class DashboardFragment : Fragment() {
 
         auth = FirebaseAuth.getInstance()
         tvGreeting = view.findViewById(R.id.tv_greeting)
+
+
 
         auth.currentUser?.let { displayUserName(it) }
 
@@ -106,6 +110,14 @@ class DashboardFragment : Fragment() {
         val currencyFormat =
             NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
+        // Set ke "ALL" agar konsisten mengambil semua data
+        transactionViewModel.setActiveWallet("ALL")
+
+        // PENTING: Observasi displayedTransactions agar MediatorLiveData aktif dan processList berjalan
+        // Tanpa ini, incomePercentage dll tidak akan terupdate karena processList tidak dipanggil
+        transactionViewModel.displayedTransactions.observe(viewLifecycleOwner) {
+            // Data list transaksi tidak ditampilkan di sini, tapi perlu diobservasi
+        }
         // === FINANCIAL DATA ===
         transactionViewModel.incomePercentage.observe(viewLifecycleOwner) {
             binding.tvIncomePercentage.text = "${it.toInt()}%"
@@ -130,13 +142,16 @@ class DashboardFragment : Fragment() {
         transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) {
             val dataSet = PieDataSet(it, "").apply {
                 colors = listOf(
-                    ContextCompat.getColor(requireContext(), R.color.yellow_500),
+                    ContextCompat.getColor(requireContext(), R.color.status_approved),
                     ContextCompat.getColor(requireContext(), R.color.red_500)
                 )
                 setDrawValues(false)
             }
 
-            binding.pieChartFinancial.data = PieData(dataSet)
+            val pieData = PieData(dataSet)
+            // Mengatur warna teks label (Income/Expense) menjadi HITAM
+            pieData.setValueTextColor(Color.BLACK)
+            binding.pieChartFinancial.data = pieData
             binding.pieChartFinancial.invalidate()
         }
 
@@ -152,6 +167,10 @@ class DashboardFragment : Fragment() {
         }
 
         updateMonthlyLimitUI()
+
+        // Set current date
+        val currentDate = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.US).format(Date())
+        binding.tvDate.text = currentDate
     }
 
     private fun setupPieChart() {
@@ -164,6 +183,10 @@ class DashboardFragment : Fragment() {
             setDrawCenterText(false)
             isRotationEnabled = false
             animateY(1400, Easing.EaseInOutQuad)
+
+            // Mengatur warna label entry (Income/Expense) menjadi HITAM
+            setEntryLabelColor(Color.BLACK)
+            setEntryLabelTextSize(13f)
         }
     }
 
@@ -177,7 +200,27 @@ class DashboardFragment : Fragment() {
             else 0
 
         binding.progressBarLimit.progress = percentage
-        binding.tvPercentage.text = "$percentage%"
+        binding.tvLimitPercentage.text = "$percentage%"
+        if (percentage >= 90) {
+            binding.progressBarLimit.progressDrawable.setColorFilter(
+                android.graphics.Color.RED, android.graphics.PorterDuff.Mode.SRC_IN
+            )
+            binding.tvLimitPercentage.setTextColor(android.graphics.Color.RED)
+        } else if(percentage >= 50 && percentage < 90){
+            binding.progressBarLimit.progressDrawable.setColorFilter(
+                android.graphics.Color.YELLOW, android.graphics.PorterDuff.Mode.SRC_IN
+            )
+            binding.tvLimitPercentage.setTextColor(android.graphics.Color.YELLOW)
+        } else if(percentage >= 10 && percentage < 50) {
+            val approvedColor = ContextCompat.getColor(requireContext(), R.color.status_approved)
+            binding.progressBarLimit.progressDrawable.setColorFilter(
+                approvedColor, android.graphics.PorterDuff.Mode.SRC_IN
+            )
+            binding.tvLimitPercentage.setTextColor(approvedColor)
+        } else {
+            // Reset warna (misal ke default biru/hijau)
+            binding.progressBarLimit.progressDrawable.clearColorFilter()
+        }
         binding.tvLimitInfo.text =
             "IDR ${formatRupiah(usedAmount)} of IDR ${formatRupiah(monthlyLimit)}"
     }

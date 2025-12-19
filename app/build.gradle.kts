@@ -1,9 +1,9 @@
 plugins {
     alias(libs.plugins.androidApplication)
+    id("kotlin-parcelize")
     alias(libs.plugins.kotlinAndroid)
     // Aktifkan Safe Args dan Parcelize
     alias(libs.plugins.kotlinSafeargs)
-    id("kotlin-parcelize")
     // Add the Google services Gradle plugin
     id("com.google.gms.google-services")
 }
