@@ -14,5 +14,6 @@ data class Transaction(
     val type: TransactionType = TransactionType.EXPENSE,
     val date: String = "",
     val category: String = "",
-    val walletId: String = ""
+    val walletId: String = "",
+    val imageUrl: String? = null // To store the receipt/image URL
 ) : Parcelable

@@ -4,13 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.bumptech.glide.Glide
 import com.example.fintelis.data.Transaction
 import com.example.fintelis.data.TransactionType
 import com.example.fintelis.databinding.FragmentTransactionDetailBinding
@@ -36,25 +35,9 @@ class TransactionDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val activity = activity as? AppCompatActivity
-        activity?.setSupportActionBar(binding.toolbar)
-
         // Setup Toolbar Back Button
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
-        }
-
-        // Set custom toolbar title and font
-        activity?.supportActionBar?.title = "Transaction Detail"
-        for (i in 0 until binding.toolbar.childCount) {
-            val child = binding.toolbar.getChildAt(i)
-            if (child is TextView) {
-                if (child.text == activity?.supportActionBar?.title) {
-                    val typeface = ResourcesCompat.getFont(requireContext(), R.font.lato_bold)
-                    child.typeface = typeface
-                    break
-                }
-            }
         }
 
         // Ambil data dan tampilkan
@@ -81,6 +64,14 @@ class TransactionDetailFragment : Fragment() {
             binding.tvDetailType.text = "Expense"
             binding.tvDetailAmount.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_rejected)) // Merah
             // binding.ivDetailIcon.setImageResource(R.drawable.ic_arrow_down)
+        }
+
+        // Display image if URL exists
+        if (!item.imageUrl.isNullOrEmpty()) {
+            binding.ivReceiptImage.isVisible = true
+            Glide.with(this)
+                .load(item.imageUrl)
+                .into(binding.ivReceiptImage)
         }
     }
 
