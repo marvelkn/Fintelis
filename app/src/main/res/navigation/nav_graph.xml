@@ -11,7 +11,7 @@
         android:label="Login">
         <action
             android:id="@+id/action_login_to_signup"
-            app:destination="@id/signupFragment"/>
+            app:destination="@id/signupFragment" />
         <action
             android:id="@+id/action_loginFragment_to_dashboardFragment"
             app:destination="@id/dashboardFragment" />
@@ -23,7 +23,7 @@
         android:label="Signup">
         <action
             android:id="@+id/action_signup_to_login"
-            app:destination="@id/loginFragment"/>
+            app:destination="@id/loginFragment" />
     </fragment>
 
     <fragment

@@ -182,7 +182,7 @@ class DashboardFragment : Fragment() {
         // Memperbarui UI di awal secara manual (optional, karena sudah ada observer)
         updateMonthlyLimitUI()
 
-        binding.tvDate.text = SimpleDateFormat("EEEE, d MMMM yyyy", Locale("id", "ID")).format(Date())
+        binding.tvDate.text = SimpleDateFormat("EEEE, d MMMM yyyy", Locale("en", "EN")).format(Date())
     }
 
     private fun setupPieChart() {
