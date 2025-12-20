@@ -286,21 +286,24 @@ class DashboardFragment : Fragment() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_set_monthly_limit, null)
         val etLimit = dialogView.findViewById<TextInputEditText>(R.id.etLimit)
 
-        // Tampilkan nilai limit saat ini di dalam EditText
-        etLimit.setText(monthlyLimit.toString())
+        // PASANG DISINI: Agar saat diketik langsung muncul titik
+        etLimit.addTextChangedListener(MoneyTextWatcher(etLimit))
 
-        AlertDialog.Builder(requireContext())
-            .setView(dialogView)
+        // Tampilkan nilai limit lama jika sudah ada (diformat titik juga)
+        if (monthlyLimit > 0) {
+            val formattedInitial = NumberFormat.getNumberInstance(Locale("id", "ID")).format(monthlyLimit)
+            etLimit.setText(formattedInitial)
+        }
+
+        AlertDialog.Builder(requireContext()).setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
-                val input = etLimit.text?.toString()?.toIntOrNull() ?: 0
+                // CARA AMBIL DATA: Hapus titiknya dulu sebelum masuk ke database
+                val rawValue = etLimit.text.toString().replace("[\\D]".toRegex(), "")
+                val input = rawValue.toIntOrNull() ?: 0
 
-                // Simpan secara permanen ke Firestore melalui ViewModel
                 dashboardViewModel.saveMonthlyLimit(input)
-
                 Toast.makeText(context, "Limit diperbarui", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            }.setNegativeButton("Cancel", null).show()
     }
 
     private fun displayUserName(user: FirebaseUser) {

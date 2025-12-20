@@ -77,6 +77,8 @@ class AddTransactionFragment : Fragment() {
         // 2. Setup Default State (Expense Mode)
         updateCategoryList(isExpense = true)
 
+        binding.etAmount.addTextChangedListener(MoneyTextWatcher(binding.etAmount))
+
         // 3. Listener Perubahan Tipe (Expense/Income)
         binding.rgType.setOnCheckedChangeListener { _, checkedId ->
             val isExpense = checkedId == R.id.rb_expense
@@ -99,7 +101,11 @@ class AddTransactionFragment : Fragment() {
         binding.btnRemoveImage.setOnClickListener { removeImage() }
 
         // 5. Listener Save
-        binding.btnSave.setOnClickListener { saveTransaction() }
+        binding.btnSave.setOnClickListener {
+            // Ambil angkanya saja untuk disimpan ke Firestore
+            val rawNominal = binding.etAmount.text.toString().replace("[\\D]".toRegex(), "")
+            val nominalMurni = rawNominal.toDoubleOrNull() ?: 0.0
+        }
     }
 
     private fun updateCategoryList(isExpense: Boolean) {
