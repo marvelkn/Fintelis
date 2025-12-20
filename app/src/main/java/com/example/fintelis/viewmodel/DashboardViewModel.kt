@@ -35,10 +35,15 @@ class DashboardViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         val userDocRef = firestore.collection("users").document(userId)
 
-        userDocRef.collection("wallets").addSnapshotListener { walletSnapshot, e ->
-            if (e != null) return@addSnapshotListener
-            val walletList = walletSnapshot?.toObjects<Wallet>() ?: emptyList()
+        userDocRef.collection("wallets").addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Log.e("DashboardViewModel", "Listen failed", e)
+                return@addSnapshotListener
+            }
 
+            val walletList = snapshot?.toObjects<Wallet>() ?: emptyList()
+
+            // PERBAIKAN: Jangan difilter ke 0.0, ambil data asli apa adanya
             _wallets.value = walletList
             _totalBalance.value = walletList.sumOf { it.balance }
         }
@@ -86,23 +91,28 @@ class DashboardViewModel : ViewModel() {
         val userDocRef = firestore.collection("users").document(userId)
         val walletRef = userDocRef.collection("wallets").document(walletId)
 
-        userDocRef.collection("transactions").whereEqualTo("walletId", walletId).get()
-            .addOnSuccessListener { snapshot ->
-                val batch = firestore.batch()
-                snapshot.documents.forEach { doc -> batch.delete(doc.reference) }
-                batch.delete(walletRef)
-                batch.commit().addOnFailureListener {
-                    Log.e("DashboardViewModel", "Failed to delete wallet and transactions", it)
-                }
-            }
-            .addOnFailureListener {
-                Log.e("DashboardViewModel", "Failed to query transactions for deletion", it)
-            }
+        // Di dalam DashboardViewModel.kt pada fungsi fetchWalletsAndTransactions
+        userDocRef.collection("wallets").addSnapshotListener { snapshot, e ->
+            if (e != null) return@addSnapshotListener
+
+            val walletList = snapshot?.toObjects<Wallet>() ?: emptyList()
+
+            // JANGAN membatasi ke 0, biarkan sesuai data asli dari Firestore
+            _wallets.value = walletList
+            _totalBalance.value = walletList.sumOf { it.balance }
+        }
     }
 
-    fun formatRupiah(number: Double): String {
-        val localeID = Locale("id", "ID")
-        val format = NumberFormat.getCurrencyInstance(localeID)
-        return format.format(number).replace("Rp", "IDR ")
+    fun formatRupiah(amount: Number): String {
+        val doubleValue = amount.toDouble()
+        val format = NumberFormat.getNumberInstance(Locale("id", "ID"))
+        val formattedNumber = format.format(Math.abs(doubleValue)) // Gunakan absolut agar minusnya hilang dulu
+
+        // Jika angka negatif, letakkan tanda minus setelah "IDR "
+        return if (doubleValue < 0) {
+            "IDR -$formattedNumber"
+        } else {
+            "IDR $formattedNumber"
+        }
     }
 }

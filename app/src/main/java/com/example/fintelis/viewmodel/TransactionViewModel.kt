@@ -160,10 +160,39 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun deleteTransactions(items: Set<Transaction>) {
+    fun deleteTransactions(transactions: Set<Transaction>) {
         val userId = auth.currentUser?.uid ?: return
-        val collection = firestore.collection("users").document(userId).collection("transactions")
-        items.forEach { collection.document(it.id).delete() }
+        val batch = firestore.batch()
+
+        transactions.forEach { transaction ->
+            // 1. Referensi ke dokumen transaksi yang akan dihapus
+            val transRef = firestore.collection("users").document(userId)
+                .collection("transactions").document(transaction.id)
+
+            // 2. Referensi ke dokumen wallet yang harus diupdate saldonya
+            val walletRef = firestore.collection("users").document(userId)
+                .collection("wallets").document(transaction.walletId)
+
+            // 3. Tentukan nilai penyesuaian (Adjustment)
+            // Jika Hapus Pengeluaran -> Saldo Wallet harus ditambah (+)
+            // Jika Hapus Pemasukan -> Saldo Wallet harus dikurangi (-)
+            val adjustment = if (transaction.type == TransactionType.EXPENSE) {
+                transaction.amount
+            } else {
+                -transaction.amount
+            }
+
+            // Tambahkan operasi ke dalam batch
+            batch.delete(transRef)
+            batch.update(walletRef, "balance", com.google.firebase.firestore.FieldValue.increment(adjustment))
+        }
+
+        // 4. Jalankan semua operasi sekaligus
+        batch.commit().addOnSuccessListener {
+            Log.d("Firestore", "Batch delete & balance update success")
+        }.addOnFailureListener { e ->
+            Log.e("Firestore", "Batch failed: ", e)
+        }
     }
 
     fun searchTransactions(query: String) {

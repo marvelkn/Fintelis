@@ -214,6 +214,15 @@ class DashboardFragment : Fragment() {
 
         fun render() {
             tvBalance?.text = if (isVisible) real else hidden
+
+            if (wallet.balance < 0) {
+                // Warna merah jika minus (menggunakan Color.RED atau kode hex)
+                tvBalance?.setTextColor(Color.RED)
+            } else {
+                // Warna biru gelap/hitam standar jika saldo aman
+                tvBalance?.setTextColor(Color.parseColor("#1E293B"))
+            }
+
             imgToggle?.setImageResource(
                 if (isVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
             )
@@ -234,6 +243,15 @@ class DashboardFragment : Fragment() {
 
     private fun updateMainBalanceDisplay() {
         binding.tvBalanceNominal.text = if (isMainBalanceVisible) actualMainBalanceFormatted else "IDR •••••••••••"
+
+        // Ambil angka murni dari dashboardViewModel untuk cek minus
+        val totalVal = dashboardViewModel.totalBalance.value ?: 0.0
+        if (totalVal < 0) {
+            binding.tvBalanceNominal.setTextColor(Color.RED)
+        } else {
+            binding.tvBalanceNominal.setTextColor(Color.WHITE) // Atau warna default saldo utama Anda
+        }
+
         binding.imgToggleBalance.setImageResource(
             if (isMainBalanceVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
         )
@@ -256,8 +274,16 @@ class DashboardFragment : Fragment() {
     }
 
     private fun formatRupiah(amount: Number): String {
-        val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-        return format.format(amount).replace("Rp", "IDR ")
+        val doubleValue = amount.toDouble()
+        val format = NumberFormat.getNumberInstance(Locale("id", "ID"))
+        val formattedNumber = format.format(Math.abs(doubleValue)) // Gunakan absolut agar minusnya hilang dulu
+
+        // Jika angka negatif, letakkan tanda minus setelah "IDR "
+        return if (doubleValue < 0) {
+            "IDR -$formattedNumber"
+        } else {
+            "IDR $formattedNumber"
+        }
     }
 
     private fun showAddWalletDialog() {

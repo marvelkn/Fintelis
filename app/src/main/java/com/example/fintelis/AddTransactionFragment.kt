@@ -84,12 +84,10 @@ class AddTransactionFragment : Fragment() {
             val isExpense = checkedId == R.id.rb_expense
 
             if (isExpense) {
-                // Mode Expense: Text Putih, Income Abu-abu
                 binding.rbExpense.setTextColor(Color.WHITE)
                 binding.rbIncome.setTextColor(Color.parseColor("#64748B"))
                 updateCategoryList(true)
             } else {
-                // Mode Income: Text Putih, Expense Abu-abu
                 binding.rbExpense.setTextColor(Color.parseColor("#64748B"))
                 binding.rbIncome.setTextColor(Color.WHITE)
                 updateCategoryList(false)
@@ -100,25 +98,22 @@ class AddTransactionFragment : Fragment() {
         binding.layoutPlaceholder.setOnClickListener { showImageSourceDialog() }
         binding.btnRemoveImage.setOnClickListener { removeImage() }
 
-        // 5. Listener Save
+        // 5. Listener Save (Updated)
         binding.btnSave.setOnClickListener {
-            // Ambil angkanya saja untuk disimpan ke Firestore
-            val rawNominal = binding.etAmount.text.toString().replace("[\\D]".toRegex(), "")
-            val nominalMurni = rawNominal.toDoubleOrNull() ?: 0.0
+            saveTransaction()
         }
     }
 
     private fun updateCategoryList(isExpense: Boolean) {
         val arrayResId = if (isExpense) R.array.expense_categories else R.array.income_categories
 
-        // Pastikan array ini ada di strings.xml
         try {
             val categories = resources.getStringArray(arrayResId)
             val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
             binding.etCategory.setAdapter(adapter)
-            binding.etCategory.setText("") // Reset text saat ganti tipe
+            binding.etCategory.setText("")
         } catch (e: Exception) {
-            // Fallback jika array belum dibuat
+            e.printStackTrace()
         }
     }
 
@@ -189,18 +184,29 @@ class AddTransactionFragment : Fragment() {
         binding.layoutPlaceholder.isVisible = true
     }
 
-    // --- LOGIKA SIMPAN ---
+    // --- LOGIKA SIMPAN (Updated) ---
     private fun saveTransaction() {
         val title = binding.etTitle.text.toString().trim()
-        val amountStr = binding.etAmount.text.toString().trim()
         val category = binding.etCategory.text.toString().trim()
 
-        if (title.isBlank() || amountStr.isBlank() || category.isBlank()) {
-            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+        // Membersihkan format titik ribuan agar bisa diparsing ke Double
+        val rawAmount = binding.etAmount.text.toString().replace("[\\D]".toRegex(), "")
+        val nominalMurni = rawAmount.toDoubleOrNull() ?: 0.0
+
+        // Validasi input
+        if (title.isBlank() || nominalMurni <= 0.0 || category.isBlank()) {
+            Toast.makeText(context, "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
             return
         }
 
-        binding.btnSave.isEnabled = false // Disable tombol saat proses
+        // Validasi Wallet (Penting agar Firebase tahu wallet mana yang di-update)
+        val currentWalletId = viewModel.activeWalletId.value
+        if (currentWalletId == null || currentWalletId == "ALL") {
+            Toast.makeText(context, "Please select a specific wallet first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.btnSave.isEnabled = false
 
         var localImageUrl: String? = null
         if (imageUri != null) {
@@ -218,11 +224,11 @@ class AddTransactionFragment : Fragment() {
 
         val transaction = Transaction(
             title = title,
-            amount = amountStr.toDouble(),
+            amount = nominalMurni,
             type = type,
             date = date,
             category = category,
-            walletId = viewModel.activeWalletId.value ?: "",
+            walletId = currentWalletId,
             imageUrl = localImageUrl
         )
 
