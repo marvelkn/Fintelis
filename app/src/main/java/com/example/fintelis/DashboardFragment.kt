@@ -221,7 +221,7 @@ class DashboardFragment : Fragment() {
                 tvBalance?.setTextColor(Color.RED)
             } else {
                 // Warna biru gelap/hitam standar jika saldo aman
-                tvBalance?.setTextColor(Color.parseColor("#1E293B"))
+                tvBalance?.setTextColor(Color.WHITE)
             }
 
             imgToggle?.setImageResource(
@@ -273,7 +273,8 @@ class DashboardFragment : Fragment() {
         if (totalVal < 0) {
             binding.tvBalanceNominal.setTextColor(Color.RED)
         } else {
-            binding.tvBalanceNominal.setTextColor(Color.WHITE) // Atau warna default saldo utama Anda
+            val myColor = Color.parseColor("#5459AC")
+            binding.tvBalanceNominal.setTextColor(myColor)
         }
 
         binding.imgToggleBalance.setImageResource(
