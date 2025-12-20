@@ -3,17 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_dash"
-    app:startDestination="@id/mainDashboard">
-
-    <fragment
-        android:id="@+id/mainDashboard"
-        android:name="com.example.fintelis.DashboardFragment"
-        android:label="Dashboard"
-        tools:layout="@layout/fragment_dashboard">
-        <action
-            android:id="@+id/action_mainDashboard_to_customerListFragment"
-            app:destination="@id/customerListFragment" />
-    </fragment>
+    app:startDestination="@id/mainDashboard"> <fragment
+    android:id="@+id/mainDashboard"
+    android:name="com.example.fintelis.DashboardFragment"
+    android:label="Dashboard"
+    tools:layout="@layout/fragment_dashboard" >
+    <action
+        android:id="@+id/action_mainDashboard_to_customerListFragment"
+        app:destination="@id/customerListFragment" />
+</fragment>
 
     <fragment
         android:id="@+id/analysisFragment"
@@ -25,10 +23,12 @@
         android:id="@+id/customerListFragment"
         android:name="com.example.fintelis.TransactionListFragment"
         android:label="Transaction History"
-        tools:layout="@layout/fragment_transaction_list">
+        tools:layout="@layout/fragment_transaction_list" >
+
         <action
             android:id="@+id/action_customerListFragment_to_customerDetailFragment"
             app:destination="@id/customerDetailFragment" />
+
         <action
             android:id="@+id/action_customerListFragment_to_addCustomerFragment"
             app:destination="@id/addCustomerFragment" />
@@ -38,20 +38,35 @@
         android:id="@+id/addCustomerFragment"
         android:name="com.example.fintelis.AddTransactionFragment"
         android:label="Add Transaction"
-        tools:layout="@layout/fragment_add_transaction">
+        tools:layout="@layout/fragment_add_transaction" >
+
         <action
             android:id="@+id/action_addCustomerFragment_to_customerListFragment"
-            app:destination="@id/customerListFragment" />
+            app:destination="@id/customerListFragment"/>
     </fragment>
 
     <fragment
         android:id="@+id/customerDetailFragment"
         android:name="com.example.fintelis.TransactionDetailFragment"
         android:label="Transaction Detail"
-        tools:layout="@layout/fragment_transaction_detail">
+        tools:layout="@layout/fragment_transaction_detail" >
+
         <argument
             android:name="transaction"
             app:argType="com.example.fintelis.data.Transaction" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.fintelis.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" >
+        <action
+            android:id="@+id/action_settingsFragment_to_editProfileFragment"
+            app:destination="@+id/editProfileFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_changePasswordFragment"
+            app:destination="@+id/changePasswordFragment" />
     </fragment>
 
     <fragment
@@ -59,6 +74,7 @@
         android:name="com.example.fintelis.VisualizationFragment"
         android:label="Visualization"
         tools:layout="@layout/fragment_visualization">
+
         <action
             android:id="@+id/action_visualization_to_detailCashflow"
             app:destination="@id/detailCashflowFragment"
@@ -73,23 +89,11 @@
         android:name="com.example.fintelis.DetailCashflowFragment"
         android:label="Cashflow Detail"
         tools:layout="@layout/fragment_detail_cashflow">
+
         <argument
             android:name="isExpense"
-            android:defaultValue="true"
-            app:argType="boolean" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/settingsFragment"
-        android:name="com.example.fintelis.SettingsFragment"
-        android:label="Settings"
-        tools:layout="@layout/fragment_settings">
-        <action
-            android:id="@+id/action_settingsFragment_to_editProfileFragment"
-            app:destination="@id/editProfileFragment" />
-        <action
-            android:id="@+id/action_settingsFragment_to_changePasswordFragment"
-            app:destination="@id/changePasswordFragment" />
+            app:argType="boolean"
+            android:defaultValue="true" />
     </fragment>
 
     <fragment
@@ -103,5 +107,4 @@
         android:name="com.example.fintelis.ChangePasswordFragment"
         android:label="Change Password"
         tools:layout="@layout/fragment_change_password" />
-
 </navigation>

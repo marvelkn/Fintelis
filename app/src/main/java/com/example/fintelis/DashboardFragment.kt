@@ -23,6 +23,7 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -239,6 +240,29 @@ class DashboardFragment : Fragment() {
             transactionViewModel.setActiveWallet(wallet.id)
             findNavController().navigate(R.id.action_mainDashboard_to_customerListFragment)
         }
+
+        cardView.setOnLongClickListener {
+            // Proteksi agar "Main Wallet" tidak bisa dihapus (opsional)
+            if (wallet.name.lowercase() != "main wallet") {
+                showDeleteConfirmation(wallet)
+            } else {
+                Toast.makeText(context, "Main wallet cannot be deleted", Toast.LENGTH_SHORT).show()
+            }
+            true // Return true agar event klik biasa tidak ikut terpicu
+        }
+    }
+
+    private fun showDeleteConfirmation(wallet: Wallet) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Wallet")
+            .setMessage("Are you sure you want to delete '${wallet.name}'? This action cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                // Pastikan Anda sudah memiliki fungsi deleteWallet di DashboardViewModel
+                dashboardViewModel.deleteWallet(wallet.id)
+                Toast.makeText(context, "${wallet.name} deleted", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun updateMainBalanceDisplay() {
@@ -311,25 +335,38 @@ class DashboardFragment : Fragment() {
     private fun showSetLimitDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_set_monthly_limit, null)
         val etLimit = dialogView.findViewById<TextInputEditText>(R.id.etLimit)
+        val btnSave = dialogView.findViewById<MaterialButton>(R.id.btnSave)
+        val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnCancel)
 
-        // PASANG DISINI: Agar saat diketik langsung muncul titik
         etLimit.addTextChangedListener(MoneyTextWatcher(etLimit))
 
-        // Tampilkan nilai limit lama jika sudah ada (diformat titik juga)
         if (monthlyLimit > 0) {
             val formattedInitial = NumberFormat.getNumberInstance(Locale("id", "ID")).format(monthlyLimit)
             etLimit.setText(formattedInitial)
         }
 
-        AlertDialog.Builder(requireContext()).setView(dialogView)
-            .setPositiveButton("Save") { _, _ ->
-                // CARA AMBIL DATA: Hapus titiknya dulu sebelum masuk ke database
-                val rawValue = etLimit.text.toString().replace("[\\D]".toRegex(), "")
-                val input = rawValue.toIntOrNull() ?: 0
+        // Builder tanpa tombol default
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
 
-                dashboardViewModel.saveMonthlyLimit(input)
-                Toast.makeText(context, "Limit diperbarui", Toast.LENGTH_SHORT).show()
-            }.setNegativeButton("Cancel", null).show()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Klik tombol Batal kustom
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Klik tombol Simpan kustom
+        btnSave.setOnClickListener {
+            val rawValue = etLimit.text.toString().replace("[\\D]".toRegex(), "")
+            val input = rawValue.toIntOrNull() ?: 0
+            dashboardViewModel.saveMonthlyLimit(input)
+            Toast.makeText(context, "Limit diperbarui", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun displayUserName(user: FirebaseUser) {
