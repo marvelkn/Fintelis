@@ -5,11 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.fintelis.databinding.FragmentEditProfileBinding // Pastikan nama Binding Class benar
+import com.example.fintelis.databinding.FragmentEditProfileBinding
 import com.example.fintelis.viewmodel.SettingsViewModel
 
 class EditProfileFragment : Fragment() {
@@ -17,8 +16,6 @@ class EditProfileFragment : Fragment() {
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
 
-    // Menggunakan activityViewModels() untuk berbagi instance SettingsViewModel
-    // dengan SettingsFragment yang merupakan parent di NavGraph
     private val viewModel: SettingsViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -32,8 +29,7 @@ class EditProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Pastikan data profil dimuat ulang saat Fragment ini dibuka
-        // Ini memastikan data terbaru (Show Data) muncul di field.
+        // Muat data profil saat pertama kali dibuka
         viewModel.loadUserProfile()
 
         setupObservers()
@@ -41,46 +37,47 @@ class EditProfileFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        // 1. Mengisi Form (Show Data) saat data user dimuat
+        // Observasi data profil untuk mengisi EditText (Show Data)
         viewModel.userProfile.observe(viewLifecycleOwner) { user ->
             binding.etFullName.setText(user.fullName)
-            binding.etEmail.setText(user.email) // Tetap tampil tapi tidak bisa diedit
+            binding.etEmail.setText(user.email)
             binding.etPhone.setText(user.phoneNumber)
         }
 
-        // 2. Status Message (Menampilkan notifikasi sukses/gagal)
+        // Observasi status pesan (berhasil/gagal)
         viewModel.statusMessage.observe(viewLifecycleOwner) { msg ->
-            if (msg.contains("berhasil diperbarui")) {
-                // Jika update sukses, kembali ke halaman Settings utama
-                Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()
-            } else if (msg.isNotEmpty() && !msg.contains("Gagal update Auth")) {
-                // Tampilkan error umum jika bukan error yang sudah ditangani di ViewModel
+            if (msg.isNotEmpty()) {
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                if (msg.contains("berhasil diperbarui")) {
+                    // Kembali ke halaman sebelumnya jika sukses
+                    findNavController().popBackStack()
+                }
             }
         }
 
-        // 3. Loading State
+        // Observasi status loading untuk tombol dan progress bar (jika ada)
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.isVisible = isLoading
             binding.btnSaveProfile.isEnabled = !isLoading
-
-            // Mengunci field yang bisa diedit saat proses berlangsung
             binding.etFullName.isEnabled = !isLoading
             binding.etPhone.isEnabled = !isLoading
-            // etEmail tetap false karena sudah diatur di XML
+            // Anda bisa menambahkan binding.progressBar.isVisible = isLoading
+            // jika ProgressBar ditambahkan kembali ke XML
         }
     }
 
     private fun setupListeners() {
+        // FUNGSI TOMBOL BACK (Sesuai id: iv_back_button di XML Anda)
+        binding.ivBackButton.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
+        // FUNGSI TOMBOL SAVE (Sesuai id: btnSaveProfile di XML Anda)
         binding.btnSaveProfile.setOnClickListener {
             val name = binding.etFullName.text.toString().trim()
-            val email = binding.etEmail.text.toString().trim() // Ambil nilai email yang tampil (untuk dikirim ke ViewModel, meskipun tidak diupdate)
+            val email = binding.etEmail.text.toString().trim()
             val phone = binding.etPhone.text.toString().trim()
 
             if (name.isNotEmpty() && email.isNotEmpty()) {
-                // Panggil fungsi update di ViewModel.
-                // ViewModel akan mengabaikan nilai email dari sini (karena sudah diubah logikanya)
                 viewModel.updateProfile(name, phone, email)
             } else {
                 Toast.makeText(context, "Nama dan Email wajib diisi!", Toast.LENGTH_SHORT).show()
