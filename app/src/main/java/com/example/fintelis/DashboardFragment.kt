@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -49,7 +50,7 @@ class DashboardFragment : Fragment() {
     private val walletVisibilityStates = mutableMapOf<String, Boolean>()
 
     // === MONTHLY LIMIT ===
-    private var monthlyLimit = 1_000_000
+    private var monthlyLimit = 0
     private var usedAmount = 0
 
     override fun onCreateView(
@@ -105,7 +106,6 @@ class DashboardFragment : Fragment() {
         // === 3. FINANCIAL CHART DATA ===
         transactionViewModel.setActiveWallet("ALL")
 
-        // Trigger MediatorLiveData
         transactionViewModel.displayedTransactions.observe(viewLifecycleOwner) {}
 
         transactionViewModel.incomePercentage.observe(viewLifecycleOwner) {
@@ -120,7 +120,14 @@ class DashboardFragment : Fragment() {
         transactionViewModel.expenseNominal.observe(viewLifecycleOwner) { expense ->
             binding.tvExpenseNominal.text = formatRupiah(expense)
             usedAmount = expense.toInt()
-            updateMonthlyLimitUI()
+            updateMonthlyLimitUI() // Update UI saat nominal pengeluaran berubah
+        }
+
+        // === 4. TAMBAHAN: OBSERVE MONTHLY LIMIT DARI FIRESTORE ===
+        // Memastikan nilai limit tidak kembali ke 0 saat aplikasi restart
+        dashboardViewModel.monthlyLimit.observe(viewLifecycleOwner) { limit ->
+            monthlyLimit = limit
+            updateMonthlyLimitUI() // Update UI saat nilai limit dari database masuk
         }
 
         transactionViewModel.incomeExpensePieData.observe(viewLifecycleOwner) { entries ->
@@ -168,10 +175,14 @@ class DashboardFragment : Fragment() {
         }
 
         binding.cardAddWallet.root.setOnClickListener { showAddWalletDialog() }
-        binding.progressBarLimit.setOnClickListener { showSetLimitDialog() }
 
+        // Memanggil dialog set limit dari teks instruksi yang baru
+        binding.btnSetLimit.setOnClickListener { showSetLimitDialog() }
+
+        // Memperbarui UI di awal secara manual (optional, karena sudah ada observer)
         updateMonthlyLimitUI()
-        binding.tvDate.text = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.US).format(Date())
+
+        binding.tvDate.text = SimpleDateFormat("EEEE, d MMMM yyyy", Locale("id", "ID")).format(Date())
     }
 
     private fun setupPieChart() {
@@ -274,13 +285,22 @@ class DashboardFragment : Fragment() {
     private fun showSetLimitDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_set_monthly_limit, null)
         val etLimit = dialogView.findViewById<TextInputEditText>(R.id.etLimit)
-        AlertDialog.Builder(requireContext()).setView(dialogView)
+
+        // Tampilkan nilai limit saat ini di dalam EditText
+        etLimit.setText(monthlyLimit.toString())
+
+        AlertDialog.Builder(requireContext())
+            .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
-                etLimit.text?.toString()?.toIntOrNull()?.let {
-                    monthlyLimit = it
-                    updateMonthlyLimitUI()
-                }
-            }.setNegativeButton("Cancel", null).show()
+                val input = etLimit.text?.toString()?.toIntOrNull() ?: 0
+
+                // Simpan secara permanen ke Firestore melalui ViewModel
+                dashboardViewModel.saveMonthlyLimit(input)
+
+                Toast.makeText(context, "Limit diperbarui", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun displayUserName(user: FirebaseUser) {

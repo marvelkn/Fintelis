@@ -246,7 +246,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
+                        android:layout_marginBottom="2dp"
                         android:text="Monthly expenses limit"
                         android:textColor="#1E293B"
                         android:textSize="16sp"
@@ -256,9 +256,37 @@
                         android:id="@+id/tvLimitInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Click to set your monthly limit"
+                        android:text="IDR 0 of IDR 0"
                         android:textColor="#64748B"
                         android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:id="@+id/btnSetLimit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Set your limit here"
+                            android:textColor="#6D28D9"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:layout_marginStart="4dp"
+                            android:src="@drawable/ic_edit"
+                            app:tint="#6D28D9" />
+
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
