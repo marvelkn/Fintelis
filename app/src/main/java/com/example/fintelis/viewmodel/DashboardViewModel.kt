@@ -88,19 +88,21 @@ class DashboardViewModel : ViewModel() {
 
     fun deleteWallet(walletId: String) {
         val userId = auth.currentUser?.uid ?: return
-        val userDocRef = firestore.collection("users").document(userId)
-        val walletRef = userDocRef.collection("wallets").document(walletId)
 
-        // Di dalam DashboardViewModel.kt pada fungsi fetchWalletsAndTransactions
-        userDocRef.collection("wallets").addSnapshotListener { snapshot, e ->
-            if (e != null) return@addSnapshotListener
-
-            val walletList = snapshot?.toObjects<Wallet>() ?: emptyList()
-
-            // JANGAN membatasi ke 0, biarkan sesuai data asli dari Firestore
-            _wallets.value = walletList
-            _totalBalance.value = walletList.sumOf { it.balance }
-        }
+        // 1. Eksekusi penghapusan di Firestore
+        firestore.collection("users")
+            .document(userId)
+            .collection("wallets")
+            .document(walletId)
+            .delete() // <--- Ini perintah krusial yang sebelumnya hilang
+            .addOnSuccessListener {
+                Log.d("DashboardViewModel", "Wallet $walletId berhasil dihapus")
+                // Tidak perlu update manual _wallets.value di sini,
+                // karena SnapshotListener di atas akan otomatis mendeteksi perubahan.
+            }
+            .addOnFailureListener { e ->
+                Log.e("DashboardViewModel", "Gagal menghapus wallet", e)
+            }
     }
 
     fun formatRupiah(amount: Number): String {
